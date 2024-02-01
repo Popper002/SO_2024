@@ -2,7 +2,7 @@
 #include "header/master.h"
 char const*args_atom[100];
 char const *args_[100];
-
+static int atomic_random;
 
 static int scan_data(FILE*fp)
 {
@@ -63,7 +63,34 @@ static void argument_creator(char * argv[]) {
     char n_nuovi_atomi[10];
     char sim_duration[10];
     char energy_explode_threshold[10];
-    
+    char atomic_number[10];
+    sprintf(n_atomi_init,"%d",config.N_ATOMI_INIT);
+    sprintf(energy_demand,"%d",config.ENERGY_DEMAND);
+    sprintf(n_atom_max,"%d",config.N_ATOM_MAX);
+    sprintf(min_a_atomico,"%d",config.MIN_A_ATOMICO);
+    sprintf(n_nuovi_atomi,"%d",config.N_NUOVI_ATOMI);
+    sprintf(sim_duration,"%d",config.SIM_DURATION);
+    sprintf(energy_explode_threshold,"%d",config.ENERGY_EXPLODE_THRESHOLD);    
+    argv[1] = strdup(n_atomi_init);
+    argv[2] = strdup(energy_demand);
+    argv[3] = strdup(n_atom_max);
+    argv[4] = strdup(min_a_atomico);
+    argv[5] = strdup(n_nuovi_atomi);
+    argv[6] = strdup(sim_duration);
+    argv[7] = strdup(energy_explode_threshold);
+
+    argv[9] = NULL;
+
+}
+static void argument_atom(char * argv[]) {
+    char n_atomi_init[10];
+    char energy_demand[10];
+    char n_atom_max[10];
+    char min_a_atomico[10];
+    char n_nuovi_atomi[10];
+    char sim_duration[10];
+    char energy_explode_threshold[10];
+    char atomic_number[10];
     sprintf(n_atomi_init,"%d",config.N_ATOMI_INIT);
     sprintf(energy_demand,"%d",config.ENERGY_DEMAND);
     sprintf(n_atom_max,"%d",config.N_ATOM_MAX);
@@ -71,7 +98,7 @@ static void argument_creator(char * argv[]) {
     sprintf(n_nuovi_atomi,"%d",config.N_NUOVI_ATOMI);
     sprintf(sim_duration,"%d",config.SIM_DURATION);
     sprintf(energy_explode_threshold,"%d",config.ENERGY_EXPLODE_THRESHOLD);
-    
+    sprintf(atomic_number ,"%d",atomic_random); 
     
     argv[1] = strdup(n_atomi_init);
     argv[2] = strdup(energy_demand);
@@ -80,8 +107,14 @@ static void argument_creator(char * argv[]) {
     argv[5] = strdup(n_nuovi_atomi);
     argv[6] = strdup(sim_duration);
     argv[7] = strdup(energy_explode_threshold);
-    argv[19] = NULL;
-
+    argv[8] = strdup(atomic_number);
+    argv[9] = NULL;
+}
+static int randomize_atom(int atomic_number)
+{
+    
+  atomic_number = rand()%config.N_ATOM_MAX;
+    return atomic_number;
 }
 pid_t atom_generator( struct config config)
 { 
@@ -92,7 +125,7 @@ pid_t atom_generator( struct config config)
             TEST_ERROR;
             exit(EXIT_FAILURE);
     case 0: 
-        argument_creator(args_atom); 
+        argument_atom(args_atom); 
         execvp(ATOM_PATH ,&args_atom);
         fprintf(__func__,__LINE__,getpid(),"%s LINE: %d[MASTER %d  , ATOM_GENERATOR(){PROBLEM IN EXECVP}\n"); 
         exit(EXIT_FAILURE);
@@ -167,8 +200,13 @@ int main(int argc, char const *argv[])
     fp= fopen("/Users/popper/Documents/Uni/secondo anno /SO_2024/SO_2024/src/config/config1.txt","r"); 
     if( fp ==NULL ){ fprintf(stderr,"%d\n");exit(EXIT_FAILURE);}
     args_atom[0]=ATOM_PATH;
+    srand(time(NULL)); 
     printf("MAIN %d\n",getpid()); 
     scan_data(fp); 
+    atomic_random = randomize_atom(atomic_random);
+    printf(
+        "RANDOMIZE ATOM_NUMBERS IS %d \n",atomic_random
+    );
     atom_generator(config); 
     close(fp);
     
