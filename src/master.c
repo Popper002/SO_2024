@@ -86,18 +86,63 @@ static void argument_creator(char * argv[]) {
 pid_t atom_generator( struct config config)
 { 
     pid_t atom_pid; 
-    switch (atom_pid )
+    switch (atom_pid=fork() )
     {
     case -1 : 
             TEST_ERROR;
+            exit(EXIT_FAILURE);
     case 0: 
         argument_creator(args_atom); 
         execvp(ATOM_PATH ,&args_atom);
         fprintf(__func__,__LINE__,getpid(),"%s LINE: %d[MASTER %d  , ATOM_GENERATOR(){PROBLEM IN EXECVP}\n"); 
+        exit(EXIT_FAILURE);
+        break;
+    
+    default:
+        
+        return atom_pid;
+        break;
+    }
+}
+pid_t activator_generator( struct config config)
+{ 
+    pid_t activator_pid; 
+    switch (activator_pid =fork() )
+    {
+    case -1 : 
+            TEST_ERROR;
+            exit(EXIT_FAILURE);
+    case 0: 
+        argument_creator(args_atom); 
+        execvp(ACTIVATOR_PATH ,&args_atom);
+        fprintf(__func__,__LINE__,getpid(),"%s LINE: %d[MASTER %d  , ACTIVATOR_GENERATOR(){PROBLEM IN EXECVP}\n"); 
+        exit(EXIT_FAILURE);
         break;
     
     default:
         sleep(1); 
+        return activator_pid;
+        break;
+    }
+}
+pid_t fuel_generator( struct config config)
+{ 
+    pid_t fuel_pid; 
+    switch (fuel_pid =fork())
+    {
+    case -1 : 
+            TEST_ERROR;
+            exit(EXIT_FAILURE);
+    case 0: 
+        argument_creator(args_atom); 
+        execvp(FUEL_PATH ,&args_atom);
+        fprintf(__func__,__LINE__,getpid(),"%s LINE: %d[MASTER %d  , FUEL_GENERATOR(){PROBLEM IN EXECVP}\n"); 
+        exit(EXIT_FAILURE);
+        break;
+    
+    default:
+        sleep(1); 
+        return fuel_pid;
         break;
     }
 }
@@ -118,13 +163,14 @@ printf("N_ATOMI_INIT: %d\n"
 int main(int argc, char const *argv[])
 {
     FILE *fp; 
+    pid_t atom;
     fp= fopen("/Users/popper/Documents/Uni/secondo anno /SO_2024/SO_2024/src/config/config1.txt","r"); 
     if( fp ==NULL ){ fprintf(stderr,"%d\n");exit(EXIT_FAILURE);}
+    args_atom[0]=ATOM_PATH;
     printf("MAIN %d\n",getpid()); 
     scan_data(fp); 
-    print_para_TEST(config);
-    argument_creator(argv); 
     atom_generator(config); 
-    exit(EXIT_SUCCESS);
+    close(fp);
+    
     return 0;
 }

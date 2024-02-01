@@ -25,6 +25,8 @@
 #include <errno.h>
 #include <string.h>
 #define ATOM_PATH "./atom"
+#define ACTIVATOR_PATH "./active"
+#define FUEL_PATH "./fuel"
 struct config
 {
     int N_ATOMI_INIT; 
