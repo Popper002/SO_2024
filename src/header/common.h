@@ -15,12 +15,15 @@
                 errno,                             \
                 strerror(errno));                  \
     }
-
+/* __LINE__ is a preprocessor macro that expands to current line number in the source file, as an integer.
+     __LINE__ is useful when generating log statements
+ */
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
+#include <errno.h>
+#include <string.h>
 struct config
 {
     int N_ATOMI_INIT; 
@@ -28,7 +31,7 @@ struct config
     int N_ATOM_MAX;
     int MIN_A_ATOMICO;
     int N_NUOVI_ATOMI;
-    float SIM_DURATION;
+    int  SIM_DURATION;
     int ENERGY_EXPLODE_THRESHOLD;
 };
 #endif 

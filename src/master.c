@@ -3,10 +3,10 @@
 
 struct config config; 
 
-static int scan_data(FILE*fp)
+int scan_data(FILE*fp)
 {
     int value; 
-    char name_param[100];
+    char name_param[500];
     int error =1; 
     printf("Reading data from file...\n");
     while(fscanf(fp,"%s %d",name_param , &value) != EOF)
@@ -21,7 +21,7 @@ static int scan_data(FILE*fp)
             config.ENERGY_DEMAND = value;
             error = 0; 
         }
-        else if(strcmp(name_param,"N_ATOMI_MAX") == 0)
+        else if(strcmp(name_param,"N_ATOM_MAX") == 0)
         {
             config.N_ATOM_MAX = value;
             error = 0; 
@@ -55,16 +55,26 @@ static int scan_data(FILE*fp)
     return error;
 }
 
-
+static void print_para_TEST(struct config config )
+{ 
+printf("N_ATOMI_INIT: %d\n"
+ "ENERGY_DEMAND :%d\n"
+ "N_ATOM_MAX:%d\n"
+ "MIN_A_ATOMICO :%d\n"
+ "N_NUOVI_ATOMI :%d\n"
+ "SIM_DURATION :%d\n"
+"ENERGY_EXPLODE_THRESHOLD :%d\n",config.N_ATOMI_INIT,config.ENERGY_DEMAND , config.N_ATOM_MAX,config.MIN_A_ATOMICO
+ , config.N_NUOVI_ATOMI,config.SIM_DURATION,config.ENERGY_EXPLODE_THRESHOLD);
+}
 
 int main(int argc, char const *argv[])
 {
     FILE *fp; 
-    fp= fopen("config/confi1.txt",'r'); 
-    if(fp <=-1 )
-    { 
-        printf("%d %s ",__LINE__,__func__); /* is a preprocessor macro that expands to
-         current line number in the source file, as an integer*/
-    }
+    fp= fopen("/Users/popper/Documents/Uni/secondo anno /SO_2024/SO_2024/src/config/config1.txt","r"); 
+    if( fp ==NULL ){ fprintf(stderr,"%d\n");exit(EXIT_FAILURE);}
+    printf("MAIN %d\n",getpid()); 
+    scan_data(fp); 
+    print_para_TEST(config);
+    exit(EXIT_SUCCESS);
     return 0;
 }
