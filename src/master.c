@@ -1,9 +1,10 @@
 #include "header/common.h"
 #include "header/master.h"
-
+char const*args_atom[100];
+char const *args_[100];
 struct config config; 
 
-int scan_data(FILE*fp)
+static int scan_data(FILE*fp)
 {
     int value; 
     char name_param[500];
@@ -54,7 +55,52 @@ int scan_data(FILE*fp)
     printf("Data read from file!\n");
     return error;
 }
+static void argument_creator(char * argv[]) {
+    char n_atomi_init[10];
+    char energy_demand[10];
+    char n_atom_max[10];
+    char min_a_atomico[10];
+    char n_nuovi_atomi[10];
+    char sim_duration[10];
+    char energy_explode_threshold[10];
+    
+    sprintf(n_atomi_init,"%d",config.N_ATOMI_INIT);
+    sprintf(energy_demand,"%d",config.ENERGY_DEMAND);
+    sprintf(n_atom_max,"%d",config.N_ATOM_MAX);
+    sprintf(min_a_atomico,"%d",config.MIN_A_ATOMICO);
+    sprintf(n_nuovi_atomi,"%d",config.N_NUOVI_ATOMI);
+    sprintf(sim_duration,"%d",config.SIM_DURATION);
+    sprintf(energy_explode_threshold,"%d",config.ENERGY_EXPLODE_THRESHOLD);
+    
+    
+    argv[1] = strdup(n_atomi_init);
+    argv[2] = strdup(energy_demand);
+    argv[3] = strdup(n_atom_max);
+    argv[4] = strdup(min_a_atomico);
+    argv[5] = strdup(n_nuovi_atomi);
+    argv[6] = strdup(sim_duration);
+    argv[7] = strdup(energy_demand);
+    argv[19] = NULL;
 
+}
+pid_t atom_generator( struct config config)
+{ 
+    pid_t atom_pid; 
+    switch (atom_pid )
+    {
+    case -1 : 
+            TEST_ERROR;
+    case 0: 
+        argument_creator(args_atom); 
+        execvp(ATOM_PATH ,&args_atom);
+        fprintf(__func__,__LINE__,getpid(),"%s LINE: %d[MASTER %d  , ATOM_GENERATOR(){PROBLEM IN EXECVP}\n"); 
+        break;
+    
+    default:
+        sleep(1); 
+        break;
+    }
+}
 static void print_para_TEST(struct config config )
 { 
 printf("N_ATOMI_INIT: %d\n"
@@ -67,6 +113,8 @@ printf("N_ATOMI_INIT: %d\n"
  , config.N_NUOVI_ATOMI,config.SIM_DURATION,config.ENERGY_EXPLODE_THRESHOLD);
 }
 
+
+
 int main(int argc, char const *argv[])
 {
     FILE *fp; 
@@ -75,6 +123,8 @@ int main(int argc, char const *argv[])
     printf("MAIN %d\n",getpid()); 
     scan_data(fp); 
     print_para_TEST(config);
+    argument_creator(argv); 
+    atom_generator(config); 
     exit(EXIT_SUCCESS);
     return 0;
 }

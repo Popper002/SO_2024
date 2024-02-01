@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#define ATOM_PATH "./atom"
 struct config
 {
     int N_ATOMI_INIT; 
