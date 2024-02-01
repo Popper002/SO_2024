@@ -2,7 +2,7 @@
 #include "header/master.h"
 char const*args_atom[100];
 char const *args_[100];
-struct config config; 
+
 
 static int scan_data(FILE*fp)
 {
@@ -79,7 +79,7 @@ static void argument_creator(char * argv[]) {
     argv[4] = strdup(min_a_atomico);
     argv[5] = strdup(n_nuovi_atomi);
     argv[6] = strdup(sim_duration);
-    argv[7] = strdup(energy_demand);
+    argv[7] = strdup(energy_explode_threshold);
     argv[19] = NULL;
 
 }

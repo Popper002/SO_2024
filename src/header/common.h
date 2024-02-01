@@ -27,6 +27,7 @@
 #define ATOM_PATH "./atom"
 #define ACTIVATOR_PATH "./active"
 #define FUEL_PATH "./fuel"
+void fetch_args(char const *argv[]); 
 struct config
 {
     int N_ATOMI_INIT; 
@@ -37,4 +38,7 @@ struct config
     int  SIM_DURATION;
     int ENERGY_EXPLODE_THRESHOLD;
 };
+struct config config; 
+
+
 #endif 
