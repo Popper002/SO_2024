@@ -39,9 +39,37 @@ void fetch_args_atom(char const *argv[])
     config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
     atom.atomic_number =atom_number;
     printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}");
- 
 }
+int get_comand()
+{
+    int comand;
+}
+void energy_free(){}
+pid_t atom_split(int atomic_number,int comand,struct config *config)
+{
+    pid_t atom_master; 
+    pid_t atom_child;
+    if( comand ==1 )
+    { 
+        switch (atom_master = fork())
+        {
+        case -1: 
+            TEST_ERROR;
+            exit(EXIT_FAILURE); 
+            break;
+        case 0: 
+            atom_child = fork();
+            atomic_number/2;
+            sleep(1); 
+            energy_free(atomic_number,atom_master ,atom_child);
 
+
+        default:
+            sleep(1); 
+            break;
+        }
+    }
+}
 int main(int argc, char const *argv[])
 {
     printf("HELLO IS ATOM %d\n",getpid()); 

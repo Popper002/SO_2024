@@ -29,6 +29,7 @@
 #define ATOM_PATH "./atom"
 #define ACTIVATOR_PATH "./active"
 #define FUEL_PATH "./fuel"
+
 void fetch_args(char const *argv[]); 
 struct config
 {

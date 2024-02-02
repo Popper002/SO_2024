@@ -146,14 +146,14 @@ pid_t activator_generator( struct config config)
             TEST_ERROR;
             exit(EXIT_FAILURE);
     case 0: 
-        argument_creator(args_atom); 
+        argument_atom(args_atom); 
         execvp(ACTIVATOR_PATH ,&args_atom);
         fprintf(__func__,__LINE__,getpid(),"%s LINE: %d[MASTER %d  , ACTIVATOR_GENERATOR(){PROBLEM IN EXECVP}\n"); 
         exit(EXIT_FAILURE);
         break;
     
     default:
-        sleep(1); 
+        
         return activator_pid;
         break;
     }
@@ -207,7 +207,8 @@ int main(int argc, char const *argv[])
     printf(
         "RANDOMIZE ATOM_NUMBERS IS %d \n",atomic_random
     );
-    atom_generator(config); 
+    //atom_generator(config); 
+    activator_generator(config);
     close(fp);
     
     return 0;

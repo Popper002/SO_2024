@@ -2,16 +2,20 @@ CC = gcc
 CFLAGS_EXTRA_ALL = -Wvla  -D_GNU_SOURCE
 CFLAGS = -D_GNU_SOURCE
 RM =rm 
-IPC_RM =ipcrm 
+IPC_RM =ipcrm --all
 master:
-	$(CC) $(CFLAGS) src/master.c -o master -lm
+	@$(CC) $(CFLAGS) src/master.c -o master -lm
 
 atom:
-	$(CC) $(CFLAGS) src/atom.c -o atom
+	@$(CC) $(CFLAGS) src/atom.c -o atom
+activator:
+	@$(CC)	$(CFLAGS) src/activator.c src/header/common.h -o active -lm
 
 rm: 
-	$(RM) ./master ./atom
+	@$(RM) ./master ./atom ./active
+.c.o:
+	@$(CC) -c $(CFLAGS) $< -o $@
 
 cleanup:
-	$(RM) ./master ./atom
-	$(IPC_RM) 
+		$(IPC_RM)
+		$(RM) ./master ./atom
