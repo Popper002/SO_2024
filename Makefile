@@ -3,6 +3,8 @@ CFLAGS_EXTRA_ALL = -Wvla  -D_GNU_SOURCE
 CFLAGS = -D_GNU_SOURCE
 RM =rm 
 IPC_RM =ipcrm --all
+
+all: master atom activator
 master:
 	@$(CC) $(CFLAGS) src/master.c -o master -lm
 
