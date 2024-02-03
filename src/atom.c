@@ -1,5 +1,7 @@
 #include "header/atom.h"
 #include "header/common.h"
+#include <sys/param.h>
+
 struct atom atom;
 
 static void print_para_TEST(struct config config)
@@ -39,9 +41,14 @@ void fetch_args_atom(char const *argv[])
   atom.atomic_number = atom_number;
   printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}");
 }
-int get_comand() { int comand; }
-void energy_free() {}
-pid_t atom_split(int atomic_number, int comand, struct config *config)
+int get_command() { int comand; }
+
+int energy_from_fission(int atomic_number1, int atomic_number2) 
+{
+  return atomic_number1 * atomic_number2 -  MAX(atomic_number1, atomic_number2);
+}
+
+pid_t atom_fission(int atomic_number, int comand, struct config *config)
 {
   pid_t atom_master;
   pid_t atom_child;
@@ -55,9 +62,9 @@ pid_t atom_split(int atomic_number, int comand, struct config *config)
       break;
     case 0:
       atom_child = fork();
-      atomic_number / 2;
+      int new_atomic_n = atomic_number / 2;
       sleep(1);
-      energy_free(atomic_number, atom_master, atom_child);
+      energy_from_fission(new_atomic_n,new_atomic_n);
 
     default:
       sleep(1);
