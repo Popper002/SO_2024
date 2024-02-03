@@ -26,6 +26,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <sys/param.h>
 #define ATOM_PATH "./atom"
 #define ACTIVATOR_PATH "./active"
 #define FUEL_PATH "./fuel"

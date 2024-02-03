@@ -3,6 +3,7 @@
 #include "header/ipc.h"
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <unistd.h>
 struct message send;
 struct atom atom;
 
@@ -35,7 +36,7 @@ void fetch_args(char const *argv[])
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
   atom.atomic_number = atom_number;
-  printf("[Activator %d] {FETCHED ARGV COMPLEATE\n}");
+  printf("[Activator %d] {FETCHED ARGV COMPLEATE\n}",getpid());
 }
 int main(int argc, char const *argv[])
 {

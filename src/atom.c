@@ -43,9 +43,9 @@ void fetch_args_atom(char const *argv[])
 }
 int get_command() { int comand; }
 
-int energy_from_fission(int atomic_number1, int atomic_number2) 
+int energy_from_fission(int atomic_number1, int atomic_number2)
 {
-  return atomic_number1 * atomic_number2 -  MAX(atomic_number1, atomic_number2);
+  return atomic_number1 * atomic_number2 - MAX(atomic_number1, atomic_number2);
 }
 
 pid_t atom_fission(int atomic_number, int comand, struct config *config)
@@ -64,7 +64,7 @@ pid_t atom_fission(int atomic_number, int comand, struct config *config)
       atom_child = fork();
       int new_atomic_n = atomic_number / 2;
       sleep(1);
-      energy_from_fission(new_atomic_n,new_atomic_n);
+      energy_from_fission(new_atomic_n, new_atomic_n);
 
     default:
       sleep(1);
@@ -72,13 +72,20 @@ pid_t atom_fission(int atomic_number, int comand, struct config *config)
     }
   }
 }
+
+static int get_atomic_number()
+{
+  return rand() % config.N_ATOM_MAX;
+}
+
 int main(int argc, char const *argv[])
 {
   printf("HELLO IS ATOM %d\n", getpid());
   fetch_args_atom(argv);
-  int atomic_number = atoi(argv[8]);
-  atomic_number = atom.atomic_number;
-  printf("%d",atomic_number);
+  srand(time(NULL));
+  int atomic_number = get_atomic_number();
+  atom.atomic_number = atomic_number;
+  printf("%d", atomic_number);
 
   print_para_TEST(config);
   return 0;
