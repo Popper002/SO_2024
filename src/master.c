@@ -1,5 +1,6 @@
 #include "header/common.h"
 #include "header/master.h"
+#include <stdio.h>
 char const*args_atom[100];
 char const *args_[100];
 static int atomic_random;
@@ -10,6 +11,7 @@ static int scan_data(FILE*fp)
     char name_param[500];
     int error =1; 
     printf("Reading data from file...\n");
+    fscanf(FILE *restrict stream, const char *restrict format, ...)
     while(fscanf(fp,"%s %d",name_param , &value) != EOF)
     {
         if(strcmp(name_param,"N_ATOMI_INIT") == 0)
@@ -127,7 +129,7 @@ pid_t atom_generator( struct config config)
     case 0: 
         argument_atom(args_atom); 
         execvp(ATOM_PATH ,&args_atom);
-        fprintf(__func__,__LINE__,getpid(),"%s LINE: %d[MASTER %d  , ATOM_GENERATOR(){PROBLEM IN EXECVP}\n"); 
+        fprintf(stderr,"%s LINE: %d[MASTER %d  , ATOM_GENERATOR(){PROBLEM IN EXECVP}\n"__func__,__LINE__,getpid()); 
         exit(EXIT_FAILURE);
         break;
     

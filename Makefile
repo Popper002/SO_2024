@@ -19,3 +19,9 @@ rm:
 cleanup:
 		$(IPC_RM)
 		$(RM) ./master ./atom
+	$(RM) ./master ./atom
+	$(IPC_RM) 
+
+
+docs:
+	pdflatex docs/Relazione.tex 
