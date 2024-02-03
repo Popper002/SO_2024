@@ -1,10 +1,11 @@
 CC = gcc 
-CFLAGS_EXTRA_ALL = -Wvla  -D_GNU_SOURCE
-CFLAGS = -D_GNU_SOURCE
+CFLAGS = -Wvla -D_GNU_SOURCE -Wall -Wextra -Werror
 RM =rm 
 IPC_RM =ipcrm --all
 
 all: master atom activator
+
+run: ./master
 master:
 	@$(CC) $(CFLAGS) src/master.c -o master -lm
 

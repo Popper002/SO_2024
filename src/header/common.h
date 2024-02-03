@@ -1,8 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
-#ifdef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+// #ifdef _GNU_SOURCE
+// #define _GNU_SOURCE
+// #endif
 #ifndef TEST_ERROR
 #define TEST_ERROR                                 \
     if (errno)                                     \
