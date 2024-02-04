@@ -48,9 +48,9 @@ int main(int argc, char const *argv[])
   printf("QUEUE %d CREATED \n ", q_id);
   send.m_type = 1;
   int comand = randomic_activation();
-  printf("command %d\n", comand);
+  printf("\ncommand %d\n", comand);
   sprintf(send.text, "%d", comand);
-  msgsnd(q_id, &send, sizeof(send), 0);
+  msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0);
   printf("SENDED THIS MESSAGGE %sIN QUEUE%d\n", send.text, q_id);
   return 0;
 }

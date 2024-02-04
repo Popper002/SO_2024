@@ -9,5 +9,6 @@ struct message
     char text[2]; 
     long m_type;
 };
+static int pipe_fd[2]; //fd[0] -read //fd[1]--write
 
 #endif

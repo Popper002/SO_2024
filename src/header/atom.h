@@ -6,6 +6,7 @@ struct atom
 {
     pid_t pid; 
     int atomic_number; 
+    int atomic_flag;
 };
 
 

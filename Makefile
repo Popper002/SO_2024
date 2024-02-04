@@ -1,17 +1,17 @@
 CC = gcc 
-CFLAGS = -Wvla -D_GNU_SOURCE -Wall -Wextra -Werror
+CFLAGS =  -D_GNU_SOURCE 
 RM =rm 
 IPC_RM =ipcrm --all
-
+COMMON_DEPS = src/header/*.h
 all: master atom activator
 
 run: ./master
-master:
+master:$(COMMON_DEPS)
 	@$(CC) $(CFLAGS) src/master.c -o master -lm
 
-atom:
-	@$(CC) $(CFLAGS) src/atom.c -o atom
-activator:
+atom: $(COMMON_DEPS)
+	@$(CC) $(CFLAGS) src/atom.c -o atom -lm
+activator: $(COMMON_DEPS)
 	@$(CC)	$(CFLAGS) src/activator.c src/header/common.h -o active -lm
 
 rm: 
