@@ -1,18 +1,21 @@
 #include "header/master.h"
 #include "header/common.h"
-char const *args_atom[100];
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+char **args_atom[100];
 char const *args_[100];
 static int atomic_random;
 
 static int scan_data(FILE *fp)
 {
-    int value; 
-    char name_param[500];
-    int error =1; 
-    printf("Reading data from file...\n");
-    while(fscanf(fp,"%s %d",name_param , &value) != EOF)
-    {
-    if( strcmp(name_param, "N_ATOMI_INIT") == 0)
+  int value;
+  char name_param[500];
+  int error = 1;
+  printf("Reading data from file...\n");
+  while (fscanf(fp, "%s %d", name_param, &value) != EOF)
+  {
+    if (strcmp(name_param, "N_ATOMI_INIT") == 0)
     {
       config.N_ATOMI_INIT = value;
       error = 0;
@@ -113,44 +116,48 @@ static void argument_atom(char *argv[])
 }
 static int randomize_atom(int atomic_number)
 {
-    
-  atomic_number = rand()%config.N_ATOM_MAX;
-    return atomic_number;
+
+  atomic_number = rand() % config.N_ATOM_MAX;
+  return atomic_number;
 }
 
-pid_t fuel_generator( struct config config)
-{ 
-    pid_t fuel_pid; 
-    switch (fuel_pid =fork())
-    {
-    case -1 : 
-            TEST_ERROR;
-            exit(EXIT_FAILURE);
-    case 0: 
-        argument_creator(args_atom); 
-        execvp(FUEL_PATH ,&args_atom);
-        fprintf(__func__,__LINE__,getpid(),"%s LINE: %d[MASTER %d  , FUEL_GENERATOR(){PROBLEM IN EXECVP}\n"); 
-        exit(EXIT_FAILURE);
-        break;
-    
-    default:
-        sleep(1); 
-        return fuel_pid;
-        break;
-    }
+pid_t fuel_generator(struct config config)
+{
+  pid_t fuel_pid;
+  switch (fuel_pid = fork())
+  {
+  case -1:
+    TEST_ERROR;
+    exit(EXIT_FAILURE);
+  case 0:
+    argument_creator((char **)args_atom);
+    execve(FUEL_PATH, (char **)args_atom, NULL);
+    fprintf(stderr,
+	    "%s LINE: %d[MASTER %d  , FUEL_GENERATOR(){PROBLEM IN EXECVP}\n",
+	    __func__, __LINE__, getpid());
+    exit(EXIT_FAILURE);
+    break;
+
+  default:
+    sleep(1);
+    return fuel_pid;
+    break;
+  }
 }
-static void print_para_TEST(struct config config )
-{ 
-printf("N_ATOMI_INIT: %d\n"
- "ENERGY_DEMAND :%d\n"
- "N_ATOM_MAX:%d\n"
- "MIN_A_ATOMICO :%d\n"
- "N_NUOVI_ATOMI :%d\n"
- "SIM_DURATION :%d\n"
-"ENERGY_EXPLODE_THRESHOLD :%d\n",config.N_ATOMI_INIT,config.ENERGY_DEMAND , config.N_ATOM_MAX,config.MIN_A_ATOMICO
- , config.N_NUOVI_ATOMI,config.SIM_DURATION,config.ENERGY_EXPLODE_THRESHOLD);
+static void print_para_TEST(struct config config)
+{
+  printf("N_ATOMI_INIT: %d\n"
+	 "ENERGY_DEMAND :%d\n"
+	 "N_ATOM_MAX:%d\n"
+	 "MIN_A_ATOMICO :%d\n"
+	 "N_NUOVI_ATOMI :%d\n"
+	 "SIM_DURATION :%d\n"
+	 "ENERGY_EXPLODE_THRESHOLD :%d\n",
+	 config.N_ATOMI_INIT, config.ENERGY_DEMAND, config.N_ATOM_MAX,
+	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
+	 config.ENERGY_EXPLODE_THRESHOLD);
 }
-pid_t atom_generator(struct config config)
+pid_t atom_gen(struct config config)
 {
   pid_t atom_pid;
   switch (atom_pid = fork())
@@ -159,10 +166,10 @@ pid_t atom_generator(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-    argument_atom(args_atom);
-    execvp(ATOM_PATH, &args_atom);
+    argument_atom((char **)args_atom);
+    execve(ATOM_PATH, (char **)args_atom, NULL);
     fprintf(stderr,
-	    "%s LINE: %d[MASTER %d  , ATOM_GENERATOR(){PROBLEM IN EXECVP}\n",
+	    "%s line: %d[master %d  , ATOM_GENERATOR(){PROBLEM IN EXECVE} \n",
 	    __func__, __LINE__, getpid());
     exit(EXIT_FAILURE);
     break;
@@ -173,7 +180,7 @@ pid_t atom_generator(struct config config)
     break;
   }
 }
-pid_t activator_generator(struct config config)
+pid_t activator(struct config config)
 {
   pid_t activator_pid;
   switch (activator_pid = fork())
@@ -182,38 +189,37 @@ pid_t activator_generator(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-    argument_atom(args_atom);
-    execvp(ACTIVATOR_PATH, &args_atom);
-    fprintf(
-	stderr,
-	"%s LINE: %d[MASTER %d  , ACTIVATOR_GENERATOR(){PROBLEM IN EXECVP}\n",
-	__func__, __LINE__, getpid());
+    argument_atom((char **)args_atom);
+    execve(ACTIVATOR_PATH, (char **)args_atom, NULL);
+    fprintf(stderr, "in: %s line: %d[master %d--> problem in execve %s}\n",
+	    __func__, __LINE__, getpid(), strerror(errno));
     exit(EXIT_FAILURE);
     break;
 
   default:
-
     return activator_pid;
     break;
   }
 }
 int main(int argc, char const *argv[])
 {
-    FILE *fp; 
-    pid_t atom;
-    fp= fopen("/Users/popper/Documents/Uni/secondo anno /SO_2024/SO_2024/src/config/config1.txt","r"); 
-    if( fp ==NULL ){ fprintf(stderr,"%d\n");exit(EXIT_FAILURE);}
-    args_atom[0]=ATOM_PATH;
-    srand(time(NULL)); 
-    printf("MAIN %d\n",getpid()); 
-    scan_data(fp); 
-    atomic_random = randomize_atom(atomic_random);
-    printf(
-        "RANDOMIZE ATOM_NUMBERS IS %d \n",atomic_random);
-    activator_generator(config);
 
-    atom_generator(config); 
-    close(fp);
-    
-    return 0;
+  pid_t atom;
+  FILE *fp = fopen("src/config/config1.txt", "r");
+  if (fp == NULL)
+  {
+    fprintf(stderr, "%d\n", errno);
+    exit(EXIT_FAILURE);
+  }
+  srand(time(NULL));
+  printf("MAIN %d\n", getpid());
+  scan_data(fp);
+  args_atom[0] = (char **)ATOM_PATH;
+
+  activator(config);
+
+  atom_gen(config);
+  fclose(fp);
+
+  return 0;
 }

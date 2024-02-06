@@ -47,10 +47,10 @@ int main(int argc, char const *argv[])
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL);
   printf("QUEUE %d CREATED \n ", q_id);
   send.m_type = 1;
-  int comand = randomic_activation();
-  printf("\ncommand %d\n", comand);
-  sprintf(send.text, "%d", comand);
+  int command = randomic_activation();
+  printf("\ncommand %d\n", command);
+  sprintf(send.text, "%d", command);
   msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0);
-  printf("SENDED THIS MESSAGGE %sIN QUEUE%d\n", send.text, q_id);
+  printf("SENDED THIS MESSAGGE %s IN QUEUE %d\n", send.text, q_id);
   return 0;
 }
