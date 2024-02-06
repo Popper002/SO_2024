@@ -27,9 +27,9 @@
 #include <math.h>
 #include <time.h>
 #include <sys/param.h>
-#define ATOM_PATH "./atom"
-#define ACTIVATOR_PATH "./active"
-#define FUEL_PATH "./fuel"
+#define ATOM_PATH "./bin/atom"
+#define ACTIVATOR_PATH "./bin/activator"
+#define FUEL_PATH "./bin/fuel"
 
 void fetch_args(char const *argv[]); 
 struct config
