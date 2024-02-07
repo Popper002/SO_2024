@@ -27,10 +27,10 @@
 #include <math.h>
 #include <time.h>
 #include <sys/param.h>
-#define ATOM_PATH "./bin/atom"
-#define ACTIVATOR_PATH "./bin/activator"
+#define ATOM_PATH "/Users/popper/Documents/Uni/secondo anno /SO_2024/SO_2024/bin/atom"
+#define ACTIVATOR_PATH "/Users/popper/Documents/Uni/secondo anno /SO_2024/SO_2024/bin/activator"
 #define FUEL_PATH "./bin/fuel"
-
+#define ATOMIC_KEY 0x221
 void fetch_args(char const *argv[]); 
 struct config
 {

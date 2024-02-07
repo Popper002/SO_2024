@@ -44,15 +44,17 @@ int main(int argc, char const *argv[])
 {
   srand(time(NULL));
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
-  int q_id;
+  static int q_id, i ;
   fetch_args(argv);
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
-  printf("[%s] %d CREATED \n ",__FILE__, q_id);
+  printf("[%s] QUEUEU : %d CREATED \n ",__FILE__, q_id);
+  for( i=0 ; i<config.N_ATOMI_INIT ; i++){
   send.m_type = 1;
   int command = randomic_activation();
   printf("\ncommand %d\n", command);
   sprintf(send.text, "%d", command);
   msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0);
-  printf("SENDED THIS MESSAGGE %s IN QUEUE %d\n", send.text, q_id);
+  printf("SENDED THIS MESSAGGE %s IN QUEUE %d TYPE:%ld\n", send.text, q_id,send.m_type);
+  }
   return 0;
 }

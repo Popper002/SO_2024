@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 char **args_atom[100];
+char **activator_args[100]; 
 char const *args_[100];
 static int atomic_random;
 
@@ -167,7 +168,7 @@ pid_t atom_gen(struct config config)
     exit(EXIT_FAILURE);
   case 0:
     argument_atom((char **)args_atom);
-    execve(ATOM_PATH, (char **)args_atom, NULL);
+    execvp(ATOM_PATH, (char **)args_atom);
     fprintf(stderr,
 	    "%s line: %d[master %d  , ATOM_GENERATOR(){PROBLEM IN EXECVE} \n",
 	    __func__, __LINE__, getpid());
@@ -189,9 +190,9 @@ pid_t activator(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-    argument_atom((char **)args_atom);
-    execve(ACTIVATOR_PATH, (char **)args_atom, NULL);
-    fprintf(stderr, "in: %s line: %d[master %d--> problem in execve %s}\n",
+    argument_atom((char **)activator_args);
+    execvp(ACTIVATOR_PATH, (char **)activator_args);
+    fprintf(stderr, "in: %s line: %d[master %d--> problem in execvp %s}\n",
 	    __func__, __LINE__, getpid(), strerror(errno));
     exit(EXIT_FAILURE);
     break;
@@ -205,6 +206,7 @@ int main(int argc, char const *argv[])
 {
 
   pid_t atom;
+  int  i,j;
   FILE *fp = fopen("src/config/config1.txt", "r");
   if (fp == NULL)
   {
@@ -215,10 +217,15 @@ int main(int argc, char const *argv[])
   printf("MAIN %d\n", getpid());
   scan_data(fp);
   args_atom[0] = (char **)ATOM_PATH;
-
+  activator_args[0]=(char**)ACTIVATOR_PATH; 
   activator(config);
+  for (  i =0 ; i< config.N_ATOMI_INIT ;i++){ 
+    atom_gen(config);
+    sleep(1); 
+  } 
 
-  atom_gen(config);
+
+
   fclose(fp);
 
   return 0;

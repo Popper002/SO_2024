@@ -76,39 +76,33 @@ pid_t atom_fission(int atomic_number, int comand, struct config *config)
         }
     }
   }
-}
 
 static int get_atomic_number() {
-  srand(time(NULL)); 
+ 
   return rand() % config.N_ATOM_MAX; 
   }
 
 int main(int argc, char const *argv[])
 {
+   srand(time(NULL)); 
   static int command;
   printf("HELLO IS ATOM %d\n", getpid());
   fetch_args_atom(argv);
   char atomic_number_str[10];
   sprintf(atomic_number_str, "%d", atom.atomic_number);
   argv[8] = atomic_number_str;
-  rcv.m_type = 0;
+  rcv.m_type = 1;
   int atomic_random_number = get_atomic_number(); 
   printf("atomic_random_number is: %d\n", atomic_random_number);
-  int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666); /*Setup for only read inside the queue*/
+  int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
   printf("[%s] connecting to queue:%d\n",__FILE__, rcv_id); 
   if(rcv_id == -1 ){ 
     fprintf(stderr,"error in rcv_id queue %s\n", strerror(errno));
 
   }
-
-  int bytes_read = msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT);
-  if (bytes_read == -1)
-  {
-    fprintf(stderr, "[%s] Error receiving message %d %s\n",__FILE__,errno, strerror(errno));
-    exit(1);
-  }
-
+  msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1,IPC_NOWAIT);
   // Assegna la stringa ricevuta al membro appropriato della struct atom
-  printf("STRINGA RICEVUTA: %d %s\n", atom.atomic_flag, rcv.text);
+  printf("STRINGA RICEVUTA: ID:%d , TYPE :%ld <DATA: %s > \n", rcv_id, rcv.m_type,rcv.text);
+  fflush(stdout); 
   return 0;
 }
