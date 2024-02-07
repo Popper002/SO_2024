@@ -45,38 +45,35 @@ void fetch_args_atom(char const *argv[])
   atom.atomic_number = atom_number;
   printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}",getpid());
 }
-static void get_comand(struct atom *atom, struct message rcv) {}
-
-/*
-int energy_free(int atomic_nuber1) {
-  return atomic_nuber1  - atomic_nuber2 - MAX(atomic_nuber1, atomic_nuber2); 
-}
-*/
-void atom_fission(int atomic_number, int comand, struct config *config)
+/* ALPHA _-_*/
+static int  energy_free(int atomic_a1, int atomic_a2)
 {
-  pid_t atom_master;
-  pid_t atom_child;
-  int nuclear_waste = 0;
-  if (comand == 1)
-  {
-    switch (atom_master = fork())
-    {
-    case -1:
-      TEST_ERROR;
-      exit(EXIT_FAILURE);
-      break;
-    case 0:
-      atom_child = fork();
-      // scission();
-     int scission_value =  atomic_number / 2; //FIXME doubt that aotmic number should be devided per 2 
-      if(atomic_number <= config->MIN_A_ATOMICO){
-        kill(getpid(), SIGKILL);
-        nuclear_waste++;
-      }
-      // energy_free(atomic_number);
-    default:
-      sleep(1);
-      break;
+    return atomic_a1*atomic_a2-fmax((int) atomic_a1,(int)atomic_a2);
+}
+//__-_-_
+pid_t atom_fission(int atomic_number, int comand, struct config *config)
+{
+    pid_t atom_master; 
+    pid_t atom_child;
+    struct atom a1; 
+    struct atom a2; 
+    if( comand ==1 )
+    { 
+        switch (atom_master = fork())
+        {
+        case -1: 
+            TEST_ERROR;
+            exit(EXIT_FAILURE); 
+            break;
+        case 0: 
+            atom_child = fork();
+            atomic_number/2;
+            sleep(1); 
+            energy_free(a1.atomic_number , a2.atomic_number);
+        default:
+            sleep(1); 
+            break;
+        }
     }
   }
 }

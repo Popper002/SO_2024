@@ -38,6 +38,8 @@ void fetch_args(char const *argv[])
   atom.atomic_number = atom_number;
   printf("[Activator %d] {FETCHED ARGV COMPLEATE\n}",getpid());
 }
+
+
 int main(int argc, char const *argv[])
 {
   srand(time(NULL));
