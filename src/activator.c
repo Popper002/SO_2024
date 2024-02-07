@@ -5,7 +5,6 @@
 #include <sys/msg.h>
 #include <unistd.h>
 struct message send;
-struct atom atom;
 
 /* activator is a message queue*/
 
@@ -25,8 +24,7 @@ void fetch_args(char const *argv[])
   int n_nuovi_atomi = atoi(argv[5]);
   int sim_duration = atoi(argv[6]);
   int energy_explode_threshold = atoi(argv[7]);
-  int atom_number = atoi(argv[8]);
-  argv[9] = NULL;
+  argv[8] = NULL;
 
   config.N_ATOMI_INIT = n_atomi_init;
   config.ENERGY_DEMAND = energy_demand;
@@ -35,7 +33,6 @@ void fetch_args(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  atom.atomic_number = atom_number;
   printf("[Activator %d] {FETCHED ARGV COMPLEATE\n}",getpid());
 }
 
@@ -53,7 +50,7 @@ int main(int argc, char const *argv[])
   int command = randomic_activation();
   printf("\ncommand %d\n", command);
   sprintf(send.text, "%d", command);
-  msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0);
+  if(msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0) <=-1){fprintf(stderr,"ERROR IN MSGSND\n");};
   printf("SENDED THIS MESSAGGE %s IN QUEUE %d TYPE:%ld\n", send.text, q_id,send.m_type);
   }
   return 0;

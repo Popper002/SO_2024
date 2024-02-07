@@ -6,7 +6,6 @@
 char **args_atom[100];
 char **activator_args[100]; 
 char const *args_[100];
-static int atomic_random;
 
 static int scan_data(FILE *fp)
 {
@@ -83,38 +82,9 @@ static void argument_creator(char *argv[])
   argv[5] = strdup(n_nuovi_atomi);
   argv[6] = strdup(sim_duration);
   argv[7] = strdup(energy_explode_threshold);
-
-  argv[9] = NULL;
+  argv[8] = NULL;
 }
-static void argument_atom(char *argv[])
-{
-  char n_atomi_init[10];
-  char energy_demand[10];
-  char n_atom_max[10];
-  char min_a_atomico[10];
-  char n_nuovi_atomi[10];
-  char sim_duration[10];
-  char energy_explode_threshold[10];
-  char atomic_number[10];
-  sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
-  sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
-  sprintf(n_atom_max, "%d", config.N_ATOM_MAX);
-  sprintf(min_a_atomico, "%d", config.MIN_A_ATOMICO);
-  sprintf(n_nuovi_atomi, "%d", config.N_NUOVI_ATOMI);
-  sprintf(sim_duration, "%d", config.SIM_DURATION);
-  sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
-  sprintf(atomic_number, "%d", atomic_random);
 
-  argv[1] = strdup(n_atomi_init);
-  argv[2] = strdup(energy_demand);
-  argv[3] = strdup(n_atom_max);
-  argv[4] = strdup(min_a_atomico);
-  argv[5] = strdup(n_nuovi_atomi);
-  argv[6] = strdup(sim_duration);
-  argv[7] = strdup(energy_explode_threshold);
-  argv[8] = strdup(atomic_number);
-  argv[9] = NULL;
-}
 static int randomize_atom(int atomic_number)
 {
 
@@ -167,7 +137,7 @@ pid_t atom_gen(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-    argument_atom((char **)args_atom);
+    argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
     fprintf(stderr,
 	    "%s line: %d[master %d  , ATOM_GENERATOR(){PROBLEM IN EXECVE} \n",
@@ -190,7 +160,7 @@ pid_t activator(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-    argument_atom((char **)activator_args);
+    argument_creator((char **)activator_args);
     execvp(ACTIVATOR_PATH, (char **)activator_args);
     fprintf(stderr, "in: %s line: %d[master %d--> problem in execvp %s}\n",
 	    __func__, __LINE__, getpid(), strerror(errno));
@@ -221,7 +191,7 @@ int main(int argc, char const *argv[])
   activator(config);
   for (  i =0 ; i< config.N_ATOMI_INIT ;i++){ 
     atom_gen(config);
-    sleep(1); 
+    sleep(2); 
   } 
 
 
