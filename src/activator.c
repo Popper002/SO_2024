@@ -44,8 +44,8 @@ int main(int argc, char const *argv[])
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
   int q_id;
   fetch_args(argv);
-  q_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL);
-  printf("QUEUE %d CREATED \n ", q_id);
+  q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  printf("[%s] %d CREATED \n ",__FILE__, q_id);
   send.m_type = 1;
   int command = randomic_activation();
   printf("\ncommand %d\n", command);

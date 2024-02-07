@@ -94,20 +94,20 @@ int main(int argc, char const *argv[])
   char atomic_number_str[10];
   sprintf(atomic_number_str, "%d", atom.atomic_number);
   argv[8] = atomic_number_str;
-  rcv.m_type = 1;
+  rcv.m_type = 0;
   int atomic_random_number = get_atomic_number(); 
   printf("atomic_random_number is: %d\n", atomic_random_number);
-  int rcv_id = msgget(ATOMIC_KEY, ALL | IPC_CREAT); /*Setup for only read inside the queue*/
-  printf("CONNECTING TO QUEUE %d\n", rcv_id); 
+  int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666); /*Setup for only read inside the queue*/
+  printf("[%s] connecting to queue:%d\n",__FILE__, rcv_id); 
   if(rcv_id == -1 ){ 
     fprintf(stderr,"error in rcv_id queue %s\n", strerror(errno));
 
   }
 
-  int bytes_read = msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, 0);
+  int bytes_read = msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT);
   if (bytes_read == -1)
   {
-    fprintf(stderr, "Error receiving message %d %s\n",errno, strerror(errno));
+    fprintf(stderr, "[%s] Error receiving message %d %s\n",__FILE__,errno, strerror(errno));
     exit(1);
   }
 
