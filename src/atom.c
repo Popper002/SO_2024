@@ -103,6 +103,8 @@ int main(int argc, char const *argv[])
   msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1,IPC_NOWAIT);
   // Assegna la stringa ricevuta al membro appropriato della struct atom
   printf("STRINGA RICEVUTA: ID:%d , TYPE :%ld <DATA: %s > \n", rcv_id, rcv.m_type,rcv.text);
-  fflush(stdout); 
+  fflush(stdout);
+  atom.atomic_flag = atoi(rcv.text); 
+  printf("ATOM FLAG IS %d",atom.atomic_flag); 
   return 0;
 }
