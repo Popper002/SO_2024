@@ -3,6 +3,7 @@
 #include "header/ipc.h"
 #include <errno.h>
 #include <string.h>
+#include <sys/cdefs.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/param.h>
@@ -41,69 +42,76 @@ void fetch_args_atom(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}",getpid());
+  printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}", getpid());
 }
 /* ALPHA _-_*/
-static int  energy_free(int atomic_a1, int atomic_a2)
+static int energy_free(int atomic_a1, int atomic_a2)
 {
-    return atomic_a1*atomic_a2-fmax((int) atomic_a1,(int)atomic_a2);
+  return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
 //__-_-_
 pid_t atom_fission(int atomic_number, int comand, struct config config)
 {
-    pid_t atom_master; 
-    pid_t atom_child;
-    struct atom a1; 
-    struct atom a2; 
-    if( comand ==1 )
-    { 
-        switch (atom_master = fork())
-        {
-        case -1: 
-            TEST_ERROR;
-            exit(EXIT_FAILURE); 
-            break;
-        case 0: 
-            atom_child = fork();
-            atomic_number/2;
-            sleep(1); 
-            int new_energy = energy_free(a1.atomic_number , a2.atomic_number);
-            printf("_------__----_----_-_-\n");
-            printf("NEW ATOM PID: %d NEW ATOMIC NUMBER %d\n",atom.pid,new_energy  );
-        default:
-            sleep(1); 
-            break;
-        }
+  pid_t atom_master;
+  pid_t atom_child;
+  struct atom a1;
+  struct atom a2;
+  if (comand == 1)
+  {
+    switch (atom_master = fork())
+    {
+    case -1:
+      TEST_ERROR;
+      exit(EXIT_FAILURE);
+      break;
+    case 0:
+      atom_child = fork();
+      // atomic_number/2;
+      sleep(1);
+      printf("first atomic number: %d \\ second atomic number:%d\n",
+	     a1.atomic_number, a2.atomic_number);
+      int new_energy = energy_free(a1.atomic_number, a2.atomic_number);
+      printf("_------__----_----_-_-\n");
+      printf("NEW ATOM PID: %d NEW ATOMIC NUMBER %d\n", atom.pid, new_energy);
+    default:
+      sleep(1);
+      break;
     }
   }
+}
 
-static int get_atomic_number() {
- 
-  return rand() % config.N_ATOM_MAX; 
-  }
+static int get_atomic_number()
+{
+  return rand() % config.N_ATOM_MAX;
+}
 
 int main(int argc, char const *argv[])
 {
-  srand(time(NULL)); 
+  srand(time(NULL));
   static int command;
   atom.pid = getpid();
   printf("HELLO IS ATOM %d\n", atom.pid);
   fetch_args_atom(argv);
   rcv.m_type = 1;
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
-  printf("[%s] connecting to queue:%d\n",__FILE__, rcv_id); 
-  if(rcv_id == -1 ){ 
-    fprintf(stderr,"error in rcv_id queue %s\n", strerror(errno));
-    exit(EXIT_FAILURE); 
+  printf("[%s] connecting to queue:%d\n", __FILE__, rcv_id);
+  if (rcv_id == -1)
+  {
+    fprintf(stderr, "error in rcv_id queue %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
   }
-  if(msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1,IPC_NOWAIT) <=-1){fprintf(stderr , "ERROR MSG_RCV\n");};
+  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
+  {
+    fprintf(stderr, "ERROR MSG_RCV\n");
+  };
   // Assegna la stringa ricevuta al membro appropriato della struct atom
-  printf("STRINGA RICEVUTA: ID:%d , TYPE :%ld <DATA: %s > \n", rcv_id, rcv.m_type,rcv.text);
+  printf("STRINGA RICEVUTA: ID:%d , TYPE :%ld <DATA: %s > \n", rcv_id,
+	 rcv.m_type, rcv.text);
   fflush(stdout);
-  atom.atomic_flag = atoi(rcv.text); 
-  printf("ATOM FLAG IS %d FOR ATOM %d\n",atom.atomic_flag,atom.pid); 
-  atom.atomic_number = get_atomic_number(); 
-  printf("ATOMIC NUMBER FOR ATOM %d IS %d \n",atom.pid, atom.atomic_number); 
-  atom_fission(atom.atomic_number,atom.atomic_flag,config); 
+  atom.atomic_flag = atoi(rcv.text);
+  printf("ATOM FLAG IS %d FOR ATOM %d\n", atom.atomic_flag, atom.pid);
+  atom.atomic_number = get_atomic_number();
+  printf("ATOMIC NUMBER FOR ATOM %d IS %d \n", atom.pid, atom.atomic_number);
+  atom_fission(atom.atomic_number, atom.atomic_flag, config);
   return 0;
 }
