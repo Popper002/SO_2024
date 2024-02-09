@@ -171,12 +171,12 @@ int main()
   table.elements = malloc(table.max * sizeof(struct elem_hash_table *));
 
   struct config config = {.N_ATOMI_INIT = 100,
-			  .ENERGY_DEMAND = 50,
-			  .N_ATOM_MAX = 10,
-			  .MIN_A_ATOMICO = 1,
-			  .N_NUOVI_ATOMI = 10,
-			  .SIM_DURATION = 500,
-			  .ENERGY_EXPLODE_THRESHOLD = 80};
+              .ENERGY_DEMAND = 50,
+              .N_ATOM_MAX = 10,
+              .MIN_A_ATOMICO = 1,
+              .N_NUOVI_ATOMI = 10,
+              .SIM_DURATION = 500,
+              .ENERGY_EXPLODE_THRESHOLD = 80};
 
   table.put = put;
   table.get = get;
@@ -184,26 +184,80 @@ int main()
   table.decrement_usage_count = decrement_usage_count;
   table.garbage_collector = garbage_collect;
 
- time_t start = clock(); 
   for (int i = 0; i < config.N_ATOM_MAX; i++)
   {
     int random_key = rand() % 1000;
     int random_value = rand(); 
     table.put(&table, random_key, random_value);
   }
-  time_t end = clock();
 
-
+  printf("Before garbage collection:\n");
   print_hash_table(&table);
-  printf("time to insert: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
 
-  /* 
-      while (1) {
-	  table.garbage_collector(&table);
-	  table.decrement_usage_count(&table);
-	  sleep(1);
+  // Decrement usage count of all elements to zero
+  for (int i = 0; i < table.max; i++)
+  {
+    struct elem_hash_table *entry = table.elements[i];
+    while (entry != NULL)
+    {
+      if(entry->value % 2 == 0){
+        entry->usage_count = 1;
       }
-  */
+      else{
+        entry->usage_count = 0;
+      }
+      entry = entry->next;
+    }
+  }
+
+  table.garbage_collector(&table);
+
+  printf("After garbage collection:\n");
+  print_hash_table(&table);
 
   return 0;
 }
+
+// int main()
+// {
+//   srand(time(NULL));
+
+//   struct hash_table table;
+//   table.max = 100;
+//   table.number_of_elements = 0;
+//   table.elements = malloc(table.max * sizeof(struct elem_hash_table *));
+
+//   struct config config = {.N_ATOMI_INIT = 100,
+// 			  .ENERGY_DEMAND = 50,
+// 			  .N_ATOM_MAX = 10,
+// 			  .MIN_A_ATOMICO = 1,
+// 			  .N_NUOVI_ATOMI = 10,
+// 			  .SIM_DURATION = 500,
+// 			  .ENERGY_EXPLODE_THRESHOLD = 80};
+
+//   table.put = put;
+//   table.get = get;
+//   table.remove = remove_elem;
+//   table.decrement_usage_count = decrement_usage_count;
+//   table.garbage_collector = garbage_collect;
+
+//   for (int i = 0; i < config.N_ATOM_MAX; i++)
+//   {
+//     int random_key = rand() % 1000;
+//     int random_value = rand(); 
+//     table.put(&table, random_key, random_value);
+//   }
+
+
+//   print_hash_table(&table);
+
+//   /* 
+//       while (1) {
+// 	  table.garbage_collector(&table);
+// 	  table.decrement_usage_count(&table);
+// 	  sleep(1);
+//       }
+//   */
+
+//   return 0;
+// }
