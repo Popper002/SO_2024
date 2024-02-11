@@ -6,6 +6,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/sem.h>
+#include <semaphore.h>
 #define macro_key 12
 
 
