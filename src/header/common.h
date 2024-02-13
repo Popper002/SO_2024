@@ -1,8 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
-// #ifdef _GNU_SOURCE
-// #define _GNU_SOURCE
-// #endif
+#pragma once
 #ifndef TEST_ERROR
 #define TEST_ERROR                                 \
     if (errno)                                     \
@@ -32,6 +28,7 @@
 #define FUEL_PATH "./bin/fuel"
 #define ATOMIC_KEY 0x221
 void fetch_args(char const *argv[]); 
+
 struct config
 {
     int N_ATOMI_INIT; 
@@ -42,7 +39,3 @@ struct config
     int  SIM_DURATION;
     int ENERGY_EXPLODE_THRESHOLD;
 };
-struct config config; 
-
-
-#endif 

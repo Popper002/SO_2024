@@ -5,6 +5,7 @@
 #include <sys/msg.h>
 #include <unistd.h>
 struct message send;
+struct config config;
 
 /* activator is a message queue*/
 

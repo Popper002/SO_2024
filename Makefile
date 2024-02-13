@@ -9,12 +9,12 @@ run:
 	./bin/master
 
 master:$(COMMON_DEPS)
-	$(CC) $(CFLAGS) src/master.c src/header/common.h -o bin/master -lm
+	$(CC) $(CFLAGS) src/master.c src/util/hash_map.c -o bin/master -lm
 
 atom:$(COMMON_DEPS)
-	$(CC)	$(CFLAGS) src/atom.c src/header/common.h src/header/ipc.h -o bin/atom -lm
+	$(CC)	$(CFLAGS) src/atom.c src/header/ipc.h -o bin/atom -lm
 activator:$(COMMON_DEPS)
-	$(CC)	$(CFLAGS) src/activator.c src/header/common.h -o bin/activator src/header/ipc.h -lm
+	$(CC)	$(CFLAGS) src/activator.c  -o bin/activator src/header/ipc.h -lm
 
 clean:
 		$(IPC_RM)

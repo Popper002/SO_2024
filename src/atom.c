@@ -9,6 +9,7 @@
 #include <sys/param.h>
 struct atom atom;
 static struct message rcv;
+struct config config;
 static void print_para_TEST(struct config config)
 {
   printf("N_ATOMI_INIT: %d\n"
@@ -50,7 +51,7 @@ static int energy_free(int atomic_a1, int atomic_a2)
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
 //__-_-_
-pid_t atom_fission(int atomic_number, int comand, struct config config)
+void atom_fission(int atomic_number, int comand, struct config config)
 {
   pid_t atom_master;
   pid_t atom_child;
@@ -66,10 +67,7 @@ pid_t atom_fission(int atomic_number, int comand, struct config config)
       break;
     case 0:
       atom_child = fork();
-      // atomic_number/2;
       sleep(1);
-      printf("first atomic number: %d \\ second atomic number:%d\n",
-	     a1.atomic_number, a2.atomic_number);
       int new_energy = energy_free(a1.atomic_number, a2.atomic_number);
       printf("_------__----_----_-_-\n");
       printf("NEW ATOM PID: %d NEW ATOMIC NUMBER %d\n", atom.pid, new_energy);
