@@ -1,6 +1,6 @@
 #include "header/master.h"
 #include "header/common.h"
-#include "util/hash_map.h"
+#include "util/hash_table.h"
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -204,13 +204,13 @@ int main(int argc, char const *argv[])
   srand(time(NULL));
   printf("MAIN %d\n", getpid());
   scan_data(fp);
+  print_para_TEST(config);
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
   activator(config);
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     atom_gen(config, table);
-    sleep(2);
   }
 
   print_hash_table(&table);

@@ -1,12 +1,5 @@
 #include "header/atom.h"
-#include "header/common.h"
-#include "header/ipc.h"
-#include <errno.h>
-#include <string.h>
-#include <sys/cdefs.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/param.h>
+
 struct atom atom;
 static struct message rcv;
 struct config config;
@@ -103,6 +96,7 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "ERROR MSG_RCV\n");
   };
   // Assegna la stringa ricevuta al membro appropriato della struct atom
+  print_para_TEST(config);
   printf("STRINGA RICEVUTA: ID:%d , TYPE :%ld <DATA: %s > \n", rcv_id,
 	 rcv.m_type, rcv.text);
   fflush(stdout);
