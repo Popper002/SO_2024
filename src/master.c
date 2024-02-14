@@ -1,11 +1,15 @@
 #include "header/master.h"
 #include "header/common.h"
+#include "util/my_sem_lib.h"
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
 char **args_atom[100];
-char **activator_args[100]; 
+char **activator_args[100];
 char const *args_[100];
+int sem_id;
 
 static int scan_data(FILE *fp)
 {
@@ -92,7 +96,7 @@ static int randomize_atom(int atomic_number)
   return atomic_number;
 }
 
-pid_t fuel_generator(struct config config)
+pid_t fuel_generator()
 {
   pid_t fuel_pid;
   switch (fuel_pid = fork())
@@ -110,12 +114,17 @@ pid_t fuel_generator(struct config config)
     break;
 
   default:
-    sleep(1);
+    if (sem_release(sem_id, 0) == -1)
+    {
+      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,
+	      strerror(errno));
+      exit(EXIT_FAILURE);
+    }
     return fuel_pid;
     break;
   }
 }
-static void print_para_TEST(struct config config)
+static void print_para_TEST()
 {
   printf("N_ATOMI_INIT: %d\n"
 	 "ENERGY_DEMAND :%d\n"
@@ -146,7 +155,11 @@ pid_t atom_gen(struct config config)
     break;
 
   default:
-
+    if (sem_release(sem_id, 0) == -1)
+    {
+      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,strerror(errno));
+      exit(EXIT_FAILURE);
+    }
     return atom_pid;
     break;
   }
@@ -168,6 +181,10 @@ pid_t activator(struct config config)
     break;
 
   default:
+  if(sem_release(sem_id,0)){
+    fprintf(stderr,"[%s]Error in sem_release %s\n",__FILE__,strerror(errno));
+    exit(EXIT_FAILURE);
+  }
     return activator_pid;
     break;
   }
@@ -176,26 +193,41 @@ int main(int argc, char const *argv[])
 {
 
   pid_t atom;
-  int  i,j;
   FILE *fp = fopen("src/config/config1.txt", "r");
   if (fp == NULL)
   {
     fprintf(stderr, "%d\n", errno);
     exit(EXIT_FAILURE);
   }
+  sem_id = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
+  if (sem_id == -1)
+  {
+    fprintf(stderr, "[%s]Error in semget %s\n", __FILE__, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  if (sem_set_val(sem_id, 0, 0) == -1)
+  {
+    fprintf(stderr, "[%s]Error in sem_set_val %s\n", __FILE__, strerror(errno));
+  }
+
   srand(time(NULL));
   printf("MAIN %d\n", getpid());
   scan_data(fp);
   args_atom[0] = (char **)ATOM_PATH;
-  activator_args[0]=(char**)ACTIVATOR_PATH; 
+  activator_args[0] = (char **)ACTIVATOR_PATH;
   activator(config);
-  for (  i =0 ; i< config.N_ATOMI_INIT ;i++){ 
+  for (int i = 0; i < config.N_ATOMI_INIT; i++)
+  {
     atom_gen(config);
-    sleep(2); 
-  } 
+  }
 
-
-
+  if (sem_release(sem_id, 0) == -1)
+  {
+    fprintf(stderr, "[%s]Error in sem_reserve %s\n", __FILE__, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  // TODO: qui dovremmo aver finito di creare i processi, a sto punt facciamo sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e propria ?
   fclose(fp);
 
   return 0;

@@ -68,7 +68,7 @@ pid_t atom_fission(int atomic_number, int comand, struct config config)
       atom_child = fork();
       // atomic_number/2;
       sleep(1);
-      printf("first atomic number: %d \\ second atomic number:%d\n",
+      printf("[%s]first atomic number: %d \\ second atomic number:%d\n",__FILE_NAME__,
 	     a1.atomic_number, a2.atomic_number);
       int new_energy = energy_free(a1.atomic_number, a2.atomic_number);
       printf("_------__----_----_-_-\n");

@@ -31,7 +31,7 @@ int main(int argc, char const *argv[])
     switch (proc)
     {
     case -1: 
-        printf("%s\n",errno);
+        printf("%s\n", strerror(errno));
         exit(EXIT_FAILURE); 
         break;
     case 0 /* constant-expression */:
