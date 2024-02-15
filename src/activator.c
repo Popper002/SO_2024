@@ -1,10 +1,15 @@
+//TODO move this in a separate header file
 #include "header/atom.h"
 #include "header/common.h"
 #include "header/ipc.h"
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <unistd.h>
+
+#include "header/ipc.h"
+
 struct message send;
+struct config config;
 
 /* activator is a message queue*/
 

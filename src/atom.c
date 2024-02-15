@@ -1,14 +1,8 @@
 #include "header/atom.h"
-#include "header/common.h"
-#include "header/ipc.h"
-#include <errno.h>
-#include <string.h>
-#include <sys/cdefs.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/param.h>
+
 struct atom atom;
 static struct message rcv;
+struct config config;
 static void print_para_TEST(struct config config)
 {
   printf("N_ATOMI_INIT: %d\n"
@@ -50,7 +44,7 @@ static int energy_free(int atomic_a1, int atomic_a2)
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
 //__-_-_
-pid_t atom_fission(int atomic_number, int comand, struct config config)
+void atom_fission(int atomic_number, int comand, struct config config)
 {
   pid_t atom_master;
   pid_t atom_child;
@@ -66,7 +60,6 @@ pid_t atom_fission(int atomic_number, int comand, struct config config)
       break;
     case 0:
       atom_child = fork();
-      // atomic_number/2;
       sleep(1);
       printf("[%s]first atomic number: %d \\ second atomic number:%d\n",__FILE_NAME__,
 	     a1.atomic_number, a2.atomic_number);
@@ -105,6 +98,7 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "ERROR MSG_RCV\n");
   };
   // Assegna la stringa ricevuta al membro appropriato della struct atom
+  print_para_TEST(config);
   printf("STRINGA RICEVUTA: ID:%d , TYPE :%ld <DATA: %s > \n", rcv_id,
 	 rcv.m_type, rcv.text);
   fflush(stdout);

@@ -8,6 +8,7 @@
 #include <time.h>
 #include <sys/sem.h>
 #include <semaphore.h>
+#include <sys/types.h>
 #define macro_key 12
 
 

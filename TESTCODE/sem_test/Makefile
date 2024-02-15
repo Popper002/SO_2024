@@ -8,3 +8,10 @@ remove:
 
 semProc:
 	$(CC) $(CFLAGS) semProc.c -o semProc
+		
+semAllZero:
+	$(CC) $(CFLAGS) waitzero.c -o sem
+semdontWait:
+	$(CC) $(CFLAGS) dontwait.c -o sem
+sem2:
+		$(CC) $(CFLAGS) sem2.c -o sem

@@ -1,6 +1,7 @@
 #include "header/master.h"
 #include "header/common.h"
 #include "util/my_sem_lib.h"
+#include "util/hash_table.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,8 +9,10 @@
 
 char **args_atom[100];
 char **activator_args[100];
+char **activator_args[100];
 char const *args_[100];
 int sem_id;
+struct config config;
 
 static int scan_data(FILE *fp)
 {
@@ -137,9 +140,10 @@ static void print_para_TEST()
 	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
 	 config.ENERGY_EXPLODE_THRESHOLD);
 }
-pid_t atom_gen(struct config config)
+pid_t atom_gen(struct config config, struct hash_table table)
 {
   pid_t atom_pid;
+  int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
   switch (atom_pid = fork())
   {
   case -1:
@@ -147,6 +151,7 @@ pid_t atom_gen(struct config config)
     exit(EXIT_FAILURE);
   case 0:
     argument_creator((char **)args_atom);
+    table.put(&table, atom_pid, random_a_number);
     execvp(ATOM_PATH, (char **)args_atom);
     fprintf(stderr,
 	    "%s line: %d[master %d  , ATOM_GENERATOR(){PROBLEM IN EXECVE} \n",
@@ -189,9 +194,24 @@ pid_t activator(struct config config)
     break;
   }
 }
+
+struct hash_table init_table(struct hash_table table)
+{
+  table.max = config.N_ATOM_MAX;
+  table.number_of_elements = 0;
+  table.elements = malloc(table.max * sizeof(struct elem_hash_table *));
+  table.put = put;
+  table.get = get;
+  table.remove = remove_elem;
+  table.decrement_usage_count = decrement_usage_count;
+  table.garbage_collector = garbage_collect;
+  return table;
+}
+
 int main(int argc, char const *argv[])
 {
-
+  struct hash_table table;
+  init_table(table);
   pid_t atom;
   FILE *fp = fopen("src/config/config1.txt", "r");
   if (fp == NULL)
@@ -214,7 +234,9 @@ int main(int argc, char const *argv[])
   srand(time(NULL));
   printf("MAIN %d\n", getpid());
   scan_data(fp);
+  print_para_TEST(config);
   args_atom[0] = (char **)ATOM_PATH;
+  activator_args[0] = (char **)ACTIVATOR_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
   activator(config);
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
@@ -228,6 +250,13 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
   // TODO: qui dovremmo aver finito di creare i processi, a sto punt facciamo sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e propria ?
+  for (int i = 0; i < config.N_ATOMI_INIT; i++)
+  {
+    atom_gen(config, table);
+  }
+
+  print_hash_table(&table);
+
   fclose(fp);
 
   return 0;
