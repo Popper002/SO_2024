@@ -241,7 +241,8 @@ int main(int argc, char const *argv[])
   activator(config);
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
-    atom_gen(config);
+    atom_gen(config,table);
+    
   }
 
   if (sem_release(sem_id, 0) == -1)
