@@ -11,7 +11,6 @@ char **args_atom[100];
 char **activator_args[100];
 char **activator_args[100];
 char const *args_[100];
-static int atom_array_pid[100];
 static int activator_array_pid[10];
 static int fuel_array_pid[100];
 int sem_id;
@@ -19,6 +18,8 @@ pid_t atom_pid;
 pid_t activator_pid;
 struct config config;
 struct hash_table table;
+static int atom_array_pid[100];
+
 #ifdef _PRINT_TEST
 static void print_para_TEST()
 {
@@ -128,6 +129,12 @@ pid_t fuel_generator()
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
+if (sem_release(sem_id, 0) == -1)
+    {
+      fprintf(stderr, "[%s || %s]Error in sem_release %s\n", __FILE__,__func__,
+	      strerror(errno));
+      exit(EXIT_FAILURE);
+    }
     argument_creator((char **)args_atom);
     execve(FUEL_PATH, (char **)args_atom, NULL);
     fprintf(stderr,
@@ -137,12 +144,7 @@ pid_t fuel_generator()
     break;
 
   default:
-    if (sem_release(sem_id, 0) == -1)
-    {
-      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,
-	      strerror(errno));
-      exit(EXIT_FAILURE);
-    }
+    
     return fuel_pid;
     break;
   }
@@ -159,38 +161,51 @@ pid_t atom_gen(struct config config, struct hash_table table)
     exit(EXIT_FAILURE);
   case 0:
 #ifdef _PRINT_TEST
-    printf(" %s %d ,%s\n", __FILE__,getpid(),__func__);
+    printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
 #endif
-    argument_creator((char **)args_atom);
-    // table.put(&table, atom_pid, random_a_number);
-    execvp(ATOM_PATH, (char **)args_atom);
-    fprintf(stderr,
-	    "%s line: %d[master %d  , ATOM_GENERATOR(){PROBLEM IN EXECVE} \n",
-	    __func__, __LINE__, getpid());
-    exit(EXIT_FAILURE);
-    break;
-
-  default:
+  #ifdef _PRINT_TEST
+    printf("%s %s sem release sem_id: %d \t sem_op: %d\n",__func__,__FILE__, sem_id, semctl(sem_id, 0, GETVAL));  
+  #endif
     if (sem_release(sem_id, 0) == -1)
     {
-      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,
+      fprintf(stderr, "[%s || %s in sem_release %s\n", __FILE__,__func__,
 	      strerror(errno));
       exit(EXIT_FAILURE);
     }
 
+
+    argument_creator((char **)args_atom);
+    execvp(ATOM_PATH, (char **)args_atom);
+    // table.put(&table, atom_pid, random_a_number);
+    // print_hash_table(&table);
+    table.put(&table, atom_pid, random_a_number);
+    printf("atomi pid inserted in table %d\n", atom_pid);
+    fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
+	    __func__, __LINE__, __FILE__, getpid());
+    exit(EXIT_FAILURE);
+    break;
+
+  default:
     return atom_pid;
     break;
   }
 }
 pid_t activator(struct config config)
 {
- 
+
   switch (activator_pid = fork())
   {
   case -1:
+    
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
+if (sem_release(sem_id, 1))
+    {
+      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,
+	      strerror(errno));
+      exit(EXIT_FAILURE);
+    }
     argument_creator((char **)activator_args);
     execvp(ACTIVATOR_PATH, (char **)activator_args);
     fprintf(stderr, "in: %s line: %d[master %d--> problem in execvp %s}\n",
@@ -199,12 +214,7 @@ pid_t activator(struct config config)
     break;
 
   default:
-    if (sem_release(sem_id, 0))
-    {
-      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,
-	      strerror(errno));
-      exit(EXIT_FAILURE);
-    }
+
     return activator_pid;
     break;
   }
@@ -224,28 +234,27 @@ struct hash_table init_table(struct hash_table table)
 }
 void shutdown()
 {
+  printf("REMOVING SEM %d\n", sem_id);
+  semctl(sem_id, 0, IPC_RMID);
+  printf("REMOVED SEM\n");
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     printf("KILLING %d PROC\n", atom_array_pid[i]);
     kill(atom_array_pid[i], SIGKILL);
-    kill(activator_array_pid[i],SIGKILL); 
+    kill(activator_array_pid[i], SIGKILL);
     printf("KILLED\n");
   }
-  printf("REMOVING SEM %d\n", sem_id);
-  semctl(sem_id, 0, IPC_RMID);
-  printf("REMOVED SEM\n");
 }
+
 void store_pid_atom()
 {
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     atom_array_pid[i] = atom_gen(config, table);
-    /*
 #ifdef _PRINT_TEST
     printf("[MASTER %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
-	   atom_pid, i);
+	   atom_array_pid[i], i);
 #endif
-*/ 
   }
 }
 void handle_signal(int signum)
@@ -270,11 +279,12 @@ void print_all_pid()
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     printf("[MASTER %d ][ATOM] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
-	   atom_pid, i);
+	   atom_array_pid[i], i);
   }
-  for( int  i =0 ; i <config.ENERGY_DEMAND ; i++ )
-  { 
-    printf("[MASTER %d ][ACTIVATOR] %s ,[PID%d ] [POS %d ]\n",getpid(),__func__ ,activator_pid,i );
+  for (int i = 0; i < config.ENERGY_DEMAND; i++)
+  {
+    printf("[MASTER %d ][ACTIVATOR] %s ,[PID%d ] [POS %d ]\n", getpid(),
+	   __func__,activator_array_pid[i], i);
   }
   printf("-----------------------------------\n");
 }
@@ -297,7 +307,7 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
 
-  if (sem_set_val(sem_id, 0, 0) == -1)
+  if (sem_set_val(sem_id, 0, config.N_ATOMI_INIT-1) == -1)
   {
     fprintf(stderr, "[%s]Error in sem_set_val %s\n", __FILE__, strerror(errno));
   }
@@ -311,12 +321,12 @@ int main(int argc, char const *argv[])
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
   activator_array_pid[0] = activator(config);
-/*  
-#ifdef _PRINT_TEST
-  printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
-	 activator_array_pid[0]);
-#endif
-*/ 
+  /*
+  #ifdef _PRINT_TEST
+    printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
+	   activator_array_pid[0]);
+  #endif
+  */
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
 #ifdef _PRINT_TEST
@@ -325,12 +335,12 @@ int main(int argc, char const *argv[])
     atom_gen(config, table);
   }
   store_pid_atom();
-  #ifdef _PRINT_TEST
-    print_all_pid(); 
-    #endif
+#ifdef _PRINT_TEST
+  print_all_pid();
+#endif
   if (sem_release(sem_id, 0) == -1)
   {
-    fprintf(stderr, "[%s]Error in sem_reserve %s\n", __FILE__, strerror(errno));
+    fprintf(stderr, "[%s || %s]Error in sem_reserve %s\n", __FILE__,__func__, strerror(errno));
     exit(EXIT_FAILURE);
   }
   // TODO: qui dovremmo aver finito di creare i processi, a sto punt facciamo
@@ -338,7 +348,7 @@ int main(int argc, char const *argv[])
   // propria ?
 
   shutdown();
-  // print_hash_table(&table);
+  print_hash_table(&table);
 
   fclose(fp);
 

@@ -38,18 +38,22 @@ void fetch_args(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  printf("[Activator %d] {FETCHED ARGV COMPLEATE\n}",getpid());
+  printf("[Activator %d] {Fetching arguments compleated}\n",getpid());
 }
 
 
 int main(int argc, char const *argv[])
 {
   srand(time(NULL));
+  #ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
+  #endif
   static int q_id, i ;
   fetch_args(argv);
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
   printf("[%s] QUEUEU : %d CREATED \n ",__FILE__, q_id);
+  printf("activator [%d] in pause\n",getpid());
+  pause();
   for( i=0 ; i<config.N_ATOMI_INIT ; i++){
   send.m_type = 1;
   int command = randomic_activation();

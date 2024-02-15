@@ -18,9 +18,9 @@ activator:$(COMMON_DEPS)
 	$(CC)	$(CFLAGS) src/activator.c $(UTILS) -o bin/activator src/header/ipc.h -lm
 
 debug: 
-	$(CC)   $(D_FLAG)  src/master.c $(UTILS) src/header/master.h -o bin/master  -lm
-	$(CC)	$(CFLAGS) src/atom.c $(UTILS) src/header/ipc.h -o bin/atom -lm
-	$(CC)	$(CFLAGS) src/activator.c $(UTILS) -o bin/activator src/header/ipc.h -lm
+	$(CC)   $(CFLAGS) $(D_FLAG)  src/master.c $(UTILS) src/header/master.h -o bin/master  -lm
+	$(CC)	$(CFLAGS) $(D_FLAG) src/atom.c $(UTILS) src/header/ipc.h -o bin/atom -lm
+	$(CC)	$(CFLAGS) $(D_FLAG) src/activator.c $(UTILS) -o bin/activator src/header/ipc.h -lm
 clean:
 		$(IPC_RM)
 		$(RM) -f bin/*
