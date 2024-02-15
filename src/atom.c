@@ -36,7 +36,9 @@ void fetch_args_atom(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
+  #ifdef _PRINT_TEST
   printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}", getpid());
+  #endif
 }
 /* ALPHA _-_*/
 static int energy_free(int atomic_a1, int atomic_a2)
@@ -83,11 +85,19 @@ int main(int argc, char const *argv[])
   srand(time(NULL));
   static int command;
   atom.pid = getpid();
+  #ifdef _PRINT_TEST
   printf("HELLO IS ATOM %d\n", atom.pid);
+  #endif
+  fflush(stdout);
   fetch_args_atom(argv);
+  printf("ATOM %d IS IN PAUSE\n ",atom.pid); 
+  pause(); 
+
   rcv.m_type = 1;
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  #ifdef _PRINT_TEST
   printf("[%s] connecting to queue:%d\n", __FILE__, rcv_id);
+  #endif
   if (rcv_id == -1)
   {
     fprintf(stderr, "error in rcv_id queue %s\n", strerror(errno));
@@ -98,14 +108,20 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "ERROR MSG_RCV\n");
   };
   // Assegna la stringa ricevuta al membro appropriato della struct atom
-  print_para_TEST(config);
+  //print_para_TEST(config);
+    #ifdef _PRINT_TEST
   printf("STRINGA RICEVUTA: ID:%d , TYPE :%ld <DATA: %s > \n", rcv_id,
 	 rcv.m_type, rcv.text);
-  fflush(stdout);
+  fflush(stdout); 
+  #endif
   atom.atomic_flag = atoi(rcv.text);
+  #ifdef _PRINT_TEST
   printf("ATOM FLAG IS %d FOR ATOM %d\n", atom.atomic_flag, atom.pid);
+  #endif
   atom.atomic_number = get_atomic_number();
+  #ifdef _PRINT_TEST
   printf("ATOMIC NUMBER FOR ATOM %d IS %d \n", atom.pid, atom.atomic_number);
+  #endif
   atom_fission(atom.atomic_number, atom.atomic_flag, config);
   return 0;
 }

@@ -23,6 +23,8 @@
 #include <math.h>
 #include <time.h>
 #include <sys/param.h>
+#include <signal.h>
+#include <sys/signal.h>
 #define ATOM_PATH "./bin/atom"
 #define ACTIVATOR_PATH "./bin/activator"
 #define FUEL_PATH "./bin/fuel"

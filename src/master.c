@@ -1,7 +1,7 @@
 #include "header/master.h"
 #include "header/common.h"
-#include "util/my_sem_lib.h"
 #include "util/hash_table.h"
+#include "util/my_sem_lib.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,9 +11,29 @@ char **args_atom[100];
 char **activator_args[100];
 char **activator_args[100];
 char const *args_[100];
+static int atom_array_pid[100];
+static int activator_array_pid[10];
+static int fuel_array_pid[100];
 int sem_id;
+pid_t atom_pid;
+pid_t activator_pid;
 struct config config;
-
+struct hash_table table;
+#ifdef _PRINT_TEST
+static void print_para_TEST()
+{
+  printf("N_ATOMI_INIT: %d\n"
+	 "ENERGY_DEMAND :%d\n"
+	 "N_ATOM_MAX:%d\n"
+	 "MIN_A_ATOMICO :%d\n"
+	 "N_NUOVI_ATOMI :%d\n"
+	 "SIM_DURATION :%d\n"
+	 "ENERGY_EXPLODE_THRESHOLD :%d\n",
+	 config.N_ATOMI_INIT, config.ENERGY_DEMAND, config.N_ATOM_MAX,
+	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
+	 config.ENERGY_EXPLODE_THRESHOLD);
+}
+#endif
 static int scan_data(FILE *fp)
 {
   int value;
@@ -127,22 +147,10 @@ pid_t fuel_generator()
     break;
   }
 }
-static void print_para_TEST()
-{
-  printf("N_ATOMI_INIT: %d\n"
-	 "ENERGY_DEMAND :%d\n"
-	 "N_ATOM_MAX:%d\n"
-	 "MIN_A_ATOMICO :%d\n"
-	 "N_NUOVI_ATOMI :%d\n"
-	 "SIM_DURATION :%d\n"
-	 "ENERGY_EXPLODE_THRESHOLD :%d\n",
-	 config.N_ATOMI_INIT, config.ENERGY_DEMAND, config.N_ATOM_MAX,
-	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
-	 config.ENERGY_EXPLODE_THRESHOLD);
-}
+
 pid_t atom_gen(struct config config, struct hash_table table)
 {
-  pid_t atom_pid;
+
   int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
   switch (atom_pid = fork())
   {
@@ -150,8 +158,11 @@ pid_t atom_gen(struct config config, struct hash_table table)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
+#ifdef _PRINT_TEST
+    printf(" %s %d ,%s\n", __FILE__,getpid(),__func__);
+#endif
     argument_creator((char **)args_atom);
-    table.put(&table, atom_pid, random_a_number);
+    // table.put(&table, atom_pid, random_a_number);
     execvp(ATOM_PATH, (char **)args_atom);
     fprintf(stderr,
 	    "%s line: %d[master %d  , ATOM_GENERATOR(){PROBLEM IN EXECVE} \n",
@@ -162,16 +173,18 @@ pid_t atom_gen(struct config config, struct hash_table table)
   default:
     if (sem_release(sem_id, 0) == -1)
     {
-      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,strerror(errno));
+      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,
+	      strerror(errno));
       exit(EXIT_FAILURE);
     }
+
     return atom_pid;
     break;
   }
 }
 pid_t activator(struct config config)
 {
-  pid_t activator_pid;
+ 
   switch (activator_pid = fork())
   {
   case -1:
@@ -186,10 +199,12 @@ pid_t activator(struct config config)
     break;
 
   default:
-  if(sem_release(sem_id,0)){
-    fprintf(stderr,"[%s]Error in sem_release %s\n",__FILE__,strerror(errno));
-    exit(EXIT_FAILURE);
-  }
+    if (sem_release(sem_id, 0))
+    {
+      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,
+	      strerror(errno));
+      exit(EXIT_FAILURE);
+    }
     return activator_pid;
     break;
   }
@@ -207,10 +222,66 @@ struct hash_table init_table(struct hash_table table)
   table.garbage_collector = garbage_collect;
   return table;
 }
+void shutdown()
+{
+  for (int i = 0; i < config.N_ATOMI_INIT; i++)
+  {
+    printf("KILLING %d PROC\n", atom_array_pid[i]);
+    kill(atom_array_pid[i], SIGKILL);
+    kill(activator_array_pid[i],SIGKILL); 
+    printf("KILLED\n");
+  }
+  printf("REMOVING SEM %d\n", sem_id);
+  semctl(sem_id, 0, IPC_RMID);
+  printf("REMOVED SEM\n");
+}
+void store_pid_atom()
+{
+  for (int i = 0; i < config.N_ATOMI_INIT; i++)
+  {
+    atom_array_pid[i] = atom_gen(config, table);
+    /*
+#ifdef _PRINT_TEST
+    printf("[MASTER %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
+	   atom_pid, i);
+#endif
+*/ 
+  }
+}
+void handle_signal(int signum)
+{
+  switch (signum)
+  {
+  case SIGINT:
 
+    break;
+  case SIGSTOP:
+    break;
+  case SIGALRM:
+    break;
+  default:
+    break;
+  }
+}
+#ifdef _PRINT_TEST
+void print_all_pid()
+{
+  printf("-----------------------------------\n");
+  for (int i = 0; i < config.N_ATOMI_INIT; i++)
+  {
+    printf("[MASTER %d ][ATOM] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
+	   atom_pid, i);
+  }
+  for( int  i =0 ; i <config.ENERGY_DEMAND ; i++ )
+  { 
+    printf("[MASTER %d ][ACTIVATOR] %s ,[PID%d ] [POS %d ]\n",getpid(),__func__ ,activator_pid,i );
+  }
+  printf("-----------------------------------\n");
+}
+#endif
 int main(int argc, char const *argv[])
 {
-  struct hash_table table;
+
   init_table(table);
   pid_t atom;
   FILE *fp = fopen("src/config/config1.txt", "r");
@@ -234,29 +305,40 @@ int main(int argc, char const *argv[])
   srand(time(NULL));
   printf("MAIN %d\n", getpid());
   scan_data(fp);
+#ifdef _PRINT_TEST
   print_para_TEST(config);
+#endif
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
-  activator_args[0] = (char **)ACTIVATOR_PATH;
-  activator(config);
+  activator_array_pid[0] = activator(config);
+/*  
+#ifdef _PRINT_TEST
+  printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
+	 activator_array_pid[0]);
+#endif
+*/ 
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
-    atom_gen(config,table);
-    
+#ifdef _PRINT_TEST
+    printf("INSIDE FOR LOOP MASTER %d \n", getpid());
+#endif
+    atom_gen(config, table);
   }
-
+  store_pid_atom();
+  #ifdef _PRINT_TEST
+    print_all_pid(); 
+    #endif
   if (sem_release(sem_id, 0) == -1)
   {
     fprintf(stderr, "[%s]Error in sem_reserve %s\n", __FILE__, strerror(errno));
     exit(EXIT_FAILURE);
   }
-  // TODO: qui dovremmo aver finito di creare i processi, a sto punt facciamo sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e propria ?
-  for (int i = 0; i < config.N_ATOMI_INIT; i++)
-  {
-    atom_gen(config, table);
-  }
+  // TODO: qui dovremmo aver finito di creare i processi, a sto punt facciamo
+  // sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e
+  // propria ?
 
-  print_hash_table(&table);
+  shutdown();
+  // print_hash_table(&table);
 
   fclose(fp);
 
