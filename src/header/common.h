@@ -15,6 +15,9 @@
      __LINE__ is useful when generating log statements
  */
 #endif
+#ifndef _GNU_SOURCE /* Missing this baby :p */
+#define _GNU_SOURCE
+#endif 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

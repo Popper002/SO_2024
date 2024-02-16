@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
   fflush(stdout);
   fetch_args_atom(argv);
   printf("ATOM %d IS IN PAUSE\n ",atom.pid); 
-  pause(); 
+  pause();
 
   rcv.m_type = 1;
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);

@@ -2,6 +2,7 @@
 #include "header/common.h"
 #include "util/hash_table.h"
 #include "util/my_sem_lib.h"
+#include "header/ipc.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,11 +12,13 @@
 
 char **args_atom[100];
 char **activator_args[100];
-char **activator_args[100];
+char **fuel_args[100];
 char const *args_[100];
 static int activator_array_pid[10];
 static int fuel_array_pid[100];
-int sem_id;
+static int sem_id;
+static int shm_id;
+static key_t key_shm;
 pid_t atom_pid;
 pid_t activator_pid;
 struct config config;
@@ -42,7 +45,7 @@ static int scan_data()
   int value;
   char name_param[500];
   int error = 1;
-FILE *fp = fopen(CONFIG_PATH, "r");
+  FILE *fp = fopen(CONFIG_PATH, "r");
   if (fp == NULL)
   {
     fprintf(stderr, "%d\n", errno);
@@ -122,7 +125,41 @@ static void argument_creator(char *argv[])
   argv[7] = strdup(energy_explode_threshold);
   argv[8] = NULL;
 }
-
+static void fuel_argument_ipc(char *argv)
+{
+  char n_atomi_init[10];
+  char energy_demand[10];
+  char n_atom_max[10];
+  char min_a_atomico[10];
+  char n_nuovi_atomi[10];
+  char sim_duration[10];
+  char energy_explode_threshold[10];
+  char atomic_number[10];
+  sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
+  sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
+  sprintf(n_atom_max, "%d", config.N_ATOM_MAX);
+  sprintf(min_a_atomico, "%d", config.MIN_A_ATOMICO);
+  sprintf(n_nuovi_atomi, "%d", config.N_NUOVI_ATOMI);
+  sprintf(sim_duration, "%d", config.SIM_DURATION);
+  sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
+ 
+  /* ipc */
+  char ipc_shm_id_[10];
+  char ipc_shm_key_[10];
+  sprintf(ipc_shm_id_, "%d", shm_id);
+  sprintf(ipc_shm_key_, "%d", key_shm);
+  argv[1] = strdup(n_atomi_init);
+  argv[2] = strdup(energy_demand);
+  argv[3] = strdup(n_atom_max);
+  argv[4] = strdup(min_a_atomico);
+  argv[5] = strdup(n_nuovi_atomi);
+  argv[6] = strdup(sim_duration);
+  argv[7] = strdup(energy_explode_threshold);
+  /* */
+  argv[8] = strdup(shm_id);
+  argv[9] = strdup(key_shm);
+  argv[10] = NULL;
+}
 static int randomize_atom(int atomic_number)
 {
 
@@ -139,14 +176,17 @@ pid_t fuel_generator()
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-if (sem_reserve(sem_id, 0) == -1)
-    {
-      fprintf(stderr, "[%s || %s]Error in sem_reserve %s\n", __FILE__,__func__,
-	      strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-    argument_creator((char **)args_atom);
-    execve(FUEL_PATH, (char **)args_atom, NULL);
+   // if (sem_reserve(sem_id, 0) == -1)
+    //{
+     // fprintf(stderr, "[%s || %s]Error in sem_reserve %s\n", __FILE__, __func__,
+	    //  strerror(errno));
+     // exit(EXIT_FAILURE);
+    //}
+    #ifdef _PRINT_TEST 
+      printf("[%s]", __func__);
+    #endif
+    fuel_argument_ipc((char **)fuel_args);
+    execvp(FUEL_PATH, (char **)fuel_args);
     fprintf(stderr,
 	    "%s LINE: %d[MASTER %d  , FUEL_GENERATOR(){PROBLEM IN EXECVP}\n",
 	    __func__, __LINE__, getpid());
@@ -154,7 +194,7 @@ if (sem_reserve(sem_id, 0) == -1)
     break;
 
   default:
-    
+
     return fuel_pid;
     break;
   }
@@ -173,12 +213,13 @@ pid_t atom_gen(struct config config, struct hash_table table)
 #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
 #endif
-  #ifdef _PRINT_TEST
-    printf("%s %s sem release sem_id: %d \t sem_op: %d\n",__func__,__FILE__, sem_id, semctl(sem_id, 0, GETVAL));  
-  #endif
+#ifdef _PRINT_TEST
+    printf("%s %s sem release sem_id: %d \t sem_op: %d\n", __func__, __FILE__,
+	   sem_id, semctl(sem_id, 0, GETVAL));
+#endif
     if (sem_reserve(sem_id, 0) == -1)
     {
-      fprintf(stderr, "[%s || %s in sem_reserve %s\n", __FILE__,__func__,
+      fprintf(stderr, "[%s || %s in sem_reserve %s\n", __FILE__, __func__,
 	      strerror(errno));
       exit(EXIT_FAILURE);
     }
@@ -188,8 +229,9 @@ pid_t atom_gen(struct config config, struct hash_table table)
 
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
-    
-    printf("[%s] [%s] atomi pid inserted in table %d\n",__FILE__,__func__, atom_pid);
+
+    printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
+	   atom_pid);
     fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
 	    __func__, __LINE__, __FILE__, getpid());
     exit(EXIT_FAILURE);
@@ -206,13 +248,13 @@ pid_t activator(struct config config)
   switch (activator_pid = fork())
   {
   case -1:
-    
+
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-if (sem_release(sem_id, 1))
+    if (sem_release(sem_id, 1))
     {
-      fprintf(stderr, "[%s || %s]Error in sem_release %s\n", __FILE__,__func__,
+      fprintf(stderr, "[%s || %s]Error in sem_release %s\n", __FILE__, __func__,
 	      strerror(errno));
       exit(EXIT_FAILURE);
     }
@@ -278,7 +320,8 @@ void handle_signal(int signum)
   switch (signum)
   {
   case SIGINT:
-
+    write(STDOUT_FILENO, "SIGINT_HANDLE\n", 15);
+    kill(atom_array_pid, SIGINT);
     break;
   case SIGSTOP:
     break;
@@ -300,17 +343,29 @@ void print_all_pid()
   for (int i = 0; i < config.ENERGY_DEMAND; i++)
   {
     printf("[MASTER %d ][ACTIVATOR] %s ,[PID%d ] [POS %d ]\n", getpid(),
-	   __func__,activator_array_pid[i], i);
+	   __func__, activator_array_pid[i], i);
   }
   printf("-----------------------------------\n");
 }
 #endif
+void ipc_init()
+{
+ 
+ // if (sem_set_val(sem_id, 0, config.N_ATOMI_INIT) == -1)
+  //{
+   // fprintf(stderr, "[%s]Error %d in sem_set_val %s\n", __FILE__, errno,
+	 //   strerror(errno));
+  //}
+}
 int main(int argc, char const *argv[])
 {
 
   init_table(table);
   pid_t atom;
-  
+
+  key_shm = ftok("fuel.c",'k');
+  shm_id = shmget(key_shm,sizeof(config)+sizeof(key_t)+sizeof(int), IPC_CREAT | 0666);
+  printf("SHM ID %d\n ",shm_id);
   sem_id = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
   if (sem_id == -1)
   {
@@ -318,26 +373,30 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
 
-  if (sem_set_val(sem_id, 0, config.N_ATOMI_INIT) == -1)
-  {
-    fprintf(stderr, "[%s]Error %d in sem_set_val %s\n", __FILE__,errno, strerror(errno));
-  }
-
   srand(time(NULL));
   printf("-> Main %d <-\n", getpid());
   scan_data();
+  //ipc_init(); 
+  #ifdef _PRINT_TEST
+    printf("");
+  #endif
 #ifdef _PRINT_TEST
   print_para_TEST(config);
 #endif
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
-  activator_array_pid[0] = activator(config);
+  //activator_array_pid[0] = activator(config);
+  fuel_args[0] = (char **)FUEL_PATH;
+
   /*
   #ifdef _PRINT_TEST
     printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
 	   activator_array_pid[0]);
   #endif
   */
+  fuel_generator(); 
+
+  /* 
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
 #ifdef _PRINT_TEST
@@ -351,16 +410,16 @@ int main(int argc, char const *argv[])
 #endif
   if (sem_release(sem_id, 0) == -1)
   {
-    fprintf(stderr, "[%s || %s]Error in sem_release %s\n", __FILE__,__func__, strerror(errno));
+    fprintf(stderr, "[%s || %s]Error in sem_release %s\n", __FILE__, __func__,
+	    strerror(errno));
     exit(EXIT_FAILURE);
   }
   // TODO: qui dovremmo aver finito di creare i processi, a sto punto facciamo
   // sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e
   // propria ?
-
-  shutdown(); //FIXME: master process killhimself
+  */
+  //shutdown(); // FIXME: master process killhimself
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
-
 
   return 0;
 }
