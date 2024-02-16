@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define CONFIG_PATH "src/config/config1.txt"
+
 char **args_atom[100];
 char **activator_args[100];
 char **activator_args[100];
@@ -35,11 +37,17 @@ static void print_para_TEST()
 	 config.ENERGY_EXPLODE_THRESHOLD);
 }
 #endif
-static int scan_data(FILE *fp)
+static int scan_data()
 {
   int value;
   char name_param[500];
   int error = 1;
+FILE *fp = fopen(CONFIG_PATH, "r");
+  if (fp == NULL)
+  {
+    fprintf(stderr, "%d\n", errno);
+    exit(EXIT_FAILURE);
+  }
   printf("Reading data from file...\n");
   while (fscanf(fp, "%s %d", name_param, &value) != EOF)
   {
@@ -83,6 +91,8 @@ static int scan_data(FILE *fp)
       error = 1;
     }
   }
+
+  fclose(fp);
   printf("Data read from file!\n");
   return error;
 }
@@ -129,9 +139,9 @@ pid_t fuel_generator()
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-if (sem_release(sem_id, 0) == -1)
+if (sem_reserve(sem_id, 0) == -1)
     {
-      fprintf(stderr, "[%s || %s]Error in sem_release %s\n", __FILE__,__func__,
+      fprintf(stderr, "[%s || %s]Error in sem_reserve %s\n", __FILE__,__func__,
 	      strerror(errno));
       exit(EXIT_FAILURE);
     }
@@ -166,20 +176,20 @@ pid_t atom_gen(struct config config, struct hash_table table)
   #ifdef _PRINT_TEST
     printf("%s %s sem release sem_id: %d \t sem_op: %d\n",__func__,__FILE__, sem_id, semctl(sem_id, 0, GETVAL));  
   #endif
-    if (sem_release(sem_id, 0) == -1)
+    if (sem_reserve(sem_id, 0) == -1)
     {
-      fprintf(stderr, "[%s || %s in sem_release %s\n", __FILE__,__func__,
+      fprintf(stderr, "[%s || %s in sem_reserve %s\n", __FILE__,__func__,
 	      strerror(errno));
       exit(EXIT_FAILURE);
     }
 
+    put(&table, atom_pid, random_a_number);
+    print_hash_table(&table);
 
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
-    // table.put(&table, atom_pid, random_a_number);
-    // print_hash_table(&table);
-    table.put(&table, atom_pid, random_a_number);
-    printf("atomi pid inserted in table %d\n", atom_pid);
+    
+    printf("[%s] [%s] atomi pid inserted in table %d\n",__FILE__,__func__, atom_pid);
     fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
 	    __func__, __LINE__, __FILE__, getpid());
     exit(EXIT_FAILURE);
@@ -202,7 +212,7 @@ pid_t activator(struct config config)
   case 0:
 if (sem_release(sem_id, 1))
     {
-      fprintf(stderr, "[%s]Error in sem_release %s\n", __FILE__,
+      fprintf(stderr, "[%s || %s]Error in sem_release %s\n", __FILE__,__func__,
 	      strerror(errno));
       exit(EXIT_FAILURE);
     }
@@ -232,18 +242,24 @@ struct hash_table init_table(struct hash_table table)
   table.garbage_collector = garbage_collect;
   return table;
 }
+
 void shutdown()
 {
-  printf("REMOVING SEM %d\n", sem_id);
+  printf("Removed sem %d\n", sem_id);
   semctl(sem_id, 0, IPC_RMID);
-  printf("REMOVED SEM\n");
+  /*
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
-    printf("KILLING %d PROC\n", atom_array_pid[i]);
-    kill(atom_array_pid[i], SIGKILL);
-    kill(activator_array_pid[i], SIGKILL);
-    printf("KILLED\n");
+    if (atom_array_pid[i] != getpid()) {
+      kill(atom_array_pid[i], SIGKILL);
+    }
+    if (activator_array_pid[i] != getpid()) {
+      kill(activator_array_pid[i], SIGKILL);
+    }
+    printf("Killed process with pid %d\n", atom_array_pid[i]);
+    printf("Killed process with pid %d\n", activator_array_pid[i]);
   }
+  */
 }
 
 void store_pid_atom()
@@ -294,12 +310,7 @@ int main(int argc, char const *argv[])
 
   init_table(table);
   pid_t atom;
-  FILE *fp = fopen("src/config/config1.txt", "r");
-  if (fp == NULL)
-  {
-    fprintf(stderr, "%d\n", errno);
-    exit(EXIT_FAILURE);
-  }
+  
   sem_id = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
   if (sem_id == -1)
   {
@@ -307,14 +318,14 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
 
-  if (sem_set_val(sem_id, 0, config.N_ATOMI_INIT-1) == -1)
+  if (sem_set_val(sem_id, 0, config.N_ATOMI_INIT) == -1)
   {
-    fprintf(stderr, "[%s]Error in sem_set_val %s\n", __FILE__, strerror(errno));
+    fprintf(stderr, "[%s]Error %d in sem_set_val %s\n", __FILE__,errno, strerror(errno));
   }
 
   srand(time(NULL));
-  printf("MAIN %d\n", getpid());
-  scan_data(fp);
+  printf("-> Main %d <-\n", getpid());
+  scan_data();
 #ifdef _PRINT_TEST
   print_para_TEST(config);
 #endif
@@ -340,17 +351,16 @@ int main(int argc, char const *argv[])
 #endif
   if (sem_release(sem_id, 0) == -1)
   {
-    fprintf(stderr, "[%s || %s]Error in sem_reserve %s\n", __FILE__,__func__, strerror(errno));
+    fprintf(stderr, "[%s || %s]Error in sem_release %s\n", __FILE__,__func__, strerror(errno));
     exit(EXIT_FAILURE);
   }
-  // TODO: qui dovremmo aver finito di creare i processi, a sto punt facciamo
+  // TODO: qui dovremmo aver finito di creare i processi, a sto punto facciamo
   // sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e
   // propria ?
 
-  shutdown();
-  print_hash_table(&table);
+  shutdown(); //FIXME: master process killhimself
+  printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
 
-  fclose(fp);
 
   return 0;
 }
