@@ -23,7 +23,8 @@ pid_t atom_pid;
 pid_t activator_pid;
 struct config config;
 struct hash_table table;
-static int atom_array_pid[100];
+// static int atom_array_pid[100];
+pid_t *atom_array_pid;
 
 #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -144,21 +145,25 @@ static void fuel_argument_ipc(char *argv)
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
  
   /* ipc */
-  char ipc_shm_id_[10];
-  char ipc_shm_key_[10];
+  char *ipc_shm_id_;
+  char *ipc_shm_key_;
   sprintf(ipc_shm_id_, "%d", shm_id);
   sprintf(ipc_shm_key_, "%d", key_shm);
-  argv[1] = strdup(n_atomi_init);
-  argv[2] = strdup(energy_demand);
-  argv[3] = strdup(n_atom_max);
-  argv[4] = strdup(min_a_atomico);
-  argv[5] = strdup(n_nuovi_atomi);
-  argv[6] = strdup(sim_duration);
-  argv[7] = strdup(energy_explode_threshold);
+  argv[1] = *strdup(n_atomi_init);
+  argv[2] = *strdup(energy_demand);
+  argv[3] = *strdup(n_atom_max);
+  argv[4] = *strdup(min_a_atomico);
+  argv[5] = *strdup(n_nuovi_atomi);
+  argv[6] = *strdup(sim_duration);
+  argv[7] = *strdup(energy_explode_threshold);
   /* */
-  argv[8] = strdup(shm_id);
-  argv[9] = strdup(key_shm);
-  argv[10] = NULL;
+  char shm_id_str[10];
+  char key_shm_str[10];
+  sprintf(shm_id_str, "%d", shm_id);
+  sprintf(key_shm_str, "%d", key_shm);
+  argv[8] = *strdup(shm_id_str);
+  argv[9] = *strdup(key_shm_str);
+  argv[10] = (char) 0;
 }
 static int randomize_atom(int atomic_number)
 {
@@ -185,11 +190,11 @@ pid_t fuel_generator()
     #ifdef _PRINT_TEST 
       printf("[%s]", __func__);
     #endif
-    fuel_argument_ipc((char **)fuel_args);
+    fuel_argument_ipc((char *)fuel_args);
     execvp(FUEL_PATH, (char **)fuel_args);
     fprintf(stderr,
-	    "%s LINE: %d[MASTER %d  , FUEL_GENERATOR(){PROBLEM IN EXECVP}\n",
-	    __func__, __LINE__, getpid());
+	    "%s LINE: %d[MASTER %d  , FUEL_GENERATOR(){PROBLEM IN EXECVP}, %s\n",
+	    __func__, __LINE__, getpid(),strerror(errno));
     exit(EXIT_FAILURE);
     break;
 
@@ -321,7 +326,7 @@ void handle_signal(int signum)
   {
   case SIGINT:
     write(STDOUT_FILENO, "SIGINT_HANDLE\n", 15);
-    kill(atom_array_pid, SIGINT);
+    kill(*atom_array_pid, SIGINT);
     break;
   case SIGSTOP:
     break;

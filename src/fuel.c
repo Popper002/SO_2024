@@ -1,42 +1,10 @@
 #include "header/common.h"
 struct config config;
 char **new_atom_args[100];
-int  new_pid_atom[100]; 
-static int shm_id; 
-static key_t shm_key; 
-pid_t born_new_atom()
-{
-  pid_t new_born_atom;
- //int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
-  switch (new_born_atom= fork())
-  {
-  case -1:
-    TEST_ERROR;
-    exit(EXIT_FAILURE);
-  case 0:
-#ifdef _PRINT_TEST
-    printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
-#endif
-  //#ifdef _PRINT_TEST
-   // printf("%s %s sem release sem_id: %d \t sem_op: %d\n",__func__,__FILE__, sem_id, semctl(sem_id, 0, GETVAL));  
- // #endif
-    //put(&table, atom_pid, random_a_number);
-   // print_hash_table(&table);
+int new_pid_atom[100];
+static int shm_id;
+static key_t shm_key;
 
-    argument_creator((char **)new_atom_args);
-    execvp(ATOM_PATH, (char **)new_atom_args);
-    
-    printf("[%s] [%s] atomi pid inserted in table %d\n",__FILE__,__func__, new_born_atom);
-    fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
-	    __func__, __LINE__, __FILE__, getpid());
-    exit(EXIT_FAILURE);
-    break;
-
-  default:
-    return new_born_atom;
-    break;
-  }
-}
 void argument_creator(char *argv[])
 {
   char n_atomi_init[10];
@@ -63,6 +31,42 @@ void argument_creator(char *argv[])
   argv[7] = strdup(energy_explode_threshold);
   argv[8] = NULL;
 }
+
+pid_t create_new_atom()
+{
+  pid_t new_born_atom;
+  // int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
+  switch (new_born_atom = fork())
+  {
+  case -1:
+    TEST_ERROR;
+    exit(EXIT_FAILURE);
+  case 0:
+#ifdef _PRINT_TEST
+    printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
+#endif
+    // #ifdef _PRINT_TEST
+    //  printf("%s %s sem release sem_id: %d \t sem_op: %d\n",__func__,__FILE__,
+    //  sem_id, semctl(sem_id, 0, GETVAL));
+    // #endif
+    // put(&table, atom_pid, random_a_number);
+    // print_hash_table(&table);
+
+    argument_creator((char **)new_atom_args);
+    execvp(ATOM_PATH, (char **)new_atom_args);
+
+    printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
+	   new_born_atom);
+    fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
+	    __func__, __LINE__, __FILE__, getpid());
+    exit(EXIT_FAILURE);
+    break;
+
+  default:
+    return new_born_atom;
+    break;
+  }
+}
 void fetch_args_fuel(char const *argv[])
 {
 
@@ -84,17 +88,17 @@ void fetch_args_fuel(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  shm_id =ipc_shm_id; 
-  shm_key=ipc_key_shm;
-  #ifdef _PRINT_TEST
+  shm_id = ipc_shm_id;
+  shm_key = ipc_key_shm;
+#ifdef _PRINT_TEST
   printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}", getpid());
-  #endif
+#endif
 }
 #ifdef _PRINT_TEST
 
-  void print_para_TEST()
-  {
-    
+void print_para_TEST()
+{
+
   printf("N_ATOMI_INIT: %d\n"
 	 "ENERGY_DEMAND :%d\n"
 	 "N_ATOM_MAX:%d\n"
@@ -105,38 +109,41 @@ void fetch_args_fuel(char const *argv[])
 	 config.N_ATOMI_INIT, config.ENERGY_DEMAND, config.N_ATOM_MAX,
 	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
 	 config.ENERGY_EXPLODE_THRESHOLD);
-  }
-  void print_ALL_IPC()
-  {
-    printf("SHID : %d ] [ STATUS <CREATED> , sizeof(%d)]\n",shm_id , sizeof(shm_id)); 
-  }
-  #endif
-/* inseriamo l'array di pid nuovo in memoria condivisa in modo da essere condivisi con altri processi */
-/* La chiave del nuovo segmento di memoria viene passata come argv dal master con un array di chiavi 
-struttura : 
-  master crea nuovo oggetto shmget con chiave passata come argv in posizione 9 in modo da che [master crea]  [fuel attacca ]
-  [fuel scrive ] [ fuel detach ] i nuovi pid vengono letti dal master in modo da sapere ogni STEP secondi le nuove nascite */
+}
+void print_ALL_IPC()
+{
+  printf("SHID : %d ] [ STATUS <CREATED> , sizeof(%ld)]\n", shm_id,
+	 sizeof(shm_id));
+}
+#endif
+/* inseriamo l'array di pid nuovo in memoria condivisa in modo da essere
+ * condivisi con altri processi */
+/* La chiave del nuovo segmento di memoria viene passata come argv dal master
+con un array di chiavi struttura : master crea nuovo oggetto shmget con chiave
+passata come argv in posizione 9 in modo da che [master crea]  [fuel attacca ]
+  [fuel scrive ] [ fuel detach ] i nuovi pid vengono letti dal master in modo da
+sapere ogni STEP secondi le nuove nascite */
 int main(int argc, char const *argv[])
 {
-  #ifdef _PRINT_TEST
-    printf("[%s][%s][PID:%d]\n",__FILE__ , __func__,getpid()); 
-  #endif 
+#ifdef _PRINT_TEST
+  printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
+#endif
   fetch_args_fuel(argv);
-  #ifdef _PRINT_TEST
-    print_ALL_IPC();
-    print_para_TEST(); 
-   #endif 
+#ifdef _PRINT_TEST
+  print_ALL_IPC();
+  print_para_TEST();
+#endif
 
-   /*
-  for( int i =0 ; i< config.N_NUOVI_ATOMI ; i++)
-  { 
-    new_pid_atom[i]= born_new_atom(); 
-  }
-  for(int j=0 ; j< new_pid_atom[j] ;j++)
-  {
-  printf("NEW PID'S ARE %d\n",new_pid_atom[j]);
-  }
+  /*
+ for( int i =0 ; i< config.N_NUOVI_ATOMI ; i++)
+ {
+   new_pid_atom[i]= born_new_atom();
+ }
+ for(int j=0 ; j< new_pid_atom[j] ;j++)
+ {
+ printf("NEW PID'S ARE %d\n",new_pid_atom[j]);
+ }
 
-  */ 
+ */
   return 0;
 }
