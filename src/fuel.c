@@ -1,7 +1,8 @@
 #include "header/common.h"
+#include "header/ipc.h"
 struct config config;
 char **new_atom_args[100];
-int new_pid_atom[100];
+int *new_pid_atom;
 static int shm_id;
 static key_t shm_key;
 
@@ -32,7 +33,7 @@ void argument_creator(char *argv[])
   argv[8] = NULL;
 }
 
-pid_t create_new_atom()
+pid_t born_new_atom()
 {
   pid_t new_born_atom;
   // int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
@@ -115,6 +116,13 @@ void print_ALL_IPC()
   printf("SHID : %d ] [ STATUS <CREATED> , sizeof(%ld) [KEY :%d]]\n", shm_id,
 	 sizeof(shm_id),shm_key);
 }
+void value_in_memory()
+{
+   for(int  i =0 ; i < config.N_NUOVI_ATOMI ; i++)
+   {
+
+   }
+}
 #endif
 /* inseriamo l'array di pid nuovo in memoria condivisa in modo da essere
  * condivisi con altri processi */
@@ -132,9 +140,12 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   print_ALL_IPC();
   print_para_TEST();
+  //value_in_memory();
 #endif
+    shm_id = shmget(shm_key,sizeof(config)+sizeof(key_t)+sizeof(int), IPC_CREAT | 0666);
 
-  /*
+ if( new_pid_atom = (int *)shmat(shm_id, NULL, 0) <0 ){printf("[%s][%s][%d][%s]\n",__func__ ,__FILE__,getpid(),strerror(errno));} ;
+
  for( int i =0 ; i< config.N_NUOVI_ATOMI ; i++)
  {
    new_pid_atom[i]= born_new_atom();
@@ -144,6 +155,6 @@ int main(int argc, char const *argv[])
  printf("NEW PID'S ARE %d\n",new_pid_atom[j]);
  }
 
- */
+ 
   return 0;
 }
