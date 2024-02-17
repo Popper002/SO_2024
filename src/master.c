@@ -372,7 +372,11 @@ int main(int argc, char const *argv[])
   init_table(table);
   pid_t atom;
 
-  key_shm = ftok("fuel.c",'k');
+  key_shm = KEY_SHM;//ftok("header/common.h",'s');
+  #ifdef _PRINT_TEST 
+    printf("KEY IS %d \n",key_shm);
+  #endif
+  if( key_shm < 0 ) { perror("PROBLEM KEY\n");}
   shm_id = shmget(key_shm,sizeof(config)+sizeof(key_t)+sizeof(int), IPC_CREAT | 0666);
   printf("SHM ID %d\n ",shm_id);
   sem_id = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);

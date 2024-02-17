@@ -112,8 +112,8 @@ void print_para_TEST()
 }
 void print_ALL_IPC()
 {
-  printf("SHID : %d ] [ STATUS <CREATED> , sizeof(%ld)]\n", shm_id,
-	 sizeof(shm_id));
+  printf("SHID : %d ] [ STATUS <CREATED> , sizeof(%ld) [KEY :%d]]\n", shm_id,
+	 sizeof(shm_id),shm_key);
 }
 #endif
 /* inseriamo l'array di pid nuovo in memoria condivisa in modo da essere
