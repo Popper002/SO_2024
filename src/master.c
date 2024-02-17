@@ -13,7 +13,7 @@
 char **args_atom[100];
 char **activator_args[100];
 char **fuel_args[100];
-char const *args_[100];
+//char const *args_[100];
 static int activator_array_pid[10];
 static int fuel_array_pid[100];
 static int sem_id;
