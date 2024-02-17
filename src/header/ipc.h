@@ -7,6 +7,7 @@
 #define ALL 0666
 #define O_READ  0400
 #define O_WRITE 0020
+#define KEY_SHM 2111
 
 struct message
 {

@@ -35,8 +35,8 @@ pid_t rcv()
 }
 int main(int argc, char const *argv[])
 {
-     key_ = ftok("send.c",'x');
-     printf("KEY NUM IS %d\n" ,key_);
+    key_ = ftok("send.c",'x');
+    printf("KEY NUM IS %d\n" ,key_);
     if(key_ < 0 ){ perror("ERROR IN KEY GEN\n");exit(EXIT_FAILURE);}
     shm_id = shmget(key_, sizeof(char) *2 , IPC_CREAT|0666); 
     if(shm_id <0){perror("ERROR IN GET\n");exit(EXIT_FAILURE);} 
