@@ -167,7 +167,7 @@ static void fuel_argument_ipc(char *argv[])
   argv[9] = strdup(key_shm_str);
   argv[10] = NULL;
 }
-static int randomize_atom(int atomic_number)
+int randomize_atom(int atomic_number)
 {
 
   atomic_number = rand() % config.N_ATOM_MAX;

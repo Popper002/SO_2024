@@ -33,7 +33,7 @@
 #define FUEL_PATH "./bin/fuel"
 #define ATOMIC_KEY 0x221
 void fetch_args(char const *argv[]); 
-
+int randomize_atom(int atomic_number);
 struct config
 {
     int N_ATOMI_INIT; 
