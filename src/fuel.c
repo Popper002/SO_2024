@@ -2,7 +2,7 @@
 #include "header/ipc.h"
 struct config config;
 char **new_atom_args[100];
-pid_t pid_array[10000];
+pid_t pid_array[100];
 pid_t *new_pid_atom;
 static int shm_id;
 static key_t shm_key;
@@ -126,30 +126,34 @@ void print_para_TEST()
 void print_ALL_IPC()
 {
   printf("SHID : %d ] [ STATUS <CREATED> , sizeof(%ld) [KEY :%d]]\n", shm_id,
-	 sizeof(shm_id),shm_key);
+	 sizeof(shm_id), shm_key);
 }
 void value_in_memory()
 {
-   for(int  i =0 ; i < config.N_NUOVI_ATOMI ; i++)
-   {
-
-   }
+  for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
+  {
+  }
 }
-int stampaStatoMemoria(int shid) {
+int stampaStatoMemoria(int shid)
+{
 
   struct shmid_ds buf;
 
-  if (shmctl(shid,IPC_STAT,&buf)==-1) {
-    fprintf(stderr, "%s: %d. Errore in shmctl #%03d: %s\n", __FILE__, __LINE__, errno, strerror(errno));
+  if (shmctl(shid, IPC_STAT, &buf) == -1)
+  {
+    fprintf(stderr, "%s: %d. Errore in shmctl #%03d: %s\n", __FILE__, __LINE__,
+	    errno, strerror(errno));
     return -1;
-  } else {
+  }
+  else
+  {
     printf("\nSTATISTICHE\n");
-    printf("AreaId: %d\n",shid);
-    printf("Dimensione: %ld\n",buf.shm_segsz);
-    printf("Ultima shmat: %s\n",ctime(&buf.shm_atime));
-    printf("Ultima shmdt: %s\n",ctime(&buf.shm_dtime));
-    printf("Ultimo processo shmat/shmdt: %d\n",buf.shm_lpid);
-    printf("Processi connessi: %ld\n",buf.shm_nattch);
+    printf("AreaId: %d\n", shid);
+    printf("Dimensione: %ld\n", buf.shm_segsz);
+    printf("Ultima shmat: %s\n", ctime(&buf.shm_atime));
+    printf("Ultima shmdt: %s\n", ctime(&buf.shm_dtime));
+    printf("Ultimo processo shmat/shmdt: %d\n", buf.shm_lpid);
+    printf("Processi connessi: %ld\n", buf.shm_nattch);
     printf("\n");
     return 0;
   }
@@ -173,43 +177,48 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   print_ALL_IPC();
   print_para_TEST();
-  //value_in_memory();
+  // value_in_memory();
 #endif
-    shm_id = shmget(shm_key,sizeof(config)+sizeof(key_t)+sizeof(int), IPC_CREAT | 0666);
-    if( shm_id <0 ){perror("FUEL , PROBLEM SHMGET\n");exit(EXIT_FAILURE);}
-  #ifdef _PRINT_TEST
-      printf(" [%s] [N_NUOVI_ATOMI : %d ]\n",__FILE__ ,config.N_NUOVI_ATOMI );
-   #endif
-
-  //store__new_pid_atom();
-
-  int i =0;
-
-  if( new_pid_atom = (pid_t *)shmat(shm_id, NULL, 0) <0 ){printf("[%s][%s][%d][%s]\n",__func__ ,__FILE__,getpid(),strerror(errno));} ;
-      printf("SH_ID %d CONNECTED\n",shm_id);
-
-     
-while(i< config.N_NUOVI_ATOMI)
+  shm_id = shmget(shm_key, sizeof(config) + sizeof(key_t) + sizeof(int),
+		  IPC_CREAT | 0666);
+  if (shm_id < 0)
   {
-  pid_array[i] = born_new_atom();
-  i++;
-     
+    perror("FUEL , PROBLEM SHMGET\n");
+    exit(EXIT_FAILURE);
+  }
+#ifdef _PRINT_TEST
+  printf(" [%s] [N_NUOVI_ATOMI : %d ]\n", __FILE__, config.N_NUOVI_ATOMI);
+#endif
+
+  // store__new_pid_atom();
+
+  int i = 0;
+
+  if (new_pid_atom = (pid_t *)shmat(shm_id, NULL, 0) < 0)
+  {
+    printf("[%s][%s][%d][%s]\n", __func__, __FILE__, getpid(), strerror(errno));
+  };
+  printf("SH_ID %d CONNECTED\n", shm_id);
+
+  while (i < config.N_NUOVI_ATOMI)
+  {
+    pid_array[i] = born_new_atom();
+    i++;
+
 #ifdef _PRINT_TEST
     printf("\n[FUEL %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	   pid_array[i], i);
 #endif
   }
- sleep(5); 
+
+/* copiamo l'array di pid in memoria condivisa */
+//memcpy(new_pid_atom, pid_array, sizeof(pid_t) * config.N_ATOMI_INIT);
+//if( shmdt(new_pid_atom )< 0 ) { perror("");}
+
 #ifdef _PRINT_TEST
 
-   stampaStatoMemoria(shm_id);
+  stampaStatoMemoria(shm_id);
 #endif
-/*
- for(int j=0 ; j< pid_array[j] ;j++)
- {
- printf("NEW PID'S ARE %d\n",pid_array[j]);
- }
-*/ 
- 
+
   return 0;
 }
