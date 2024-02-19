@@ -24,7 +24,7 @@ pid_t activator_pid;
 struct config config;
 struct hash_table table;
 // static int atom_array_pid[100];
-pid_t *atom_array_pid;
+pid_t atom_array_pid[100];
 
 #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -211,7 +211,7 @@ pid_t atom_gen(struct config config)
 {
 
   int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
-  switch (fork())
+  switch (atom_pid = fork())
   {
   case -1:
     TEST_ERROR;
@@ -388,6 +388,7 @@ int main(int argc, char const *argv[])
   #endif
   */
   pid_t activator_pid = activator(config);
+  printf("activator pid %d\n", activator_pid);
   kill(activator_pid, SIGSTOP);
   printf("activator generated and stopped\n");
   pid_t fuel_pid = fuel_generator();
