@@ -24,7 +24,7 @@ pid_t activator_pid;
 struct config config;
 struct hash_table table;
 // static int atom_array_pid[100];
-pid_t *atom_array_pid;
+int atom_array_pid[100];
 
 #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -404,7 +404,7 @@ int main(int argc, char const *argv[])
 #endif
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
-  // activator_array_pid[0] = activator(config);
+   activator_array_pid[0] = activator(config);
   fuel_args[0] = (char **)FUEL_PATH;
 
   /*
@@ -426,7 +426,7 @@ int main(int argc, char const *argv[])
   */
   store_pid_atom();
 #ifdef _PRINT_TEST
-  //print_all_pid();
+  print_all_pid();
 #endif
   /*
     if (sem_release(sem_id, 0) == -1)
