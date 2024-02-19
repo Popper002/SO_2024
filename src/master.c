@@ -186,9 +186,8 @@ pid_t fuel_generator()
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-#ifdef _PRINT_TEST
-    printf("[%s]", __func__);
-#endif
+  printf("fuel case 0\n");
+
     printf("fuel generator pid %d\n", getpid());
     fuel_argument_ipc((char *)fuel_args);
     printf("got argument ipc\n");
@@ -202,6 +201,7 @@ pid_t fuel_generator()
 
   default:
 
+printf("fuel case default\n");
     return fuel_pid;
     break;
   }
@@ -211,23 +211,23 @@ pid_t atom_gen(struct config config)
 {
 
   int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
-  switch (atom_pid = fork())
+  switch (fork())
   {
   case -1:
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
+  printf("atom case 0\n");
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
 
-    printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
-	   atom_pid);
     fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
 	    __func__, __LINE__, __FILE__, getpid());
     exit(EXIT_FAILURE);
     break;
 
   default:
+  printf("atom case default\n");
     return atom_pid;
     break;
   }
@@ -238,20 +238,21 @@ pid_t activator(struct config config)
   switch (activator_pid = fork())
   {
   case -1:
-
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
+  printf("activator case 0\n");
 
     argument_creator((char **)activator_args);
     execvp(ACTIVATOR_PATH, (char **)activator_args);
+    printf("activator executed\n");
     fprintf(stderr, "in: %s line: %d[master %d--> problem in execvp %s}\n",
 	    __func__, __LINE__, getpid(), strerror(errno));
     exit(EXIT_FAILURE);
     break;
 
   default:
-
+    printf("activator case default\n");
     return activator_pid;
     break;
   }
@@ -368,7 +369,7 @@ int main(int argc, char const *argv[])
   srand(time(NULL));
   printf("-> Main %d <-\n", getpid());
   scan_data();
-// ipc_init();
+  // ipc_init();
 #ifdef _PRINT_TEST
   printf("");
 #endif
