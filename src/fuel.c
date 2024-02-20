@@ -2,8 +2,9 @@
 #include "header/ipc.h"
 struct config config;
 char **new_atom_args[100];
-static pid_t atom_new_pid[100];
+int atom_new_pid[100];
 shm_fuel*new_pid_atom;
+pid_t new_atom; 
 static int shm_id;
 static key_t shm_key;
 
@@ -34,36 +35,47 @@ void argument_creator(char *argv[])
   argv[8] = NULL;
 }
 
-void born_new_atom(pid_t *new_pid)
+pid_t born_new_atom(struct config config)
 {
-  int j;
-  for (j = 0; j < config.N_ATOMI_INIT; j++)
+
+  //int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
+  switch (new_atom = fork())
   {
-    new_pid[j] = fork();
+  case -1:
+    TEST_ERROR;
+    exit(EXIT_FAILURE);
+  case 0:
 #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
 #endif
-    // #ifdef _PRINT_TEST
-    //  printf("%s %s sem release sem_id: %d \t sem_op: %d\n",__func__,__FILE__,
-    //  sem_id, semctl(sem_id, 0, GETVAL));
-    // #endif
-    // put(&table, atom_pid, random_a_number);
-    // print_hash_table(&table);
+#ifdef _PRINT_TEST
+    //printf("%s %s sem release sem_id: %d \t sem_op: %d\n", __func__, __FILE__,
+	   //sem_id, semctl(sem_id, 0, GETVAL));
+#endif
+    /*
+	if (sem_reserve(sem_id, 0) == -1)
+	{
+	  fprintf(stderr, "[%s || %s in sem_reserve %s\n", __FILE__, __func__,
+		  strerror(errno));
+	  exit(EXIT_FAILURE);
+	}
 
-    if (new_pid == 0)
-    {
-      argument_creator((char **)new_atom_args);
-      execvp(ATOM_PATH, (char **)new_atom_args);
+	put(&table, atom_pid, random_a_number);
+	print_hash_table(&table);
+      */
+    argument_creator((char **)new_atom_args);
+    execvp(ATOM_PATH, (char **)new_atom_args);
 
-      //printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
-	     //new_pid);
-    }
-    if (new_pid < 0)
-    {
-      fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
-	      __func__, __LINE__, __FILE__, getpid());
-      exit(EXIT_FAILURE);
-    }
+    printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
+	   new_atom);
+    fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
+	    __func__, __LINE__, __FILE__, getpid());
+    exit(EXIT_FAILURE);
+    break;
+
+  default:
+    return new_atom;
+    break;
   }
 }
 /*
@@ -193,18 +205,18 @@ int main(int argc, char const *argv[])
 
   int i = 0;
   //*new_pid_atom->array = (shm_fuel * ) malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t)); 
-  if (new_pid_atom = (shm_fuel*)shmat(shm_id, NULL, 0) < 0)
-  {
-    printf("[%s][%s][%d][%s]\n", __func__, __FILE__, getpid(), strerror(errno));
-  }
-  printf("SH_ID %d CONNECTED\n", shm_id);
-
-  born_new_atom(atom_new_pid);
-#ifdef _PRINT_TEST
+  
   for (i ; i< config.N_NUOVI_ATOMI;i++)
   {
+   atom_new_pid[i]=born_new_atom(config);
+
+  } 
+
+#ifdef _PRINT_TEST
+  for (int l=0 ; l< 10;l++)
+  {
     printf("\n[FUEL %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
-	   atom_new_pid[i], i);
+	   atom_new_pid[l], l);
   } 
 #endif
   
