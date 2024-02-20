@@ -2,13 +2,13 @@
 #include "header/ipc.h"
 struct config config;
 char **new_atom_args[100];
-int atom_new_pid[100];
+pid_t atom_new_pid[100];
 shm_fuel*new_pid_atom;
 pid_t new_atom; 
 static int shm_id;
 static key_t shm_key;
 
-void argument_creator(char *argv[])
+void atom_argument_creator(char *argv[])
 {
   char n_atomi_init[10];
   char energy_demand[10];
@@ -63,7 +63,7 @@ pid_t born_new_atom(struct config config)
 	put(&table, atom_pid, random_a_number);
 	print_hash_table(&table);
       */
-    argument_creator((char **)new_atom_args);
+    atom_argument_creator((char **)new_atom_args);
     execvp(ATOM_PATH, (char **)new_atom_args);
 
     printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
@@ -181,6 +181,7 @@ passata come argv in posizione 9 in modo da che [master crea]  [fuel attacca ]
 sapere ogni STEP secondi le nuove nascite */
 int main(int argc, char const *argv[])
 {
+srand(time(NULL));
 #ifdef _PRINT_TEST
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
@@ -219,10 +220,11 @@ int main(int argc, char const *argv[])
 	   atom_new_pid[l], l);
   } 
 #endif
-  
+  new_pid_atom = (shm_fuel*)shmat(shm_id , NULL , 0 ); 
 /* copiamo l'array di pid in memoria condivisa */
 memcpy(new_pid_atom->array, atom_new_pid, sizeof(atom_new_pid));
 printf("COPY COMPLEATE\n");
+fflush(stdout);
 if( shmdt(new_pid_atom )< 0 ) { perror("");}
 #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);

@@ -16,7 +16,7 @@ struct message
 };
 typedef struct 
 {
-    int array[1];
+    int array[100];
 }shm_fuel;
 key_t key_sem_m;
 key_t key_sem_acti;

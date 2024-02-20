@@ -424,9 +424,9 @@ int main(int argc, char const *argv[])
     atom_gen(config, table);
   }
   */
-  store_pid_atom();
+  //store_pid_atom();
 #ifdef _PRINT_TEST
-  print_all_pid();
+  //print_all_pid();
 #endif
   /*
     if (sem_release(sem_id, 0) == -1)
