@@ -1,14 +1,20 @@
 #ifndef IPC_H_SO
 #define IPC_H_SO
+#include <sys/sem.h>
+#include <sys/types.h>
+#include <semaphore.h>
+#include <sys/shm.h>
 #define ALL 0666
 #define O_READ  0400
 #define O_WRITE 0020
+#define KEY_SHM 2111
 
 struct message
 {
-    char text[2]; 
     long m_type;
+    char text[10];
 };
-static int pipe_fd[2]; //fd[0] -read //fd[1]--write
 
+key_t key_sem_m;
+key_t key_sem_acti;
 #endif

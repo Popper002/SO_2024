@@ -1,8 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
-// #ifdef _GNU_SOURCE
-// #define _GNU_SOURCE
-// #endif
+#pragma once
 #ifndef TEST_ERROR
 #define TEST_ERROR                                 \
     if (errno)                                     \
@@ -19,6 +15,9 @@
      __LINE__ is useful when generating log statements
  */
 #endif
+#ifndef _GNU_SOURCE /* Missing this baby :p */
+#define _GNU_SOURCE
+#endif 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -27,11 +26,14 @@
 #include <math.h>
 #include <time.h>
 #include <sys/param.h>
-#define ATOM_PATH "./atom"
-#define ACTIVATOR_PATH "./active"
-#define FUEL_PATH "./fuel"
-
+#include <signal.h>
+#include <sys/signal.h>
+#define ATOM_PATH "./bin/atom"
+#define ACTIVATOR_PATH "./bin/activator"
+#define FUEL_PATH "./bin/fuel"
+#define ATOMIC_KEY 0x221
 void fetch_args(char const *argv[]); 
+
 struct config
 {
     int N_ATOMI_INIT; 
@@ -42,7 +44,3 @@ struct config
     int  SIM_DURATION;
     int ENERGY_EXPLODE_THRESHOLD;
 };
-struct config config; 
-
-
-#endif 

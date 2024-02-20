@@ -1,11 +1,15 @@
+//TODO move this in a separate header file
 #include "header/atom.h"
 #include "header/common.h"
 #include "header/ipc.h"
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <unistd.h>
+
+#include "header/ipc.h"
+
 struct message send;
-struct atom atom;
+struct config config;
 
 /* activator is a message queue*/
 
@@ -25,8 +29,7 @@ void fetch_args(char const *argv[])
   int n_nuovi_atomi = atoi(argv[5]);
   int sim_duration = atoi(argv[6]);
   int energy_explode_threshold = atoi(argv[7]);
-  int atom_number = atoi(argv[8]);
-  argv[9] = NULL;
+  argv[8] = NULL;
 
   config.N_ATOMI_INIT = n_atomi_init;
   config.ENERGY_DEMAND = energy_demand;
@@ -35,22 +38,29 @@ void fetch_args(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  atom.atomic_number = atom_number;
-  printf("[Activator %d] {FETCHED ARGV COMPLEATE\n}",getpid());
+  printf("[Activator %d] {Fetching arguments compleated}\n",getpid());
 }
+
+
 int main(int argc, char const *argv[])
 {
   srand(time(NULL));
+  #ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
-  int q_id;
+  #endif
+  static int q_id, i ;
   fetch_args(argv);
-  q_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL);
-  printf("QUEUE %d CREATED \n ", q_id);
+  q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  printf("[%s] QUEUEU : %d CREATED \n ",__FILE__, q_id);
+  printf("activator [%d] in pause\n",getpid());
+  pause();
+  for( i=0 ; i<config.N_ATOMI_INIT ; i++){
   send.m_type = 1;
-  int comand = randomic_activation();
-  printf("\ncommand %d\n", comand);
-  sprintf(send.text, "%d", comand);
-  msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0);
-  printf("SENDED THIS MESSAGGE %sIN QUEUE%d\n", send.text, q_id);
+  int command = randomic_activation();
+  printf("\ncommand %d\n", command);
+  sprintf(send.text, "%d", command);
+  if(msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0) <=-1){fprintf(stderr,"ERROR IN MSGSND\n");};
+  printf("SENDED THIS MESSAGGE %s IN QUEUE %d TYPE:%ld\n", send.text, q_id,send.m_type);
+  }
   return 0;
 }

@@ -1,12 +1,15 @@
 #include "header/atom.h"
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include "header/ipc.h"
-#include"header/common.h"
-struct atom atom; 
+
+struct atom atom;
 static struct message rcv;
+struct config config;
+
+
+
+
 static void print_para_TEST(struct config config)
 {
+  printf("\t\n----------\n");
   printf("N_ATOMI_INIT: %d\n"
 	 "ENERGY_DEMAND :%d\n"
 	 "N_ATOM_MAX:%d\n"
@@ -18,60 +21,65 @@ static void print_para_TEST(struct config config)
 	 config.N_ATOMI_INIT, config.ENERGY_DEMAND, config.N_ATOM_MAX,
 	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
 	 config.ENERGY_EXPLODE_THRESHOLD, atom.atomic_number);
+  printf("\t\n----------\n");
 }
 void fetch_args_atom(char const *argv[])
 {
 
-  int n_atomi_init = atoi(argv[1]);
+  int n_atom_init = atoi(argv[1]);
   int energy_demand = atoi(argv[2]);
   int n_atom_max = atoi(argv[3]);
   int min_a_atomico = atoi(argv[4]);
   int n_nuovi_atomi = atoi(argv[5]);
   int sim_duration = atoi(argv[6]);
   int energy_explode_threshold = atoi(argv[7]);
-  int atom_number = atoi(argv[8]);
-  argv[9] = NULL;
+  argv[8] = NULL;
 
-  config.N_ATOMI_INIT = n_atomi_init;
+  config.N_ATOMI_INIT = n_atom_init;
   config.ENERGY_DEMAND = energy_demand;
   config.N_ATOM_MAX = n_atom_max;
   config.MIN_A_ATOMICO = min_a_atomico;
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  atom.atomic_number = atom_number;
-  printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}");
+  #ifdef _PRINT_TEST
+  printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}", getpid());
+  #endif
 }
-static void get_comand(struct atom *atom,struct message rcv )
+/* ALPHA _-_*/
+static int energy_free(int atomic_a1, int atomic_a2)
 {
-   
+  return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
-
-static void energy_free(){}
-pid_t atom_fission(int atomic_number, int comand, struct config *config)
+//__-_-_
+void atom_fission(int atomic_number, int comand, struct config config)
 {
-    pid_t atom_master; 
-    pid_t atom_child;
-    if( comand ==1 )
-    { 
-        switch (atom_master = fork())
-        {
-        case -1: 
-            TEST_ERROR;
-            exit(EXIT_FAILURE); 
-            break;
-        case 0: 
-            atom_child = fork();
-            atomic_number/2;
-            sleep(1); 
-            energy_free(atomic_number,atom_master ,atom_child);
-        default:
-            sleep(1); 
-            break;
-        }
+  pid_t atom_master;
+  pid_t atom_child;
+  struct atom a1;
+  struct atom a2;
+  if (comand == 1)
+  {
+    switch (atom_master = fork())
+    {
+    case -1:
+      TEST_ERROR;
+      exit(EXIT_FAILURE);
+      break;
+    case 0:
+      atom_child = fork();
+      sleep(1);
+      printf("[%s]first atomic number: %d \\ second atomic number:%d\n",__FILE_NAME__,
+	     a1.atomic_number, a2.atomic_number);
+      int new_energy = energy_free(a1.atomic_number, a2.atomic_number);
+      printf("_------__----_----_-_-\n");
+      printf("NEW ATOM PID: %d NEW ATOMIC NUMBER %d\n", atom.pid, new_energy);
+    default:
+      sleep(1);
+      break;
     }
   }
-
+}
 
 static int get_atomic_number()
 {
@@ -80,23 +88,46 @@ static int get_atomic_number()
 
 int main(int argc, char const *argv[])
 {
-    static int command;
-    printf("HELLO IS ATOM %d\n",getpid()); 
-    fetch_args_atom(argv);
-    argv[8] = atom.atomic_number;
-    static int rcv_id; 
-    rcv.m_type=1; 
-    rcv_id = msgget(ATOMIC_KEY,O_READ); /*Setup for only read inside the queue*/
-    printf("CONNECTING TO QUEUE %d\n", rcv_id);
+  srand(time(NULL));
+  static int command;
+  atom.pid = getpid();
+  #ifdef _PRINT_TEST
+  printf("HELLO IS ATOM %d\n", atom.pid);
+  #endif
+  fflush(stdout);
+  fetch_args_atom(argv);
+  printf("ATOM %d IS IN PAUSE\n ",atom.pid); 
+  pause();
 
-    int bytes_read = msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, 0);
-    if (bytes_read == -1) {
-        perror("Errore ricezione messaggio");
-        return;
-    }
-
-    // Assegna la stringa ricevuta al membro appropriato della struct atom
-    sprintf(atom.atomic_flag,"%d",rcv.text);
-    printf("STRINGA RICEVUTA: %s\n", atom.atomic_flag);
-    return 0;
+  rcv.m_type = 1;
+  int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  #ifdef _PRINT_TEST
+  printf("[%s] connecting to queue:%d\n", __FILE__, rcv_id);
+  #endif
+  if (rcv_id == -1)
+  {
+    fprintf(stderr, "error in rcv_id queue %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
+  {
+    fprintf(stderr, "ERROR MSG_RCV\n");
+  };
+  // Assegna la stringa ricevuta al membro appropriato della struct atom
+  //print_para_TEST(config);
+    #ifdef _PRINT_TEST
+  printf("STRINGA RICEVUTA: ID:%d , TYPE :%ld <DATA: %s > \n", rcv_id,
+	 rcv.m_type, rcv.text);
+  fflush(stdout); 
+  #endif
+  atom.atomic_flag = atoi(rcv.text);
+  #ifdef _PRINT_TEST
+  printf("ATOM FLAG IS %d FOR ATOM %d\n", atom.atomic_flag, atom.pid);
+  #endif
+  atom.atomic_number = get_atomic_number();
+  #ifdef _PRINT_TEST
+  printf("ATOMIC NUMBER FOR ATOM %d IS %d \n", atom.pid, atom.atomic_number);
+  #endif
+  atom_fission(atom.atomic_number, atom.atomic_flag, config);
+  return 0;
 }
