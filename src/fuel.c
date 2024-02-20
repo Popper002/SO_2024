@@ -2,8 +2,8 @@
 #include "header/ipc.h"
 struct config config;
 char **new_atom_args[100];
-pid_t pid_array[100];
-pid_t *new_pid_atom;
+static pid_t atom_new_pid[100];
+shm_fuel*new_pid_atom;
 static int shm_id;
 static key_t shm_key;
 
@@ -34,16 +34,12 @@ void argument_creator(char *argv[])
   argv[8] = NULL;
 }
 
-pid_t born_new_atom()
+void born_new_atom(pid_t *new_pid)
 {
-  pid_t new_born_atom;
-  // int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
-  switch (new_born_atom = fork())
+  int j;
+  for (j = 0; j < config.N_ATOMI_INIT; j++)
   {
-  case -1:
-    TEST_ERROR;
-    exit(EXIT_FAILURE);
-  case 0:
+    new_pid[j] = fork();
 #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
 #endif
@@ -54,21 +50,23 @@ pid_t born_new_atom()
     // put(&table, atom_pid, random_a_number);
     // print_hash_table(&table);
 
-    argument_creator((char **)new_atom_args);
-    execvp(ATOM_PATH, (char **)new_atom_args);
+    if (new_pid == 0)
+    {
+      argument_creator((char **)new_atom_args);
+      execvp(ATOM_PATH, (char **)new_atom_args);
 
-    printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
-	   new_born_atom);
-    fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
-	    __func__, __LINE__, __FILE__, getpid());
-    exit(EXIT_FAILURE);
-    break;
-
-  default:
-    return new_born_atom;
-    break;
+      //printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
+	     //new_pid);
+    }
+    if (new_pid < 0)
+    {
+      fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
+	      __func__, __LINE__, __FILE__, getpid());
+      exit(EXIT_FAILURE);
+    }
   }
 }
+/*
 void store__new_pid_atom()
 {
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
@@ -80,6 +78,7 @@ void store__new_pid_atom()
 #endif
   }
 }
+*/ 
 void fetch_args_fuel(char const *argv[])
 {
 
@@ -179,7 +178,7 @@ int main(int argc, char const *argv[])
   print_para_TEST();
   // value_in_memory();
 #endif
-  shm_id = shmget(shm_key, sizeof(config) + sizeof(key_t) + sizeof(int),
+  shm_id = shmget(shm_key, sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t) ,
 		  IPC_CREAT | 0666);
   if (shm_id < 0)
   {
@@ -193,34 +192,27 @@ int main(int argc, char const *argv[])
   // store__new_pid_atom();
 
   int i = 0;
-
-  if (new_pid_atom = (pid_t *)shmat(shm_id, NULL, 0) < 0)
+  //*new_pid_atom->array = (shm_fuel * ) malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t)); 
+  if (new_pid_atom = (shm_fuel*)shmat(shm_id, NULL, 0) < 0)
   {
     printf("[%s][%s][%d][%s]\n", __func__, __FILE__, getpid(), strerror(errno));
-  };
+  }
   printf("SH_ID %d CONNECTED\n", shm_id);
 
-  while (i < config.N_NUOVI_ATOMI)
+  born_new_atom(atom_new_pid);
+#ifdef _PRINT_TEST
+  for (i ; i< config.N_NUOVI_ATOMI;i++)
   {
-    pid_array[i] = born_new_atom();
-    i++;
-
-#ifdef _PRINT_TEST
     printf("\n[FUEL %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
-	   pid_array[i], i);
+	   atom_new_pid[i], i);
+  } 
 #endif
-  }
-
-#ifdef _PRINT_TEST 
-
-  printf( " ARRAY IS NOW READY I")
-#endif
+  
 /* copiamo l'array di pid in memoria condivisa */
-//memcpy(new_pid_atom, pid_array, sizeof(pid_t) * config.N_ATOMI_INIT);
-//if( shmdt(new_pid_atom )< 0 ) { perror("");}
-
+memcpy(new_pid_atom->array, atom_new_pid, sizeof(atom_new_pid));
+printf("COPY COMPLEATE\n");
+if( shmdt(new_pid_atom )< 0 ) { perror("");}
 #ifdef _PRINT_TEST
-
   stampaStatoMemoria(shm_id);
 #endif
 

@@ -14,7 +14,10 @@ struct message
     long m_type;
     char text[10];
 };
-
+typedef struct 
+{
+    int array[1];
+}shm_fuel;
 key_t key_sem_m;
 key_t key_sem_acti;
 #endif

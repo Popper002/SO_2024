@@ -314,7 +314,7 @@ void shutdown()
   }
   */
 }
-// va in segfault da risolvere domani //TODO URGENTE
+
 void store_pid_atom()
 {
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
@@ -370,7 +370,7 @@ void ipc_init()
 }
 int main(int argc, char const *argv[])
 {
-
+  shm_fuel *rcv_pid; 
   init_table(table);
   pid_t atom;
 
@@ -382,7 +382,7 @@ int main(int argc, char const *argv[])
   {
     perror("PROBLEM KEY\n");
   }
-  shm_id = shmget(key_shm, sizeof(config) + sizeof(key_t) + sizeof(int),
+  shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT)*sizeof(pid_t),
 		  IPC_CREAT | 0666);
   printf("SHM ID %d\n ", shm_id);
   sem_id = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
@@ -413,7 +413,7 @@ int main(int argc, char const *argv[])
 	   activator_array_pid[0]);
   #endif
   */
-  // fuel_generator();
+  fuel_generator();
 
   /*
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
@@ -441,6 +441,12 @@ int main(int argc, char const *argv[])
     */
   // shutdown(); // FIXME: master process killhimself
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
-
+  sleep(10); 
+  rcv_pid = (shm_fuel*) shmat(shm_id , NULL , 0 );
+    for( int i =0 ; i < config.N_NUOVI_ATOMI ;i++) 
+    {
+    printf("Il valore memorizzato è %d\n", rcv_pid->array[i]);
+    }
+  shmdt(rcv_pid);
   return 0;
 }
