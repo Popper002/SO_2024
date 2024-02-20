@@ -211,6 +211,10 @@ int main(int argc, char const *argv[])
 #endif
   }
 
+#ifdef _PRINT_TEST 
+
+  printf( " ARRAY IS NOW READY I")
+#endif
 /* copiamo l'array di pid in memoria condivisa */
 //memcpy(new_pid_atom, pid_array, sizeof(pid_t) * config.N_ATOMI_INIT);
 //if( shmdt(new_pid_atom )< 0 ) { perror("");}

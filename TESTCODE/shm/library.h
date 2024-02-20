@@ -9,4 +9,8 @@
 #include <sys/sem.h>
 #include <semaphore.h>
 #include <sys/shm.h>
+#define ARRAY_SIZE 10
+typedef struct {
+  int array[ARRAY_SIZE];
+} MyData;
 
