@@ -52,8 +52,6 @@ int main(int argc, char const *argv[])
   fetch_args(argv);
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
   printf("[%s] QUEUEU : %d CREATED \n ",__FILE__, q_id);
-  printf("activator [%d] in pause\n",getpid());
-  pause();
   for( i=0 ; i<config.N_ATOMI_INIT ; i++){
   send.m_type = 1;
   int command = randomic_activation();
