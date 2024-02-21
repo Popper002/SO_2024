@@ -17,6 +17,10 @@ atom:$(COMMON_DEPS)
 activator:$(COMMON_DEPS)
 	$(CC)	$(CFLAGS) src/activator.c $(UTILS) -o bin/activator src/header/ipc.h -lm
 
+fuel:$(COMMON_DEPS)
+	$(CC)	$(CFLAGS) src/fuel.c $(UTILS) src/header/ipc.h -o bin/fuel -lm
+
+
 debug: 
 	$(CC)   $(CFLAGS) $(D_FLAG) src/master.c $(UTILS) src/header/master.h -o bin/master -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/atom.c $(UTILS) src/header/ipc.h -o bin/atom -lm

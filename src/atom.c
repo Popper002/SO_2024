@@ -3,8 +3,13 @@
 struct atom atom;
 static struct message rcv;
 struct config config;
+
+
+
+
 static void print_para_TEST(struct config config)
 {
+  printf("\t\n----------\n");
   printf("N_ATOMI_INIT: %d\n"
 	 "ENERGY_DEMAND :%d\n"
 	 "N_ATOM_MAX:%d\n"
@@ -16,6 +21,7 @@ static void print_para_TEST(struct config config)
 	 config.N_ATOMI_INIT, config.ENERGY_DEMAND, config.N_ATOM_MAX,
 	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
 	 config.ENERGY_EXPLODE_THRESHOLD, atom.atomic_number);
+  printf("\t\n----------\n");
 }
 void fetch_args_atom(char const *argv[])
 {
