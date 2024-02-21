@@ -195,7 +195,7 @@ srand(time(NULL));
 		  IPC_CREAT | 0666);
   if (shm_id < 0)
   {
-    perror("FUEL , PROBLEM SHMGET\n");
+    fprintf(stderr,"FUEL , PROBLEM SHMGET\n");
     exit(EXIT_FAILURE);
   }
 #ifdef _PRINT_TEST
@@ -225,7 +225,7 @@ srand(time(NULL));
 memcpy(new_pid_atom->array, atom_new_pid, sizeof(atom_new_pid));
 printf("COPY COMPLEATE\n");
 fflush(stdout);
-if( shmdt(new_pid_atom )< 0 ) { perror("");}
+if( shmdt(new_pid_atom )< 0 ) { fprintf(stderr,"");}
 #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);
 #endif

@@ -398,7 +398,7 @@ int main(int argc, char const *argv[])
   printf("fuel generated and stopped\n");
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
-    pid_t aotm_pid = atom_gen(config);
+    pid_t atom_pid = atom_gen(config);
     kill(atom_pid, SIGSTOP);
   }
   printf("atoms generated and stopped\n");
@@ -413,6 +413,9 @@ int main(int argc, char const *argv[])
   // propria ?
   // shutdown(); // FIXME: master process killhimself
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
+  printf("\n\t-----------------------------------\n");
+  printf("\t\tEverything is ready to start the simulation\n");
+  printf("\n\t-----------------------------------\n");
   sleep(10); 
   rcv_pid = (shm_fuel*) shmat(shm_id , NULL , 0 );
     for( int i =0 ; i < config.N_NUOVI_ATOMI ;i++) 

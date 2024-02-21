@@ -4,7 +4,7 @@ D_FLAG = -D _PRINT_TEST -D_GNU_SOURCE -Wall -g
 RM =rm 
 IPC_RM =ipcrm --all
 UTILS = src/util/*.c
-all: master atom activator 
+all: master atom activator fuel 
 
 run: 
 	./bin/master
