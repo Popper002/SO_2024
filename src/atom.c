@@ -1,4 +1,5 @@
 #include "header/atom.h"
+#include <math.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -98,10 +99,10 @@ void atom_fission(struct atom *atom, int command, struct config config)
 /**
  * here it change just each second, could be more random imo
  */
-static int get_atomic_number()
+int get_atomic_number()
 {
-  srand(time(NULL));
-  return rand() % config.N_ATOM_MAX;
+  double random_value = rand() / (RAND_MAX + 1.0);
+  return (int) floor(random_value * config.N_ATOM_MAX);
 }
 
 int main(int argc, char const *argv[])
