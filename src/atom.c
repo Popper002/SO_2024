@@ -23,6 +23,7 @@ static void print_para_TEST(struct config config)
 	 config.ENERGY_EXPLODE_THRESHOLD, atom.atomic_number);
   printf("\t\n----------\n");
 }
+
 void fetch_args_atom(char const *argv[])
 {
 
@@ -128,7 +129,7 @@ int main(int argc, char const *argv[])
   if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
   {
     fprintf(stderr, "Error in msg_rcv\n");
-  };
+  }
   // Assegna la stringa ricevuta al membro appropriato della struct atom
   // print_para_TEST(config);
 #ifdef _PRINT_TEST

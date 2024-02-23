@@ -19,6 +19,8 @@ activator:$(COMMON_DEPS)
 
 fuel:$(COMMON_DEPS)
 	$(CC)	$(CFLAGS) src/fuel.c $(UTILS) src/header/ipc.h -o bin/fuel -lm
+inebitore:$(COMMON_DEPS)
+	$(CC)	$(CFLAGS) src/inebitore.c $(UTILS) src/header/ipc.h bin/inebitore -lm
 
 
 debug: 
@@ -26,6 +28,8 @@ debug:
 	$(CC)	$(CFLAGS) $(D_FLAG) src/atom.c $(UTILS) src/header/ipc.h -o bin/atom -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/activator.c $(UTILS) src/header/ipc.h -o bin/activator -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/fuel.c $(UTILS) src/header/ipc.h -o bin/fuel -lm
+	$(CC)	$(CFLAGS) $(D_FLAG) src/inebitore.c $(UTILS) src/header/ipc.h -o bin/inebitore -lm
+
 clean:
 		$(IPC_RM)
 		$(RM) -f bin/*

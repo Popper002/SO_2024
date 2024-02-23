@@ -13,6 +13,7 @@
 char **args_atom[100];
 char **activator_args[100];
 char **fuel_args[100];
+char **inebitore_args[100];
 // char const *args_[100];
 static int activator_array_pid[10];
 static int fuel_array_pid[100];
@@ -20,6 +21,7 @@ static int sem_id;
 static int shm_id;
 static key_t key_shm;
 pid_t atom_pid;
+pid_t inebitore_pid;
 pid_t activator_pid;
 struct config config;
 struct hash_table table;
@@ -176,7 +178,28 @@ int randomize_atom(int atomic_number)
   atomic_number = rand() % config.N_ATOM_MAX;
   return atomic_number;
 }
+pid_t inebitore_generator()
+{
+  switch (inebitore_pid = fork())
+  {
+  case -1:
+    TEST_ERROR;
+    exit(EXIT_FAILURE);
+  case 0:
+    argument_creator((char **)inebitore_args);
+    execvp(INEBITORE_PATH, (char **)inebitore_args);
 
+    fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
+	    __func__, __LINE__, __FILE__, getpid());
+    exit(EXIT_FAILURE);
+    break;
+
+  default:
+  printf("Inebitore case default\n");
+    return inebitore_pid;
+    break;
+ }
+}
 pid_t fuel_generator()
 {
   pid_t fuel_pid;
@@ -343,6 +366,7 @@ void ipc_init()
   //   strerror(errno));
   //}
 }
+
 int main(int argc, char const *argv[])
 {
   shm_fuel *rcv_pid; 
@@ -379,8 +403,9 @@ int main(int argc, char const *argv[])
 #endif
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
-   activator_array_pid[0] = activator(config);
+  activator_array_pid[0] = activator(config);
   fuel_args[0] = (char **)FUEL_PATH;
+  inebitore_args[0]=(char **)INEBITORE_PATH;
 
   /*
   #ifdef _PRINT_TEST
@@ -389,6 +414,7 @@ int main(int argc, char const *argv[])
   #endif
   */
   pid_t activator_pid = activator(config);
+  pid_t inibitore_pid = inebitore_generator();
   printf("activator pid %d\n", activator_pid);
   kill(activator_pid, SIGSTOP);
   printf("activator generated and stopped\n");
@@ -420,7 +446,7 @@ int main(int argc, char const *argv[])
   rcv_pid = (shm_fuel*) shmat(shm_id , NULL , 0 );
     for( int i =0 ; i < config.N_NUOVI_ATOMI ;i++) 
     {
-    printf("Il valore memorizzato è %d\n", rcv_pid->array[i]);
+    printf("[%s]Il valore memorizzato è %d\n", __FILE__,rcv_pid->array[i]);
     }
   shmdt(rcv_pid);
   for (int i = 0; i < config.N_ATOMI_INIT; i++)

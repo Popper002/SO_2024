@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <semaphore.h>
 #include <sys/shm.h>
+#include <sys/msg.h> 
 #define ALL 0666
 #define O_READ  0400
 #define O_WRITE 0020

@@ -3,7 +3,6 @@
 #include "header/common.h"
 #include "header/ipc.h"
 #include <sys/ipc.h>
-#include <sys/msg.h>
 #include <unistd.h>
 
 #include "header/ipc.h"

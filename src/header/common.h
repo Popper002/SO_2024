@@ -31,6 +31,7 @@
 #define ATOM_PATH "./bin/atom"
 #define ACTIVATOR_PATH "./bin/activator"
 #define FUEL_PATH "./bin/fuel"
+#define INEBITORE_PATH "./bin/inebitore"
 #define ATOMIC_KEY 0x221
 void fetch_args(char const *argv[]); 
 int randomize_atom(int atomic_number);
@@ -41,6 +42,36 @@ struct config
     int N_ATOM_MAX;
     int MIN_A_ATOMICO;
     int N_NUOVI_ATOMI;
-    int  SIM_DURATION;
+    int SIM_DURATION;
     int ENERGY_EXPLODE_THRESHOLD;
+    float STEP;
 };
+struct statistiche
+{
+    struct config conf; 
+    int num_activation;
+    int num_activation_last_sec;
+    int num_fission_last_sec;
+    int num_fission; 
+    int num_energy_produced; 
+    int num_energy_produced_last_sec; 
+    int num_energy_consumed;
+    int num_energy_consumed_last_sec;
+    int num_energy_consumed_inebitore; 
+    int num_energy_consumed_inebitore_last_sec; 
+    /* Forse servono altri parametri --> punto:8 ,.pdf*/
+
+
+}; 
+/* RIPASSO ENUM: 
+* Sono un modo per rappresentare un gruppo di constanti ,di default i valori vanno da 
+* 0 a n costanti   */
+enum term_reason
+{ 
+    TIMEOUT  = 0,
+    EXPLODE  = 1,
+    BLACKOUT = 2,
+    MELTDOWN = 3,
+
+}; 
+//TODO Creare una serie di cofigurazioni in modo tale da avere almeno una per ogni term_reason
