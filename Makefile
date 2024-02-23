@@ -4,7 +4,7 @@ D_FLAG = -D _PRINT_TEST -D_GNU_SOURCE -Wall -g
 RM =rm 
 IPC_RM =ipcrm --all
 UTILS = src/util/*.c
-all: master atom activator fuel 
+all: master atom activator fuel inhibitor 
 
 run: 
 	./bin/master
@@ -19,16 +19,16 @@ activator:$(COMMON_DEPS)
 
 fuel:$(COMMON_DEPS)
 	$(CC)	$(CFLAGS) src/fuel.c $(UTILS) src/header/ipc.h -o bin/fuel -lm
-inebitore:$(COMMON_DEPS)
-	$(CC)	$(CFLAGS) src/inebitore.c $(UTILS) src/header/ipc.h bin/inebitore -lm
+inhibitor:$(COMMON_DEPS)
+	$(CC)	$(CFLAGS) src/inhibitor.c $(UTILS)  bin/inebitore -lm
 
 
 debug: 
-	$(CC)   $(CFLAGS) $(D_FLAG) src/master.c $(UTILS) src/header/master.h -o bin/master -lm
+	$(CC) $(CFLAGS) $(D_FLAG) src/master.c $(UTILS) src/header/master.h -o bin/master -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/atom.c $(UTILS) src/header/ipc.h -o bin/atom -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/activator.c $(UTILS) src/header/ipc.h -o bin/activator -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/fuel.c $(UTILS) src/header/ipc.h -o bin/fuel -lm
-	$(CC)	$(CFLAGS) $(D_FLAG) src/inebitore.c $(UTILS) src/header/ipc.h -o bin/inebitore -lm
+	$(CC)	$(CFLAGS) $(D_FLAG) src/inhibitor.c $(UTILS) src/header/ipc.h -o bin/inihibitor -lm
 
 clean:
 		$(IPC_RM)

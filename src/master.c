@@ -21,7 +21,7 @@ static int sem_id;
 static int shm_id;
 static key_t key_shm;
 pid_t atom_pid;
-pid_t inebitore_pid;
+pid_t inhiitor_pid;
 pid_t activator_pid;
 struct config config;
 struct hash_table table;
@@ -178,9 +178,9 @@ int randomize_atom(int atomic_number)
   atomic_number = rand() % config.N_ATOM_MAX;
   return atomic_number;
 }
-pid_t inebitore_generator()
+pid_t inhibitor()
 {
-  switch (inebitore_pid = fork())
+  switch (inhiitor_pid = fork())
   {
   case -1:
     TEST_ERROR;
@@ -196,7 +196,7 @@ pid_t inebitore_generator()
 
   default:
   printf("Inebitore case default\n");
-    return inebitore_pid;
+    return inhiitor_pid;
     break;
  }
 }
@@ -414,13 +414,14 @@ int main(int argc, char const *argv[])
   #endif
   */
   pid_t activator_pid = activator(config);
-  pid_t inibitore_pid = inebitore_generator();
   printf("activator pid %d\n", activator_pid);
   kill(activator_pid, SIGSTOP);
   printf("activator generated and stopped\n");
   pid_t fuel_pid = fuel_generator();
   kill(fuel_pid, SIGSTOP);
 
+  pid_t inhibitor_pid = inhibitor();
+  kill(inhibitor_pid, SIGSTOP);
   printf("fuel generated and stopped\n");
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
@@ -442,7 +443,6 @@ int main(int argc, char const *argv[])
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
-  sleep(10); 
   rcv_pid = (shm_fuel*) shmat(shm_id , NULL , 0 );
     for( int i =0 ; i < config.N_NUOVI_ATOMI ;i++) 
     {
@@ -455,5 +455,6 @@ int main(int argc, char const *argv[])
   }
   kill(activator_pid, SIGCONT);
   kill(fuel_pid, SIGCONT);
+  kill(inhibitor_pid, SIGCONT);
   return 0;
 }
