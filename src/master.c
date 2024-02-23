@@ -212,7 +212,7 @@ pid_t fuel_generator()
   printf("fuel case 0\n");
 
     printf("fuel generator pid %d\n", getpid());
-    fuel_argument_ipc((char *)fuel_args);
+    fuel_argument_ipc((char **)fuel_args);
     printf("got argument ipc\n");
     execvp(FUEL_PATH, (char *const *)fuel_args);
     fprintf(
@@ -330,7 +330,11 @@ void handle_signal(int signum)
   {
   case SIGINT:
     write(STDOUT_FILENO, "SIGINT_HANDLE\n", 15);
-    kill(atom_array_pid, SIGINT);
+    size_t length = sizeof(atom_array_pid) / sizeof(atom_array_pid[0]);
+    for(size_t pid = 0; pid < length; pid++)
+    {
+      kill(atom_array_pid[pid], SIGINT);
+    }
     break;
   case SIGSTOP:
     break;
