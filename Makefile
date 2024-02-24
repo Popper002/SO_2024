@@ -4,23 +4,13 @@ D_FLAG = -D _PRINT_TEST -D_GNU_SOURCE -Wall -g
 RM =rm 
 IPC_RM =ipcrm --all
 UTILS = src/util/*.c
-all: master atom activator fuel inhibitor 
 
-run: 
-	./bin/master
-
-master:$(COMMON_DEPS)
+all:
 	$(CC) $(CFLAGS) src/master.c $(UTILS) -o bin/master -lm
-
-atom:$(COMMON_DEPS)
 	$(CC)	$(CFLAGS) src/atom.c $(UTILS) -o bin/atom -lm
-activator:$(COMMON_DEPS)
 	$(CC)	$(CFLAGS) src/activator.c $(UTILS) -o bin/activator  -lm
-
-fuel:$(COMMON_DEPS)
 	$(CC)	$(CFLAGS) src/fuel.c $(UTILS) -o bin/fuel -lm
-inhibitor:$(COMMON_DEPS)
-	$(CC)	$(CFLAGS) src/inhibitor.c $(UTILS)  bin/inebitore -lm
+	$(CC)	$(CFLAGS) src/inhibitor.c $(UTILS) -o  bin/inhibitor -lm
 
 
 debug: 
@@ -36,6 +26,13 @@ clean:
 
 mem_check: 
 	valgrind ./bin/master
+
+run: 
+	./bin/master
+
+gdb:
+	gdb ./bin/master
+
 
 docs:
 	pdflatex docs/Relazione.tex 

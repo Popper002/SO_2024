@@ -204,10 +204,9 @@ srand(time(NULL));
 
   // store__new_pid_atom();
 
-  int i = 0;
   //*new_pid_atom->array = (shm_fuel * ) malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t)); 
   
-  for (i ; i< config.N_NUOVI_ATOMI;i++)
+  for (int i = 0 ; i< config.N_NUOVI_ATOMI;i++)
   {
    atom_new_pid[i]=born_new_atom(config);
 
