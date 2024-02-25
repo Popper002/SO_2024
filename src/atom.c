@@ -1,4 +1,6 @@
 #include "header/atom.h"
+#include <bits/time.h>
+#include <time.h>
 #include <math.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -48,16 +50,16 @@ void fetch_args_atom(char const *argv[])
 #endif
 }
 /* ALPHA _-_*/
-static int energy_free(int atomic_a1, int atomic_a2)
+static int energy_free(int atomic_a1,int atomic_a2)
 {
-  return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
+  return atomic_a1 * atomic_a2 - MAX((int) atomic_a1,(int) atomic_a2);
 }
 //__-_-_
 
 void atom_fission(struct atom *atom, int command, struct config config)
 {
 
-  int child1_atomic_number, child2_atomic_number;
+ int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
   {
     fprintf(stderr, "Atom with %d atomic number can't be fissioned\n",
@@ -80,7 +82,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
       printf("child1 atomic number %d\n", child1_atomic_number);
       printf("child2 atomic number %d\n", child2_atomic_number);
 
-      int energy_released =
+       int energy_released =
 	  energy_free(child1_atomic_number, child2_atomic_number);
       printf("energy released %d\n", energy_released);
 
@@ -102,8 +104,11 @@ void atom_fission(struct atom *atom, int command, struct config config)
  */
 int get_atomic_number()
 {
-  double random_value = rand() / (RAND_MAX + 1.0);
-  return (int) floor(random_value * config.N_ATOM_MAX);
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  unsigned long long seed = (ts.tv_sec * 1000000000 + ts.tv_nsec); 
+  srand(seed);
+  return rand() % config.N_ATOM_MAX;
 }
 
 int main(int argc, char const *argv[])
