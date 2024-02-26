@@ -3,8 +3,8 @@
 struct config config;
 char **new_atom_args[100];
 pid_t atom_new_pid[100];
-shm_fuel*new_pid_atom;
-pid_t new_atom; 
+shm_fuel *new_pid_atom;
+pid_t new_atom;
 static int shm_id;
 static key_t shm_key;
 
@@ -38,7 +38,7 @@ void atom_argument_creator(char *argv[])
 pid_t born_new_atom(struct config config)
 {
 
-  //int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
+  // int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
   switch (new_atom = fork())
   {
   case -1:
@@ -49,8 +49,8 @@ pid_t born_new_atom(struct config config)
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
 #endif
 #ifdef _PRINT_TEST
-    //printf("%s %s sem release sem_id: %d \t sem_op: %d\n", __func__, __FILE__,
-	   //sem_id, semctl(sem_id, 0, GETVAL));
+    // printf("%s %s sem release sem_id: %d \t sem_op: %d\n", __func__,
+    // __FILE__, sem_id, semctl(sem_id, 0, GETVAL));
 #endif
     /*
 	if (sem_reserve(sem_id, 0) == -1)
@@ -90,7 +90,7 @@ void store__new_pid_atom()
 #endif
   }
 }
-*/ 
+*/
 void fetch_args_fuel(char const *argv[])
 {
 
@@ -172,16 +172,18 @@ int stampaStatoMemoria(int shid)
 
 #endif
 
-/* inseriamo l'array di pid nuovo in memoria condivisa in modo da essere
- * condivisi con altri processi */
-/* La chiave del nuovo segmento di memoria viene passata come argv dal master
-con un array di chiavi struttura : master crea nuovo oggetto shmget con chiave
-passata come argv in posizione 9 in modo da che [master crea]  [fuel attacca ]
-  [fuel scrive ] [ fuel detach ] i nuovi pid vengono letti dal master in modo da
-sapere ogni STEP secondi le nuove nascite */
+/**
+ * inseriamo l'array di pid nuovo in memoria condivisa in modo da essere
+ * condivisi con altri processi
+ *   La chiave del nuovo segmento di memoria viene passata come argv dal master
+ * con un array di chiavi struttura : master crea nuovo oggetto shmget con
+ * chiave passata come argv in posizione 9 in modo da che [master crea]  [fuel
+ * attacca ] [fuel scrive ] [ fuel detach ] i nuovi pid vengono letti dal master
+ * in modo da sapere ogni STEP secondi le nuove nascite
+ */
 int main(int argc, char const *argv[])
 {
-srand(time(NULL));
+  srand(time(NULL));
 #ifdef _PRINT_TEST
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
@@ -191,11 +193,11 @@ srand(time(NULL));
   print_para_TEST();
   // value_in_memory();
 #endif
-  shm_id = shmget(shm_key, sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t) ,
+  shm_id = shmget(shm_key, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t),
 		  IPC_CREAT | 0666);
   if (shm_id < 0)
   {
-    fprintf(stderr,"FUEL , PROBLEM SHMGET\n");
+    fprintf(stderr, "FUEL , PROBLEM SHMGET\n");
     exit(EXIT_FAILURE);
   }
 #ifdef _PRINT_TEST
@@ -204,27 +206,30 @@ srand(time(NULL));
 
   // store__new_pid_atom();
 
-  //*new_pid_atom->array = (shm_fuel * ) malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t)); 
-  
-  for (int i = 0 ; i< config.N_NUOVI_ATOMI;i++)
-  {
-   atom_new_pid[i]=born_new_atom(config);
+  //*new_pid_atom->array = (shm_fuel * )
+  // malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t));
 
-  } 
+  for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
+  {
+    atom_new_pid[i] = born_new_atom(config);
+  }
 
 #ifdef _PRINT_TEST
-  for (int l=0 ; l< 10;l++)
+  for (int l = 0; l < 10; l++)
   {
     printf("\n[FUEL %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	   atom_new_pid[l], l);
-  } 
+  }
 #endif
-  new_pid_atom = (shm_fuel*)shmat(shm_id , NULL , 0 ); 
-/* copiamo l'array di pid in memoria condivisa */
-memcpy(new_pid_atom->array, atom_new_pid, sizeof(atom_new_pid));
-printf("COPY COMPLEATE\n");
-fflush(stdout);
-if( shmdt(new_pid_atom )< 0 ) { fprintf(stderr,"");}
+  new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
+  /* copiamo l'array di pid in memoria condivisa */
+  memcpy(new_pid_atom->array, atom_new_pid, sizeof(atom_new_pid));
+  printf("COPY COMPLEATE\n");
+  fflush(stdout);
+  if (shmdt(new_pid_atom) < 0)
+  {
+    fprintf(stderr, "");
+  }
 #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);
 #endif

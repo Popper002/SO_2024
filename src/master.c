@@ -195,10 +195,10 @@ pid_t inhibitor()
     break;
 
   default:
-  printf("Inebitore case default\n");
+    printf("Inebitore case default\n");
     return inhiitor_pid;
     break;
- }
+  }
 }
 pid_t fuel_generator()
 {
@@ -209,7 +209,9 @@ pid_t fuel_generator()
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-  printf("fuel case 0\n");
+#ifdef _PRINT_TEST
+    printf("fuel case 0\n");
+#endif
 
     printf("fuel generator pid %d\n", getpid());
     fuel_argument_ipc((char **)fuel_args);
@@ -224,7 +226,7 @@ pid_t fuel_generator()
 
   default:
 
-printf("fuel case default\n");
+    printf("fuel case default\n");
     return fuel_pid;
     break;
   }
@@ -240,7 +242,9 @@ pid_t atom_gen(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-  printf("atom case 0\n");
+#ifdef _PRINT_TEST
+    printf("atom case 0\n");
+#endif
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
 
@@ -250,7 +254,9 @@ pid_t atom_gen(struct config config)
     break;
 
   default:
-  printf("atom case default\n");
+#ifdef _PRINT_TEST
+    printf("atom case default\n");
+#endif
     return atom_pid;
     break;
   }
@@ -264,7 +270,9 @@ pid_t activator(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-  printf("activator case 0\n");
+#ifdef _PRINT_TEST
+    printf("activator case 0\n");
+#endif
 
     argument_creator((char **)activator_args);
     execvp(ACTIVATOR_PATH, (char **)activator_args);
@@ -275,12 +283,15 @@ pid_t activator(struct config config)
     break;
 
   default:
+#ifdef _PRINT_TEST
     printf("activator case default\n");
+#endif
     return activator_pid;
     break;
   }
 }
 
+// TODO remove
 struct hash_table init_table(struct hash_table table)
 {
   table.max = config.N_ATOM_MAX;
@@ -331,7 +342,7 @@ void handle_signal(int signum)
   case SIGINT:
     write(STDOUT_FILENO, "SIGINT_HANDLE\n", 15);
     size_t length = sizeof(atom_array_pid) / sizeof(atom_array_pid[0]);
-    for(size_t pid = 0; pid < length; pid++)
+    for (size_t pid = 0; pid < length; pid++)
     {
       kill(atom_array_pid[pid], SIGINT);
     }
@@ -373,7 +384,7 @@ void ipc_init()
 
 int main(int argc, char const *argv[])
 {
-  shm_fuel *rcv_pid; 
+  shm_fuel *rcv_pid;
   init_table(table);
   pid_t atom;
 
@@ -385,7 +396,7 @@ int main(int argc, char const *argv[])
   {
     fprintf(stderr, "PROBLEM KEY\n");
   }
-  shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT)*sizeof(pid_t),
+  shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT) * sizeof(pid_t),
 		  IPC_CREAT | 0666);
   printf("SHM ID %d\n ", shm_id);
   sem_id = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
@@ -409,7 +420,7 @@ int main(int argc, char const *argv[])
   activator_args[0] = (char **)ACTIVATOR_PATH;
   activator_array_pid[0] = activator(config);
   fuel_args[0] = (char **)FUEL_PATH;
-  inebitore_args[0]=(char **)INEBITORE_PATH;
+  inebitore_args[0] = (char **)INEBITORE_PATH;
 
   /*
   #ifdef _PRINT_TEST
@@ -447,11 +458,12 @@ int main(int argc, char const *argv[])
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
-  rcv_pid = (shm_fuel*) shmat(shm_id , NULL , 0 );
-    for( int i =0 ; i < config.N_NUOVI_ATOMI ;i++) 
-    {
-    printf("[%s]Il valore memorizzato è %d\n", __FILE__,rcv_pid->array[i]);
-    }
+  rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
+
+  for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
+  {
+    printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
+  }
   shmdt(rcv_pid);
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
