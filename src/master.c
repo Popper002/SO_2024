@@ -21,6 +21,7 @@ static int sem_id;
 static int shm_id;
 static key_t key_shm;
 pid_t atom_pid;
+static pid_t inhibitor_pid;
 pid_t inhiitor_pid;
 pid_t activator_pid;
 struct config config;
@@ -95,6 +96,11 @@ static int scan_data()
     {
       config.ENERGY_EXPLODE_THRESHOLD = value;
       error = 0;
+    }
+    else if( strcmp(name_param , "INIBITOR") == 0)
+    {
+      config.INIBITOR = value; 
+      errno= 0; 
     }
     else
     {
@@ -434,9 +440,11 @@ int main(int argc, char const *argv[])
   printf("activator generated and stopped\n");
   pid_t fuel_pid = fuel_generator();
   kill(fuel_pid, SIGSTOP);
-
-  pid_t inhibitor_pid = inhibitor();
+  if(config.INIBITOR ==1)
+  {
+   inhibitor_pid = inhibitor();
   kill(inhibitor_pid, SIGSTOP);
+  }
   printf("fuel generated and stopped\n");
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {

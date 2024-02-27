@@ -14,7 +14,7 @@ all:
 
 
 debug: 
-	$(CC) $(CFLAGS) $(D_FLAG) src/master.c $(UTILS)  -o bin/master -lm
+	$(CC)   $(CFLAGS) $(D_FLAG) src/master.c $(UTILS)  -o bin/master -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/atom.c $(UTILS)  -o bin/atom -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/activator.c $(UTILS)  -o bin/activator -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/fuel.c $(UTILS)  -o bin/fuel -lm
