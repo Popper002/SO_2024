@@ -387,13 +387,38 @@ void ipc_init()
   //   strerror(errno));
   //}
 }
+void sem_reset()
+{ 
+  semctl(sem_id , SEM_ID_ATOM , SETVAL , 0 ); 
+  semctl(sem_id , SEM_ID_ACTIVATOR , SETVAL , 0 ); 
+  semctl(sem_id , SEM_ID_FUEL , SETVAL , 0 ); 
+  semctl(sem_id , SEM_ID_INIBITOR , SETVAL , 0 ); 
 
+}
+void fill_sem()
+{ 
+      struct sembuf sops[TYPE_PROC]; 
+      bzero(sops , sizeof(sops)); 
+      sops[0].sem_flg =0; 
+      sops[0].sem_num = SEM_ID_ATOM;
+      sops[0].sem_num = config.N_ATOMI_INIT;
+      sops[1].sem_flg =0; 
+      sops[1].sem_num =SEM_ID_ACTIVATOR;
+      sops[1].sem_op = 1; 
+      sops[2].sem_flg=0;
+      sops[2].sem_num = SEM_ID_FUEL;
+      sops[2].sem_op = 1; 
+      sops[3].sem_flg =0;
+      sops[3].sem_num = SEM_ID_INIBITOR;
+      sops[3].sem_op= config.INIBITOR;
+      semop(sem_id, sops , TYPE_PROC); 
+
+}
 int main(int argc, char const *argv[])
 {
   shm_fuel *rcv_pid;
   init_table(table);
   pid_t atom;
-
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
 #ifdef _PRINT_TEST
   printf("KEY IS %d \n", key_shm);
@@ -405,7 +430,7 @@ int main(int argc, char const *argv[])
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT) * sizeof(pid_t),
 		  IPC_CREAT | 0666);
   printf("SHM ID %d\n ", shm_id);
-  sem_id = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
+  sem_id = semget(IPC_PRIVATE, TYPE_PROC, 0666 | IPC_CREAT);
   if (sem_id == -1)
   {
     fprintf(stderr, "[%s]Error in semget %s\n", __FILE__, strerror(errno));

@@ -4,8 +4,12 @@ sem:
 	$(CC) $(CFLAGS) sem.c -o sem
 remove:
 	ipcrm --all 
-	rm sem semProc
-
+	rm sem semProc all
+all:
+	$(CC) $(CFLAGS) all.c -o all
+exe: 
+	$(CC) $(CFLAGS) exe.c -o exe 
+	echo exe_creato
 semProc:
 	$(CC) $(CFLAGS) semProc.c -o semProc
 		

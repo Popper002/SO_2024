@@ -9,7 +9,12 @@
 #define O_READ  0400
 #define O_WRITE 0020
 #define KEY_SHM 2111
-
+/* */
+#define SEM_ID_ATOM 0 
+#define SEM_ID_ACTIVATOR 1 
+#define SEM_ID_FUEL 2 
+#define SEM_ID_INIBITOR 3 
+#define TYPE_PROC 4 
 struct message
 {
     long m_type;
