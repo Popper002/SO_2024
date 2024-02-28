@@ -1,5 +1,4 @@
 #include "header/atom.h"
-#include <bits/time.h>
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
@@ -142,6 +141,7 @@ int main(int argc, char const *argv[])
   {
     fprintf(stderr, "Error in msg_rcv\n");
   }
+
   // Assegna la stringa ricevuta al membro appropriato della struct atom
   // print_para_TEST(config);
 #ifdef _PRINT_TEST

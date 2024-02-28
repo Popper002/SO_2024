@@ -14,5 +14,9 @@ rcv:
 rm: 
 	$(IPC_RM) $(RM) signal rcv
 
+alarm: 
+
 debug:
 	$(CC) $(CFLAGS) -D _PRINT_TEST startandstop.c library.h -o signal 
+	$(CC) $(CFLAGS) -D _PRINT_TEST alarm.c -o alarm_test
+	echo compilation compleate

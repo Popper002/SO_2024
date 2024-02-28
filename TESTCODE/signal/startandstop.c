@@ -102,7 +102,7 @@ int main(int argc, char const *argv[])
     struct sigaction sa; 
     bzero(&sa, sizeof(sa));
     sa.sa_handler = &handle_signal;
-  int pid_array[100]; // Adjust size as needed
+     int pid_array[100]; // Adjust size as needed
     int num_procs = fill_array(pid_array, NUM_PROC); // Specify desired number of child processes
     sigaction(SIGSTOP,&sa,NULL);
     sigaction(SIGCONT , &sa , NULL); 

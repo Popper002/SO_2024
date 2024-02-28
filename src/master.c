@@ -244,7 +244,7 @@ pid_t fuel_generator()
 
 pid_t atom_gen(struct config config)
 {
-
+  struct sembuf operation; 
   int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
   switch (atom_pid = fork())
   {
@@ -255,6 +255,11 @@ pid_t atom_gen(struct config config)
 #ifdef _PRINT_TEST
     printf("atom case 0\n");
 #endif
+    operation.sem_flg = 0; 
+    operation.sem_num = 0; 
+    operation.sem_op = 0; 
+    semop(master_atom_sem , &operation, 1);
+    printf("[%s][%s]--> LOCKED\n",__FILE__ , __func__); 
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
 
@@ -420,6 +425,7 @@ void fill_sem()
 }
 int main(int argc, char const *argv[])
 {
+
   shm_fuel *rcv_pid;
   init_table(table);
   pid_t atom;
@@ -458,8 +464,11 @@ int main(int argc, char const *argv[])
   activator_args[0] = (char **)ACTIVATOR_PATH;
   activator_array_pid[0] = activator(config);
   fuel_args[0] = (char **)FUEL_PATH;
-  inebitore_args[0] = (char **)INHIBITOR_PATH;
-
+  inebitore_args[0] = (char **)INEBITORE_PATH;
+  master_atom_sem = semget(MASTER_ATOM_SEM,1 ,0600|IPC_CREAT); 
+  semctl(master_atom_sem  , 1 , SETVAL ,0);
+  TEST_ERROR
+  /*
   #ifdef _PRINT_TEST
     printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
 	   activator_array_pid[0]);
@@ -472,18 +481,16 @@ int main(int argc, char const *argv[])
 
   pid_t fuel_pid = fuel_generator();
   kill(fuel_pid, SIGSTOP);
-  printf("fuel generated and stopped\n");
-
-  if (config.INHIBITOR == 1)
+  if(config.INIBITOR ==1)
   {
-    inhibitor_pid = inhibitor();
-    kill(inhibitor_pid, SIGSTOP);
+   inhibitor_pid = inhibitor();
+  kill(inhibitor_pid, SIGSTOP);
   }
 
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     pid_t atom_pid = atom_gen(config);
-    kill(atom_pid, SIGSTOP);
+  //kill(atom_pid, SIGSTOP);
   }
 
  
@@ -519,5 +526,8 @@ int main(int argc, char const *argv[])
   {
     kill(atom_array_pid[i], SIGCONT);
   }
+  kill(activator_pid, SIGCONT);
+  kill(fuel_pid, SIGCONT);
+  kill(inhibitor_pid, SIGCONT);
   return 0;
 }

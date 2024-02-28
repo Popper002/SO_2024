@@ -42,8 +42,11 @@ void fetch_args(char const *argv[])
 
 int main(int argc, char const *argv[])
 {
+  struct sembuf fill; 
   srand(time(NULL));
-#ifdef _PRINT_TEST
+  struct sembuf fill;
+
+  #ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
 #endif
   static int q_id, i;
@@ -67,5 +70,10 @@ int main(int argc, char const *argv[])
 	   send.m_type);
 #endif
   }
+  fill.sem_num = 0; 
+  fill.sem_flg = 0;
+  fill.sem_op = 1; 
+  semop(master_atom_sem , &fill, 1); 
+  printf("[ %s ] [ %s ] SEM_OP_SEND\n",__FILE__ , __func__); 
   return 0;
 }

@@ -9,6 +9,7 @@
 #include <sys/sem.h>
 #include <semaphore.h>
 #include <sys/types.h>
+#include <signal.h>
 #define macro_key 12
 
 

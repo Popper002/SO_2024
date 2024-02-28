@@ -1,7 +1,7 @@
 #include "library.h"
 
 #define NUM_FORK 6
-#define SEM_INIT_VAL 1
+#define SEM_INIT_VAL 3
 #define TEST_ERROR    if (errno) {fprintf(stderr, \
 					   "%s:%d: PID=%5d: Error %d (%s)\n",\
 					   __FILE__,\
@@ -41,19 +41,21 @@ int main(int argc, char const *argv[])
                 semop(s_id,&operation, 1);
                 TEST_ERROR;
                 execvp("./exe",NULL);
-                operation.sem_op =1;
-                semop(s_id ,&operation,1); 
-                TEST_ERROR;
-                exit(0);
+             
+                
         default:
             break;
         }
     }
-    while ( ( child_pid =wait(&status) ) != -1)
-    {
-       	printf("PARENT: PID=%d. Got info of child with PID=%d, status=0x%04X\n", getpid(), child_pid,status);
- 
-    } 
+                operation.sem_op =1;
+                semop(s_id ,&operation,1); 
+                TEST_ERROR;
+                exit(0);
+    kill(getpid(),SIGSTOP);
+    printf("STOPPO CHILD\n");
+    sleep(5);
+    kill(getpid(),SIGCONT);
+  
     end = time(NULL); 
     fprintf(stderr,"Total time: %ld (sec)\n", end-start);
     semctl(s_id , 0 , IPC_RMID); 
