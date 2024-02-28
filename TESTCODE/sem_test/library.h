@@ -12,7 +12,7 @@
 #include <signal.h>
 #define macro_key 12
 
-
+int sem_id; 
 struct msg{
     long msg_type;
     char text[10]; 

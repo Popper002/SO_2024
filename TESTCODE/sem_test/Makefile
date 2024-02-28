@@ -4,7 +4,7 @@ sem:
 	$(CC) $(CFLAGS) sem.c -o sem
 remove:
 	ipcrm --all 
-	rm sem semProc all
+	rm sem semProc all exe
 all:
 	$(CC) $(CFLAGS) all.c -o all
 exe: 
@@ -18,4 +18,6 @@ semAllZero:
 semdontWait:
 	$(CC) $(CFLAGS) dontwait.c -o sem
 sem2:
-		$(CC) $(CFLAGS) sem2.c -o sem
+	$(CC) $(CFLAGS) sem2.c -o sem
+exec:
+	$(CC) $(CFLAGS) exec.c -o exe

@@ -15,6 +15,23 @@
 
 int main(int argc, char const *argv[])
 {
+    struct sembuf op1;
+    sem_id = semget(0x22, 1 , IPC_CREAT|0600); 
+
+    printf("PID %d\n",getpid()); 
+
+    
+    printf("WALCOME %d\n",getpid());
+
+
+    return 0;
+}
+
+
+/*
+
+int main(int argc, char const *argv[])
+{
     pid_t child_pid;
     int status,s_id; 
     time_t start,end; 
@@ -62,3 +79,4 @@ int main(int argc, char const *argv[])
     exit(EXIT_SUCCESS);
     return 0;
 }
+*/

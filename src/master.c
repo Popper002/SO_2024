@@ -464,7 +464,7 @@ int main(int argc, char const *argv[])
   activator_args[0] = (char **)ACTIVATOR_PATH;
   activator_array_pid[0] = activator(config);
   fuel_args[0] = (char **)FUEL_PATH;
-  inebitore_args[0] = (char **)INEBITORE_PATH;
+  inebitore_args[0] = (char **)INHIBITOR_PATH;
   master_atom_sem = semget(MASTER_ATOM_SEM,1 ,0600|IPC_CREAT); 
   semctl(master_atom_sem  , 1 , SETVAL ,0);
   TEST_ERROR
@@ -519,7 +519,7 @@ int main(int argc, char const *argv[])
   }
   shmdt(rcv_pid);
   kill(activator_pid, SIGCONT);
-  kill(fuel_pid, SIGCONT);
+  //kill(fuel_pid, SIGCONT);
   kill(inhibitor_pid, SIGCONT);
   printf("\033[1;32m starting atom as last process \033[0m\n");
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
@@ -527,7 +527,7 @@ int main(int argc, char const *argv[])
     kill(atom_array_pid[i], SIGCONT);
   }
   kill(activator_pid, SIGCONT);
-  kill(fuel_pid, SIGCONT);
+  //kill(fuel_pid, SIGCONT);
   kill(inhibitor_pid, SIGCONT);
   return 0;
 }
