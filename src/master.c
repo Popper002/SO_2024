@@ -97,10 +97,10 @@ static int scan_data()
       config.ENERGY_EXPLODE_THRESHOLD = value;
       error = 0;
     }
-    else if( strcmp(name_param , "INIBITOR") == 0)
+    else if (strcmp(name_param, "INHIBITOR") == 0)
     {
-      config.INIBITOR = value; 
-      errno= 0; 
+      config.INHIBITOR = value;
+      errno = 0;
     }
     else
     {
@@ -110,6 +110,10 @@ static int scan_data()
 
   fclose(fp);
   printf("Data read from file!\n");
+  if (config.INHIBITOR == 1)
+  {
+    printf("Inhibitor is going to be used in this simulation\n");
+  }
   return error;
 }
 static void argument_creator(char *argv[])
@@ -193,9 +197,9 @@ pid_t inhibitor()
     exit(EXIT_FAILURE);
   case 0:
     argument_creator((char **)inebitore_args);
-    execvp(INEBITORE_PATH, (char **)inebitore_args);
+    execvp(INHIBITOR_PATH, (char **)inebitore_args);
 
-    fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
+    fprintf(stderr, "%s line: %d [master %s Problem in execvp with pid %d \n",
 	    __func__, __LINE__, __FILE__, getpid());
     exit(EXIT_FAILURE);
     break;
@@ -221,7 +225,7 @@ pid_t fuel_generator()
 
     printf("fuel generator pid %d\n", getpid());
     fuel_argument_ipc((char **)fuel_args);
-    printf("got argument ipc\n");
+    printf("[%s %s %d] got argument ipc\n", __func__, __FILE__, __LINE__);
     execvp(FUEL_PATH, (char *const *)fuel_args);
     fprintf(
 	stderr,
@@ -437,6 +441,7 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
 
+
   srand(time(NULL));
   printf("-> Main %d <-\n", getpid());
   scan_data();
@@ -447,35 +452,42 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   print_para_TEST(config);
 #endif
+
+  
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
   activator_array_pid[0] = activator(config);
   fuel_args[0] = (char **)FUEL_PATH;
-  inebitore_args[0] = (char **)INEBITORE_PATH;
+  inebitore_args[0] = (char **)INHIBITOR_PATH;
 
-  /*
   #ifdef _PRINT_TEST
     printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
 	   activator_array_pid[0]);
   #endif
-  */
+
   pid_t activator_pid = activator(config);
   printf("activator pid %d\n", activator_pid);
   kill(activator_pid, SIGSTOP);
   printf("activator generated and stopped\n");
+
   pid_t fuel_pid = fuel_generator();
   kill(fuel_pid, SIGSTOP);
-  if(config.INIBITOR ==1)
-  {
-   inhibitor_pid = inhibitor();
-  kill(inhibitor_pid, SIGSTOP);
-  }
   printf("fuel generated and stopped\n");
+
+  if (config.INHIBITOR == 1)
+  {
+    inhibitor_pid = inhibitor();
+    kill(inhibitor_pid, SIGSTOP);
+  }
+
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     pid_t atom_pid = atom_gen(config);
     kill(atom_pid, SIGSTOP);
   }
+
+ 
+
   printf("atoms generated and stopped\n");
   // //store_pid_atom();
   /*
@@ -491,6 +503,7 @@ int main(int argc, char const *argv[])
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
+
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
@@ -498,12 +511,13 @@ int main(int argc, char const *argv[])
     printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
   }
   shmdt(rcv_pid);
+  kill(activator_pid, SIGCONT);
+  kill(fuel_pid, SIGCONT);
+  kill(inhibitor_pid, SIGCONT);
+  printf("\033[1;32m starting atom as last process \033[0m\n");
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(atom_array_pid[i], SIGCONT);
   }
-  kill(activator_pid, SIGCONT);
-  kill(fuel_pid, SIGCONT);
-  kill(inhibitor_pid, SIGCONT);
   return 0;
 }

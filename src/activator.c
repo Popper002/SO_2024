@@ -1,4 +1,4 @@
-//TODO move this in a separate header file
+// TODO move this in a separate header file
 #include "header/atom.h"
 #include "header/common.h"
 #include "header/ipc.h"
@@ -37,27 +37,35 @@ void fetch_args(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  printf("[Activator %d] {Fetching arguments compleated}\n",getpid());
+  printf("[Activator %d] {Fetching arguments compleated}\n", getpid());
 }
-
 
 int main(int argc, char const *argv[])
 {
   srand(time(NULL));
-  #ifdef _PRINT_TEST
+#ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
-  #endif
-  static int q_id, i ;
+#endif
+  static int q_id, i;
   fetch_args(argv);
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
-  printf("[%s] QUEUEU : %d CREATED \n ",__FILE__, q_id);
-  for( i=0 ; i<config.N_ATOMI_INIT ; i++){
-  send.m_type = 1;
-  int command = randomic_activation();
-  printf("\ncommand %d\n", command);
-  sprintf(send.text, "%d", command);
-  if(msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0) <=-1){fprintf(stderr,"ERROR IN MSGSND\n");};
-  printf("SENDED THIS MESSAGGE %s IN QUEUE %d TYPE:%ld\n", send.text, q_id,send.m_type);
+  printf("[%s] QUEUEU : %d CREATED \n ", __FILE__, q_id);
+  for (i = 0; i < config.N_ATOMI_INIT; i++)
+  {
+    send.m_type = 1;
+    int command = randomic_activation();
+#ifdef _PRINT_TEST
+    printf("\ncommand %d\n", command);
+#endif
+    sprintf(send.text, "%d", command);
+    if (msgsnd(q_id, &send, sizeof(send) - sizeof(long), 0) <= -1)
+    {
+      fprintf(stderr, "ERROR IN MSGSND\n");
+    };
+#ifdef _PRINT_TEST
+    printf("[%s %s SENDED THIS MESSAGE %s IN QUEUE %d TYPE:%ld\n",__FILE__,__func__, send.text, q_id,
+	   send.m_type);
+#endif
   }
   return 0;
 }

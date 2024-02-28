@@ -88,7 +88,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
 	  energy_free(child1_atomic_number, child2_atomic_number);
       printf("energy released %d\n", energy_released);
 
-      printf("[%s %d] fissioned into %d and %d, energy released is %d\n",
+      printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
 	     __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
 	     energy_released);
       exit(0);
