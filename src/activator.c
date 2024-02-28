@@ -44,7 +44,6 @@ int main(int argc, char const *argv[])
 {
   struct sembuf fill; 
   srand(time(NULL));
-  struct sembuf fill;
 
   #ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
@@ -63,7 +62,7 @@ int main(int argc, char const *argv[])
     sprintf(send.text, "%d", command);
     if (msgsnd(q_id, &send, sizeof(send) - sizeof(long), 0) <= -1)
     {
-      fprintf(stderr, "ERROR IN MSGSND\n");
+      fprintf(stderr, "%s Error in msgsnd\n",__FILE__);
     };
 #ifdef _PRINT_TEST
     printf("[%s %s SENDED THIS MESSAGE %s IN QUEUE %d TYPE:%ld\n",__FILE__,__func__, send.text, q_id,

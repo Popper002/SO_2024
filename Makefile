@@ -18,7 +18,7 @@ debug:
 	$(CC)	$(CFLAGS) $(D_FLAG) src/atom.c $(UTILS)  -o bin/atom -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/activator.c $(UTILS)  -o bin/activator -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/fuel.c $(UTILS)  -o bin/fuel -lm
-	$(CC)	$(CFLAGS) $(D_FLAG) src/inhibitor.c $(UTILS)  -o bin/inihibitor -lm
+	$(CC)	$(CFLAGS) $(D_FLAG) src/inhibitor.c $(UTILS)  -o bin/inhibitor -lm
 
 clean:
 		$(IPC_RM)

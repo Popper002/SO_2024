@@ -139,7 +139,7 @@ int main(int argc, char const *argv[])
   }
   if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
   {
-    fprintf(stderr, "Error in msg_rcv\n");
+    fprintf(stderr, "%s Error in msg_rcv\n",__FILE__);
   }
 
   // Assegna la stringa ricevuta al membro appropriato della struct atom
