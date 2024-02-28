@@ -21,3 +21,5 @@ sem2:
 	$(CC) $(CFLAGS) sem2.c -o sem
 exec:
 	$(CC) $(CFLAGS) exec.c -o exe
+rcv: 
+	$(CC) $(CFLAGS) rcv.c -o rcv

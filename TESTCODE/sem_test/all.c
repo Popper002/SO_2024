@@ -15,15 +15,13 @@
 
 int main(int argc, char const *argv[])
 {
-    struct sembuf op1;
+    struct sembuf op;
     sem_id = semget(0x22, 1 , IPC_CREAT|0600); 
 
     printf("PID %d\n",getpid()); 
-
-    
     printf("WALCOME %d\n",getpid());
-
-
+    printf(" NOW I'M WATING CHILD'S\n");
+    
     return 0;
 }
 
