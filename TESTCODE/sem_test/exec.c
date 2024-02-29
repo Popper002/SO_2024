@@ -1,7 +1,8 @@
 #include "library.h"
 pid_t inib()
 {
-    switch (fork())
+    pid_t ret_pid;
+    switch (ret_pid = fork())
     {
     case 0: 
         execvp("./rcv",NULL);
@@ -10,7 +11,7 @@ pid_t inib()
         break;
     
     default:
-        return getpid();
+        return ret_pid;
         break;
     }
 }
@@ -21,6 +22,9 @@ int main(int argc, char const *argv[])
     semctl(sem_id, 1, SETVAL, 0);
     pid_t inibitore; 
     inibitore = inib();
+    for(int i =0;  i <NUM_PROC; i++ ){      
+        printf("iterzaione num: %d\n", i);
+        fflush(stdout);
     switch (fork())
     {
     case -1:
@@ -29,10 +33,11 @@ int main(int argc, char const *argv[])
     case 0:
         printf("INIT SEM OPERATION\n");
                 fflush(stdout);
-
+//sem_reserve
         op.sem_flg = 0;
         op.sem_num = 0;
         op.sem_op = -1;
+//sem_reserve
         semop(sem_id, &op, 1);
         printf("BEFORE EXECVP\n");
                 fflush(stdout);
@@ -51,12 +56,11 @@ int main(int argc, char const *argv[])
 
         printf("AFTER THIS I'M OPEN THE DOOR\n");
         fflush(stdout);
-         
-        op.sem_flg = 0;
-        op.sem_num = 0;
-        op.sem_op = 1; // Incrementa il semaforo
+       
         break;
     }
+}
+    
     semctl(sem_id, 1, IPC_RMID);
     return 0;
 }

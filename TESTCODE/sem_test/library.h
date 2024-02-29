@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #define macro_key 12
+#define NUM_PROC 4
 
 int sem_id; 
 struct msg{
