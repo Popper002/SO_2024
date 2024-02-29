@@ -23,6 +23,6 @@ union semun
   }
 
 int sem_set_val(int sem_id, int sem_num, int sem_val);
-int sem_reserve(int sem_id, int sem_num);
-int sem_release(int sem_id, int sem_num);
+int sem_reserve(int sem_id, int sem_num,int sem_op);
+int sem_release(int sem_id, int sem_num,int sem_op);
 void sem_getall(char *my_string, int sem_id);

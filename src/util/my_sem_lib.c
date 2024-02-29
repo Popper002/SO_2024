@@ -6,22 +6,22 @@ int sem_set_val(int sem_id, int sem_num, int sem_val)
   return semctl(sem_id, sem_num, SETVAL, sem_val);
 }
 
-int sem_reserve(int sem_id, int sem_num)
+int sem_reserve(int sem_id, int sem_num,int sem_op )
 {
   struct sembuf sops;
 
   sops.sem_num = sem_num;
-  sops.sem_op = -1;
+  sops.sem_op = sem_op;
   sops.sem_flg = 0;
   return semop(sem_id, &sops, 1);
 }
 
-int sem_release(int sem_id, int sem_num)
+int sem_release(int sem_id, int sem_num,int sem_op)
 {
   struct sembuf sops;
 
   sops.sem_num = sem_num;
-  sops.sem_op = 1;
+  sops.sem_op = sem_op;
   sops.sem_flg = 0;
   return semop(sem_id, &sops, 1);
 }

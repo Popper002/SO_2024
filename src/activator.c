@@ -3,7 +3,9 @@
 #include "header/common.h"
 #include "header/ipc.h"
 #include <sys/ipc.h>
+#include <sys/sem.h>
 #include <unistd.h>
+#include "util/my_sem_lib.h"
 
 #include "header/ipc.h"
 
@@ -42,15 +44,14 @@ void fetch_args(char const *argv[])
 
 int main(int argc, char const *argv[])
 {
-  struct sembuf fill; 
   srand(time(NULL));
-
   #ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
 #endif
   static int q_id, i;
   fetch_args(argv);
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  int sem_master_activator_id = semget(MASTER_ACTIVATOR_SEM, 0, 0600|IPC_CREAT); /* return the id of the sem associated with this key */
   printf("[%s] QUEUEU : %d CREATED \n ", __FILE__, q_id);
   for (i = 0; i < config.N_ATOMI_INIT; i++)
   {
@@ -69,10 +70,7 @@ int main(int argc, char const *argv[])
 	   send.m_type);
 #endif
   }
-  fill.sem_num = 0; 
-  fill.sem_flg = 0;
-  fill.sem_op = 1; 
-  semop(master_atom_sem , &fill, 1); 
+  sem_release(sem_master_activator_id, 0, config.N_ATOMI_INIT +1);
   printf("[ %s ] [ %s ] SEM_OP_SEND\n",__FILE__ , __func__); 
   return 0;
 }

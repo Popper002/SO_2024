@@ -26,6 +26,8 @@ pid_t inhiitor_pid;
 pid_t activator_pid;
 struct config config;
 struct hash_table table;
+
+int sem_master_activator_id;
 // static int atom_array_pid[100];
 pid_t atom_array_pid[100];
 
@@ -222,7 +224,6 @@ pid_t fuel_generator()
 #ifdef _PRINT_TEST
     printf("fuel case 0\n");
 #endif
-
     printf("fuel generator pid %d\n", getpid());
     fuel_argument_ipc((char **)fuel_args);
     printf("[%s %s %d] got argument ipc\n", __func__, __FILE__, __LINE__);
@@ -244,7 +245,6 @@ pid_t fuel_generator()
 
 pid_t atom_gen(struct config config)
 {
-  struct sembuf operation; 
   int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
   switch (atom_pid = fork())
   {
@@ -255,11 +255,7 @@ pid_t atom_gen(struct config config)
 #ifdef _PRINT_TEST
     printf("atom case 0\n");
 #endif
-    operation.sem_flg = 0; 
-    operation.sem_num = 0; 
-    operation.sem_op = 0; 
-    semop(master_atom_sem , &operation, 1);
-    printf("[%s][%s]--> LOCKED\n",__FILE__ , __func__); 
+    sem_reserve(sem_master_activator_id, 0 , -1);
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
 
@@ -270,7 +266,7 @@ pid_t atom_gen(struct config config)
 
   default:
 #ifdef _PRINT_TEST
-    printf("atom case default\n");
+    printf("MASTER _ FATHER %d\n", getppid());
 #endif
     return atom_pid;
     break;
@@ -387,45 +383,46 @@ void print_all_pid()
   printf("-----------------------------------\n");
 }
 #endif
+
+/*
 void ipc_init()
 {
 
-  // if (sem_set_val(sem_id, 0, config.N_ATOMI_INIT) == -1)
-  //{
-  // fprintf(stderr, "[%s]Error %d in sem_set_val %s\n", __FILE__, errno,
-  //   strerror(errno));
-  //}
+  if (sem_set_val(sem_id, 0, config.N_ATOMI_INIT) == -1)
+  {
+  fprintf(stderr, "[%s]Error %d in sem_set_val %s\n", __FILE__, errno,
+    strerror(errno));
+  }
 }
+*/
 void sem_reset()
-{ 
-  semctl(sem_id , SEM_ID_ATOM , SETVAL , 0 ); 
-  semctl(sem_id , SEM_ID_ACTIVATOR , SETVAL , 0 ); 
-  semctl(sem_id , SEM_ID_FUEL , SETVAL , 0 ); 
-  semctl(sem_id , SEM_ID_INIBITOR , SETVAL , 0 ); 
-
+{
+  semctl(sem_id, SEM_ID_ATOM, SETVAL, 0);
+  semctl(sem_id, SEM_ID_ACTIVATOR, SETVAL, 0);
+  semctl(sem_id, SEM_ID_FUEL, SETVAL, 0);
+  semctl(sem_id, SEM_ID_INIBITOR, SETVAL, 0);
+  semctl(sem_master_activator_id, 0, SETVAL, 0);
 }
 void fill_sem()
-{ 
-      struct sembuf sops[TYPE_PROC]; 
-      bzero(sops , sizeof(sops)); 
-      sops[0].sem_flg =0; 
-      sops[0].sem_num = SEM_ID_ATOM;
-      sops[0].sem_num = config.N_ATOMI_INIT;
-      sops[1].sem_flg =0; 
-      sops[1].sem_num =SEM_ID_ACTIVATOR;
-      sops[1].sem_op = 1; 
-      sops[2].sem_flg=0;
-      sops[2].sem_num = SEM_ID_FUEL;
-      sops[2].sem_op = 1; 
-      sops[3].sem_flg =0;
-      sops[3].sem_num = SEM_ID_INIBITOR;
-      sops[3].sem_op= config.INIBITOR;
-      semop(sem_id, sops , TYPE_PROC); 
-
+{
+  struct sembuf sops[TYPE_PROC];
+  bzero(sops, sizeof(sops));
+  sops[0].sem_flg = 0;
+  sops[0].sem_num = SEM_ID_ATOM;
+  sops[0].sem_num = config.N_ATOMI_INIT;
+  sops[1].sem_flg = 0;
+  sops[1].sem_num = SEM_ID_ACTIVATOR;
+  sops[1].sem_op = 1;
+  sops[2].sem_flg = 0;
+  sops[2].sem_num = SEM_ID_FUEL;
+  sops[2].sem_op = 1;
+  sops[3].sem_flg = 0;
+  sops[3].sem_num = SEM_ID_INIBITOR;
+  sops[3].sem_op = config.INHIBITOR;
+  semop(sem_id, sops, TYPE_PROC);
 }
 int main(int argc, char const *argv[])
 {
-
   shm_fuel *rcv_pid;
   init_table(table);
   pid_t atom;
@@ -440,14 +437,19 @@ int main(int argc, char const *argv[])
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT) * sizeof(pid_t),
 		  IPC_CREAT | 0666);
   printf("SHM ID %d\n ", shm_id);
-  sem_id = semget(IPC_PRIVATE, TYPE_PROC, 0666 | IPC_CREAT);
+  sem_id = semget(IPC_PRIVATE, TYPE_PROC, 0600 | IPC_CREAT);
   if (sem_id == -1)
   {
     fprintf(stderr, "[%s]Error in semget %s\n", __FILE__, strerror(errno));
     exit(EXIT_FAILURE);
   }
-
-
+  if ((sem_master_activator_id =
+	   semget(MASTER_ACTIVATOR_SEM, 1, IPC_CREAT | 0600)) < 0)
+  {
+    fprintf(stderr, "%s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  };
+  sem_reset();
   srand(time(NULL));
   printf("-> Main %d <-\n", getpid());
   scan_data();
@@ -459,44 +461,38 @@ int main(int argc, char const *argv[])
   print_para_TEST(config);
 #endif
 
-  
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
-  activator_array_pid[0] = activator(config);
   fuel_args[0] = (char **)FUEL_PATH;
   inebitore_args[0] = (char **)INHIBITOR_PATH;
-  master_atom_sem = semget(MASTER_ATOM_SEM,1 ,0600|IPC_CREAT); 
-  semctl(master_atom_sem  , 1 , SETVAL ,0);
-  TEST_ERROR
-  /*
-  #ifdef _PRINT_TEST
-    printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
-	   activator_array_pid[0]);
-  #endif
 
+/*
   pid_t activator_pid = activator(config);
   printf("activator pid %d\n", activator_pid);
   kill(activator_pid, SIGSTOP);
   printf("activator generated and stopped\n");
-
+    #ifdef _PRINT_TEST
+    printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
+	   activator_pid);
+  #endif
   pid_t fuel_pid = fuel_generator();
   kill(fuel_pid, SIGSTOP);
-  if(config.INIBITOR ==1)
+ if(config.INHIBITOR ==1)
   {
    inhibitor_pid = inhibitor();
   kill(inhibitor_pid, SIGSTOP);
   }
-
+  */
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     pid_t atom_pid = atom_gen(config);
   //kill(atom_pid, SIGSTOP);
   }
 
- 
+
 
   printf("atoms generated and stopped\n");
-  // //store_pid_atom();
+  store_pid_atom();
   /*
 #ifdef _PRINT_TEST
   //print_all_pid();
@@ -519,7 +515,7 @@ int main(int argc, char const *argv[])
   }
   shmdt(rcv_pid);
   kill(activator_pid, SIGCONT);
-  //kill(fuel_pid, SIGCONT);
+  // kill(fuel_pid, SIGCONT);
   kill(inhibitor_pid, SIGCONT);
   printf("\033[1;32m starting atom as last process \033[0m\n");
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
@@ -527,7 +523,7 @@ int main(int argc, char const *argv[])
     kill(atom_array_pid[i], SIGCONT);
   }
   kill(activator_pid, SIGCONT);
-  //kill(fuel_pid, SIGCONT);
+  // kill(fuel_pid, SIGCONT);
   kill(inhibitor_pid, SIGCONT);
   return 0;
 }

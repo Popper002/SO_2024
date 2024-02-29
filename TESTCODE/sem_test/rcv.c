@@ -11,7 +11,8 @@ int main(int argc, char const *argv[])
     op.sem_flg = 0;
     op.sem_num = 0;
     op.sem_op = NUM_PROC+1; // Incrementa il semaforo
-    sleep(1);
+    printf("%s sem op num:  %hu\n",__FILE__, op.sem_op);
+    fflush(stdout);
     semop(sem_id ,&op, 1); 
     return 0;
 }

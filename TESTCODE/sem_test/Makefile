@@ -1,5 +1,7 @@
 CC = gcc
 CFLAGS = -std=c11 -D_GNU_SOURCE -Wall -Wextra -g	
+
+test: all exec rcv
 sem:
 	$(CC) $(CFLAGS) sem.c -o sem
 remove:

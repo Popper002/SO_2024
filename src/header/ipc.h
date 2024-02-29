@@ -9,7 +9,7 @@
 #define O_READ  0400
 #define O_WRITE 0020
 #define KEY_SHM 2111
-#define MASTER_ATOM_SEM 0x123
+#define MASTER_ACTIVATOR_SEM 0x123
 /* */
 #define SEM_ID_ATOM 0 
 #define SEM_ID_ACTIVATOR 1 
