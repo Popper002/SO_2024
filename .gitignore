@@ -1,6 +1,4 @@
 .DS_Store
-master
-atom 
 *.aux
 *.log
 *.toc
@@ -10,3 +8,5 @@ master
 activator
 atom 
 inhibitor
+
+.idea/**
