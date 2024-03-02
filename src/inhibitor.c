@@ -1,7 +1,7 @@
 #include "header/common.h"
 #include "header/ipc.h"
 static int msg_id;
-struct message inebitore_send;
+struct message inhibitor_send;
 struct config config;
 /* Possibile idea :
     questo processo pusha in message queue ogni tot nanosecondi degli zeri ,in
@@ -41,6 +41,7 @@ int main(int argc, char const *argv[])
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
   fetch_args_inibitore(argv);
+  int inhibitor_command; 
   /* idea sarebbe quella che inebitore insieme a attivatore in modo sincrono
     inseriscono dentro la message queue i dati della fissione
     siccome inebitore ha il compito di ridurre le fissioni pushiamo molti piû
@@ -49,28 +50,24 @@ int main(int argc, char const *argv[])
 
   msg_id =
       msgget(ATOMIC_KEY, IPC_CREAT | ALL); /* @return the same queue of atom */
-  inebitore_send.m_type = 1;
+  inhibitor_send.m_type = 1;
 
 #ifdef _PRINT_TEST
   printf("ID %d \n", msg_id);
 #endif
   for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
   {
-    int inebitore_command = fission_flag();
+    inhibitor_command = fission_flag();
     /* convert command in to string ,inside the msg_buffer*/
-    sprintf(inebitore_send.text, "%d", inebitore_command);
-    if (msgsnd(msg_id, &inebitore_send, sizeof(inebitore_send) - sizeof(long),
+    sprintf(inhibitor_send.text, "%d", inhibitor_command);
+    if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
 	       0) < 0)
     {
       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
 	      strerror(errno), getpid());
     }
-#ifdef _PRINT_TEST
-    printf("[%s][%s][%d][VALUE:%d]\n", __FILE__, __func__, getpid(),
-	   inebitore_command);
-    printf("[%s][%s][%d][VALUE IN MSG_BUFF:%s]\n", __FILE__, __func__, getpid(),
-	   inebitore_send.text);
-#endif
+    printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__, getpid(),inhibitor_command,
+	   inhibitor_send.text);
   }
 
   return 0;
