@@ -45,7 +45,7 @@ void fetch_args_atom(char const *argv[])
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
 #ifdef _PRINT_TEST
-  printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}", getpid());
+  printf("[ATOM %d] {FETCHED ARGV COMPLETED}\n", getpid());
 #endif
 }
 /* ALPHA _-_*/

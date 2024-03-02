@@ -186,7 +186,6 @@ static void fuel_argument_ipc(char *argv[])
 }
 int randomize_atom(int atomic_number)
 {
-
   atomic_number = rand() % config.N_ATOM_MAX;
   return atomic_number;
 }
@@ -255,7 +254,7 @@ pid_t atom_gen(struct config config)
 #ifdef _PRINT_TEST
     printf("atom case 0\n");
 #endif
-    sem_reserve(sem_master_activator_id, 0 , -1);
+//    sem_reserve(sem_master_activator_id, 0 , -1);
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
 
@@ -449,7 +448,7 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "%s\n", strerror(errno));
     exit(EXIT_FAILURE);
   };
-  sem_reset();
+//  sem_reset();
   srand(time(NULL));
   printf("-> Main %d <-\n", getpid());
   scan_data();
@@ -466,27 +465,25 @@ int main(int argc, char const *argv[])
   fuel_args[0] = (char **)FUEL_PATH;
   inebitore_args[0] = (char **)INHIBITOR_PATH;
 
-/*
-  pid_t activator_pid = activator(config);
+   activator_pid = activator(config);
   printf("activator pid %d\n", activator_pid);
-  kill(activator_pid, SIGSTOP);
+//  kill(activator_pid, SIGSTOP);
   printf("activator generated and stopped\n");
     #ifdef _PRINT_TEST
     printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
 	   activator_pid);
   #endif
   pid_t fuel_pid = fuel_generator();
-  kill(fuel_pid, SIGSTOP);
+//  kill(fuel_pid, SIGSTOP);
  if(config.INHIBITOR ==1)
   {
    inhibitor_pid = inhibitor();
-  kill(inhibitor_pid, SIGSTOP);
+//  kill(inhibitor_pid, SIGSTOP);
   }
-  */
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
-    pid_t atom_pid = atom_gen(config);
-  //kill(atom_pid, SIGSTOP);
+     atom_pid = atom_gen(config);
+//  kill(atom_pid, SIGSTOP);
   }
 
 
@@ -498,9 +495,10 @@ int main(int argc, char const *argv[])
   //print_all_pid();
 #endif
 */
-  // TODO: qui dovremmo aver finito di creare i processi, a sto punto facciamo
-  // sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e
-  // propria ?
+  /** TODO: qui dovremmo aver finito di creare i processi, a sto punto facciamo
+   *sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e
+   * propria ?
+   */
   // shutdown(); // FIXME: master process killhimself
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
   printf("\n\t-----------------------------------\n");
