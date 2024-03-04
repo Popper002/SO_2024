@@ -70,7 +70,14 @@ int main(int argc, char const *argv[])
 	   send.m_type);
 #endif
   }
-  sem_release(sem_master_activator_id, 0, config.N_ATOMI_INIT +1);
-  printf("[ %s ] [ %s ] SEM_OP_SEND\n",__FILE__ , __func__); 
+  //sem_release(sem_master_activator_id, 0, config.N_ATOMI_INIT +1);
+  /*  
+  struct sembuf operation; 
+  operation.sem_num=0; 
+  operation.sem_op = config.N_ATOMI_INIT+config.N_NUOVI_ATOMI;
+  semop(sem_master_activator_id,&operation,1);
+  */ 
+  printf("[ %s ] [ %s ] SEM_OP_SEND\n",__FILE__ , __func__);
+  fflush(stdout);  
   return 0;
 }

@@ -26,7 +26,7 @@ pid_t inhiitor_pid;
 pid_t activator_pid;
 struct config config;
 struct hash_table table;
-
+enum term_reason term_reason; 
 int sem_master_activator_id;
 // static int atom_array_pid[100];
 pid_t atom_array_pid[100];
@@ -194,8 +194,7 @@ pid_t inhibitor()
   switch (inhiitor_pid = fork())
   {
   case -1:
-    TEST_ERROR;
-    exit(EXIT_FAILURE);
+    why_term(MELTDOWN);
   case 0:
     argument_creator((char **)inebitore_args);
     execvp(INHIBITOR_PATH, (char **)inebitore_args);
@@ -217,6 +216,7 @@ pid_t fuel_generator()
   switch (fuel_pid = fork())
   {
   case -1:
+     why_term(MELTDOWN);
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
@@ -244,10 +244,12 @@ pid_t fuel_generator()
 
 pid_t atom_gen(struct config config)
 {
+  struct sembuf operation; 
   int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
   switch (atom_pid = fork())
   {
   case -1:
+      why_term(MELTDOWN);
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
@@ -255,6 +257,11 @@ pid_t atom_gen(struct config config)
     printf("atom case 0\n");
 #endif
 //    sem_reserve(sem_master_activator_id, 0 , -1);
+ /*     
+    operation.sem_num=0; 
+    operation.sem_op= 0;
+    semop(sem_master_activator_id ,&operation,1); 
+    */ 
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
 
@@ -275,8 +282,9 @@ pid_t activator(struct config config)
 {
 
   switch (activator_pid = fork())
-  {
+  { 
   case -1:
+    why_term(MELTDOWN);
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
@@ -293,6 +301,7 @@ pid_t activator(struct config config)
     break;
 
   default:
+   /*waitpid(activator_pid, NULL, 0);*/
 #ifdef _PRINT_TEST
     printf("activator case default\n");
 #endif
@@ -360,8 +369,51 @@ void handle_signal(int signum)
   case SIGSTOP:
     break;
   case SIGALRM:
+      fprintf(stdout,"\t\t\tRECEIVED AN ALARM IT'S TIME TO STOP\t\t\t");
+      why_term(TIMEOUT); 
     break;
   default:
+    break;
+  }
+}
+void remove_ipc()
+{
+  semctl(sem_master_activator_id,NULL,IPC_RMID);
+  shmctl(shm_id,IPC_RMID,NULL);
+  semctl(sem_id , NULL,IPC_RMID); 
+
+  printf("REMOVED ALL IPC'ITEM\n");
+}
+int why_term(enum term_reason term_reason)
+{
+  switch (term_reason)
+  {
+  case EXPLODE: 
+          fprintf(stderr,"To much energy -TERMINATION\n"); 
+          remove_ipc();
+          killpg(getpid(),SIGINT);
+          exit(EXIT_FAILURE); 
+          break;
+  case TIMEOUT: 
+        fprintf(stderr,"TIMEOUT -TERMINATION\n"); 
+        remove_ipc(); 
+        killpg(getpid(),SIGINT); 
+        exit(EXIT_FAILURE); 
+        break;
+  case BLACKOUT: 
+          fprintf(stderr,"BLACKOUT- ENOUGH ENERGY WE NEED MORE GENERATOR \n"); 
+          remove_ipc();
+          killpg(getpid(),SIGINT);
+          exit(EXIT_FAILURE); 
+          break;
+  case MELTDOWN:
+          fprintf(stderr,"MELTDOWN - FORK-ERROR -TERMINATION\n");
+          remove_ipc();
+          killpg(getpid(),SIGINT);
+          exit(EXIT_FAILURE);
+          break;
+     default:
+      return term_reason; 
     break;
   }
 }
@@ -504,7 +556,7 @@ int main(int argc, char const *argv[])
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
-
+  alarm(config.SIM_DURATION); 
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
@@ -523,5 +575,9 @@ int main(int argc, char const *argv[])
   kill(activator_pid, SIGCONT);
   // kill(fuel_pid, SIGCONT);
   kill(inhibitor_pid, SIGCONT);
+
+
+
+  why_term(TIMEOUT);
   return 0;
 }
