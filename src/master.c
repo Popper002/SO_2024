@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
+#define START 10 
 #define CONFIG_PATH "src/config/config1.txt"
 
 char **args_atom[100];
@@ -205,6 +205,7 @@ pid_t inhibitor()
 
   default:
     printf("Inebitore case default\n");
+    kill(inhibitor_pid ,SIGSTOP);
     return inhiitor_pid;
     break;
   }
@@ -236,6 +237,7 @@ pid_t fuel_generator()
   default:
 
     printf("fuel case default\n");
+    kill(fuel_pid ,SIGSTOP);
     return fuel_pid;
     break;
   }
@@ -270,6 +272,9 @@ pid_t atom_gen(struct config config)
     break;
 
   default:
+       fprintf(stdout,"Child process %d created and suspended.\n", atom_pid);
+
+        kill(atom_pid , SIGSTOP); 
 #ifdef _PRINT_TEST
     printf("MASTER _ FATHER %d\n", getppid());
 #endif
@@ -300,6 +305,7 @@ pid_t activator(struct config config)
     break;
 
   default:
+    kill(activator_pid ,SIGSTOP);
     /*waitpid(activator_pid, NULL, 0);*/
 #ifdef _PRINT_TEST
     printf("activator case default\n");
@@ -365,12 +371,20 @@ void handle_signal(int signum)
       kill(atom_array_pid[pid], SIGINT);
     }
     break;
-  case SIGSTOP:
+  case SIGUSR1:
     break;
   case SIGALRM:
-    fprintf(stdout, "\t\t\tRECEIVED AN ALARM IT'S TIME TO STOP\t\t\t");
-    // why_term(TIMEOUT);
-    break;
+    write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
+    write(STDOUT_FILENO, "\t\tALARM : IT'S TIME TO STOP\n", 29);
+    write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
+    remove_ipc();
+    killpg(atom_array_pid, SIGKILL);
+    killpg(activator_pid, SIGKILL);
+    killpg(inhibitor_pid, SIGKILL);
+    write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n",26);
+    exit(EXIT_SUCCESS); 
+
+	break;
   default:
     break;
   }
@@ -388,62 +402,56 @@ int why_term(enum term_reason term_reason)
 {
   switch (term_reason)
   {
-  case EXPLODE: 
-          fprintf(stderr,"To much energy -TERMINATION\n"); 
-          remove_ipc();
-          for(int i =0 ; i<config.N_ATOM_MAX ; i++)
-          {
-            kill(atom_array_pid[i],SIGINT); 
+  case EXPLODE:
+    fprintf(stderr, "To much energy -TERMINATION\n");
+    remove_ipc();
+    for (int i = 0; i < config.N_ATOM_MAX; i++)
+    {
+      kill(atom_array_pid[i], SIGINT);
+    }
+    kill(inhiitor_pid, SIGINT);
+    kill(activator_pid, SIGINT);
 
-          }
-          kill(inhiitor_pid,SIGINT);
-          kill(activator_pid,SIGINT); 
+    exit(EXIT_FAILURE);
+    break;
+    case TIMEOUT:
+    fprintf(stdout, "TIMEOUT -TERMINATION\n");
+    for (int i = 0; i < config.N_ATOM_MAX; i++)
+    {
+      kill(atom_array_pid[i], SIGINT);
+    }
+    kill(inhiitor_pid, SIGINT);
+    kill(activator_pid, SIGINT);
+    exit(EXIT_SUCCESS);
+    break;
+  case BLACKOUT:
+    fprintf(stderr, "BLACKOUT- ENOUGH ENERGY WE NEED MORE GENERATOR \n");
+    remove_ipc();
+    for (int i = 0; i < config.N_ATOM_MAX; i++)
+    {
+      kill(atom_array_pid[i], SIGINT);
+    }
+    kill(inhiitor_pid, SIGINT);
+    kill(activator_pid, SIGINT);
 
-          exit(EXIT_FAILURE); 
-          break;
-  case TIMEOUT: 
-        fprintf(stderr,"TIMEOUT -TERMINATION\n"); 
-        remove_ipc(); 
-         for(int i =0 ; i<config.N_ATOM_MAX ; i++)
-          {
-            kill(atom_array_pid[i],SIGINT); 
-
-          }
-        kill(inhiitor_pid,SIGINT);
-        kill(activator_pid,SIGINT); 
-        killpg(getpid(),SIGINT);
-        exit(EXIT_FAILURE); 
-        break;
-  case BLACKOUT: 
-          fprintf(stderr,"BLACKOUT- ENOUGH ENERGY WE NEED MORE GENERATOR \n"); 
-          remove_ipc();
-           for(int i =0 ; i<config.N_ATOM_MAX ; i++)
-          {
-            kill(atom_array_pid[i],SIGINT); 
-
-          }
-          kill(inhiitor_pid,SIGINT);
-          kill(activator_pid,SIGINT); 
-          
-          kill(getpid(),SIGINT);
-          exit(EXIT_FAILURE); 
-          break;
+    kill(getpid(), SIGINT);
+    exit(EXIT_FAILURE);
+    break;
   case MELTDOWN:
-          fprintf(stderr,"MELTDOWN - FORK-ERROR -TERMINATION\n");
-          remove_ipc();
-          for(int i =0 ; i<config.N_ATOM_MAX ; i++)
-          {
-            kill(atom_array_pid[i],SIGINT); 
+    fprintf(stderr, "MELTDOWN - FORK-ERROR -TERMINATION\n");
+    remove_ipc();
+    for (int i = 0; i < config.N_ATOM_MAX; i++)
+    {
+      kill(atom_array_pid[i], SIGINT);
+    }
+    kill(inhiitor_pid, SIGINT);
+    kill(activator_pid, SIGINT);
 
-          }
-          kill(inhiitor_pid,SIGINT);
-          kill(activator_pid,SIGINT); 
-          
-          kill(getpid(),SIGINT);
-          exit(EXIT_FAILURE);
-          break;
-     default:
-      return term_reason; 
+    kill(getpid(), SIGINT);
+    exit(EXIT_FAILURE);
+    break;
+  default:
+    return term_reason;
     break;
   }
 }
@@ -507,8 +515,8 @@ int main(void)
   shm_fuel *rcv_pid;
   // init_table(table);
   struct sigaction sa;
-  sa.sa_handler = handle_signal;
-	sa.sa_flags = 0; 	
+  //sa.sa_handler = handle_signal;
+  //sa.sa_flags = 0;
   pid_t atom;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
 #ifdef _PRINT_TEST
@@ -532,11 +540,16 @@ int main(void)
   {
     fprintf(stderr, "%s\n", strerror(errno));
     exit(EXIT_FAILURE);
-  };
+  }
   //  sem_reset();
   srand(time(NULL));
+  signal(SIGUSR1, handle_signal);
+  signal(SIGALRM, handle_signal);
+  
   printf("-> Main %d <-\n", getpid());
   scan_data();
+
+
 // ipc_init();
 #ifdef _PRINT_TEST
   printf("");
@@ -558,6 +571,7 @@ int main(void)
   printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
 	 activator_pid);
 #endif
+
   pid_t fuel_pid = fuel_generator();
   //  kill(fuel_pid, SIGSTOP);
   if (config.INHIBITOR == 1)
@@ -573,47 +587,65 @@ int main(void)
 
   printf("atoms generated and stopped\n");
   store_pid_atom();
-  /*
+  
 #ifdef _PRINT_TEST
-  //print_all_pid();
+  print_all_pid();
 #endif
-*/
+
   /* TODO: qui dovremmo aver finito di creare i processi, a sto punto facciamo
    *sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e
    * propria ?
    */
-  // shutdown(); 
+  // shutdown();
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
-  sigaction(SIGALRM, &sa, NULL);
-  alarm(config.SIM_DURATION); 
+   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
+  printf("\n\t-----------------------------------\n");
+  printf("\t\tEverything is ready to start the simulation\n");
+  printf("\n\t-----------------------------------\n");
+  int start; 
+  start = START; 
+
+       printf("IN %d SEC SIMULATION START\n",start);
+      sleep(start);
+
+  
+
+
+
+  alarm(config.SIM_DURATION);
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
-/* FIXME: here we have the seg fault
-  for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
-  {
-    printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
-  }
-*/
+  /* FIXME: here we have the seg fault  */ 
+    for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
+    {
+      printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
+    }
+  
   shmdt(rcv_pid);
-  /*
-  kill(activator_pid, SIGCONT);
-  // kill(fuel_pid, SIGCONT);
-  kill(inhibitor_pid, SIGCONT);
+  
   printf("\033[1;32m starting atom as last process \033[0m\n");
+  
+  
+  
+  
+  
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(atom_array_pid[i], SIGCONT);
+    printf("\n\tSTART ATOM %d\n",atom_array_pid[i]);
   }
   kill(activator_pid, SIGCONT);
   // kill(fuel_pid, SIGCONT);
   kill(inhibitor_pid, SIGCONT);
-
-
   //why_term(TIMEOUT);
 
-*/
+  while (1)
+  {
+
+  }
+  
   return 0;
 }

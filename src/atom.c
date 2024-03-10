@@ -123,11 +123,7 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf("HELLO IS ATOM %d\n", atom.pid);
 #endif
-  if (argc < 8)
-  {
-    fprintf(stderr, "[%s]]Not enough argument", __FILE__);
-    exit(EXIT_FAILURE);
-  }
+
   fetch_args_atom(argv);
 
   rcv.m_type = 1;
@@ -160,5 +156,10 @@ int main(int argc, char const *argv[])
   printf("ATOMIC NUMBER FOR ATOM %d IS %d \n", atom.pid, atom.atomic_number);
 #endif
   atom_fission(&atom, atom.atomic_flag, config);
+  while (1)
+  {
+    
+  }
+  
   return 0;
 }
