@@ -391,25 +391,55 @@ int why_term(enum term_reason term_reason)
   case EXPLODE: 
           fprintf(stderr,"To much energy -TERMINATION\n"); 
           remove_ipc();
-          killpg(getpid(),SIGINT);
+          for(int i =0 ; i<config.N_ATOM_MAX ; i++)
+          {
+            kill(atom_array_pid[i],SIGINT); 
+
+          }
+          kill(inhiitor_pid,SIGINT);
+          kill(activator_pid,SIGINT); 
+
           exit(EXIT_FAILURE); 
           break;
   case TIMEOUT: 
         fprintf(stderr,"TIMEOUT -TERMINATION\n"); 
         remove_ipc(); 
-        killpg(getpid(),SIGINT); 
+         for(int i =0 ; i<config.N_ATOM_MAX ; i++)
+          {
+            kill(atom_array_pid[i],SIGINT); 
+
+          }
+        kill(inhiitor_pid,SIGINT);
+        kill(activator_pid,SIGINT); 
+        killpg(getpid(),SIGINT);
         exit(EXIT_FAILURE); 
         break;
   case BLACKOUT: 
           fprintf(stderr,"BLACKOUT- ENOUGH ENERGY WE NEED MORE GENERATOR \n"); 
           remove_ipc();
-          killpg(getpid(),SIGINT);
+           for(int i =0 ; i<config.N_ATOM_MAX ; i++)
+          {
+            kill(atom_array_pid[i],SIGINT); 
+
+          }
+          kill(inhiitor_pid,SIGINT);
+          kill(activator_pid,SIGINT); 
+          
+          kill(getpid(),SIGINT);
           exit(EXIT_FAILURE); 
           break;
   case MELTDOWN:
           fprintf(stderr,"MELTDOWN - FORK-ERROR -TERMINATION\n");
           remove_ipc();
-          killpg(getpid(),SIGINT);
+          for(int i =0 ; i<config.N_ATOM_MAX ; i++)
+          {
+            kill(atom_array_pid[i],SIGINT); 
+
+          }
+          kill(inhiitor_pid,SIGINT);
+          kill(activator_pid,SIGINT); 
+          
+          kill(getpid(),SIGINT);
           exit(EXIT_FAILURE);
           break;
      default:
@@ -476,6 +506,9 @@ int main(int argc, char const *argv[])
 {
   shm_fuel *rcv_pid;
   init_table(table);
+  struct sigaction sa;
+  sa.sa_handler = handle_signal;
+	sa.sa_flags = 0; 	
   pid_t atom;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
 #ifdef _PRINT_TEST
@@ -556,6 +589,7 @@ int main(int argc, char const *argv[])
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
+  sigaction(SIGALRM, &sa, NULL);
   alarm(config.SIM_DURATION); 
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
