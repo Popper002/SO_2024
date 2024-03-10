@@ -12,11 +12,12 @@ rcv:
 	$(CC) $(CFLAGS) delivery.c library.h -o rcv 
 
 rm: 
-	$(IPC_RM) $(RM) signal rcv
+	$(IPC_RM) $(RM) signal rcv timeout alarm_test 
 
 alarm: 
 	
 debug:
 	$(CC) $(CFLAGS) -D _PRINT_TEST startandstop.c library.h -o signal 
 	$(CC) $(CFLAGS) -D _PRINT_TEST alarm.c -o alarm_test
+	$(CC) $(CFLAGS) -D _PRINT_TEST timeout.c -o timeout
 	echo compilation compleate

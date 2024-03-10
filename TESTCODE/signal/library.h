@@ -12,3 +12,8 @@
 #include <sys/types.h>
 
 
+struct msg
+{
+    long msg_type; 
+    char text[10];  
+}; 
