@@ -26,7 +26,7 @@ pid_t inhiitor_pid;
 pid_t activator_pid;
 struct config config;
 struct hash_table table;
-enum term_reason term_reason; 
+enum term_reason term_reason;
 int sem_master_activator_id;
 // static int atom_array_pid[100];
 pid_t atom_array_pid[100];
@@ -194,7 +194,7 @@ pid_t inhibitor()
   switch (inhiitor_pid = fork())
   {
   case -1:
-    why_term(MELTDOWN);
+    // why_term(MELTDOWN);
   case 0:
     argument_creator((char **)inebitore_args);
     execvp(INHIBITOR_PATH, (char **)inebitore_args);
@@ -216,7 +216,7 @@ pid_t fuel_generator()
   switch (fuel_pid = fork())
   {
   case -1:
-     why_term(MELTDOWN);
+    // why_term(MELTDOWN);
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
@@ -244,24 +244,24 @@ pid_t fuel_generator()
 
 pid_t atom_gen(struct config config)
 {
-  struct sembuf operation; 
+  struct sembuf operation;
   int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
   switch (atom_pid = fork())
   {
   case -1:
-      why_term(MELTDOWN);
+    // why_term(MELTDOWN);
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
 #ifdef _PRINT_TEST
     printf("atom case 0\n");
 #endif
-//    sem_reserve(sem_master_activator_id, 0 , -1);
- /*     
-    operation.sem_num=0; 
-    operation.sem_op= 0;
-    semop(sem_master_activator_id ,&operation,1); 
-    */ 
+    //    sem_reserve(sem_master_activator_id, 0 , -1);
+    /*
+       operation.sem_num=0;
+       operation.sem_op= 0;
+       semop(sem_master_activator_id ,&operation,1);
+       */
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
 
@@ -282,9 +282,9 @@ pid_t activator(struct config config)
 {
 
   switch (activator_pid = fork())
-  { 
+  {
   case -1:
-    why_term(MELTDOWN);
+    // why_term(MELTDOWN);
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
@@ -301,7 +301,7 @@ pid_t activator(struct config config)
     break;
 
   default:
-   /*waitpid(activator_pid, NULL, 0);*/
+    /*waitpid(activator_pid, NULL, 0);*/
 #ifdef _PRINT_TEST
     printf("activator case default\n");
 #endif
@@ -369,8 +369,8 @@ void handle_signal(int signum)
   case SIGSTOP:
     break;
   case SIGALRM:
-      fprintf(stdout,"\t\t\tRECEIVED AN ALARM IT'S TIME TO STOP\t\t\t");
-      why_term(TIMEOUT); 
+    fprintf(stdout, "\t\t\tRECEIVED AN ALARM IT'S TIME TO STOP\t\t\t");
+    // why_term(TIMEOUT);
     break;
   default:
     break;
@@ -378,42 +378,43 @@ void handle_signal(int signum)
 }
 void remove_ipc()
 {
-  semctl(sem_master_activator_id,NULL,IPC_RMID);
-  shmctl(shm_id,IPC_RMID,NULL);
-  semctl(sem_id , NULL,IPC_RMID); 
+  semctl(sem_master_activator_id, NULL, IPC_RMID);
+  shmctl(shm_id, IPC_RMID, NULL);
+  semctl(sem_id, NULL, IPC_RMID);
 
   printf("REMOVED ALL IPC'ITEM\n");
 }
+
 int why_term(enum term_reason term_reason)
 {
   switch (term_reason)
   {
-  case EXPLODE: 
-          fprintf(stderr,"To much energy -TERMINATION\n"); 
-          remove_ipc();
-          killpg(getpid(),SIGINT);
-          exit(EXIT_FAILURE); 
-          break;
-  case TIMEOUT: 
-        fprintf(stderr,"TIMEOUT -TERMINATION\n"); 
-        remove_ipc(); 
-        killpg(getpid(),SIGINT); 
-        exit(EXIT_FAILURE); 
-        break;
-  case BLACKOUT: 
-          fprintf(stderr,"BLACKOUT- ENOUGH ENERGY WE NEED MORE GENERATOR \n"); 
-          remove_ipc();
-          killpg(getpid(),SIGINT);
-          exit(EXIT_FAILURE); 
-          break;
+  case EXPLODE:
+    fprintf(stderr, "To much energy -TERMINATION\n");
+    remove_ipc();
+    killpg(getpid(), SIGINT);
+    exit(EXIT_FAILURE);
+    break;
+  case TIMEOUT:
+    fprintf(stderr, "TIMEOUT -TERMINATION\n");
+    remove_ipc();
+    killpg(getpid(), SIGINT);
+    exit(EXIT_FAILURE);
+    break;
+  case BLACKOUT:
+    fprintf(stderr, "BLACKOUT- ENOUGH ENERGY WE NEED MORE GENERATOR \n");
+    remove_ipc();
+    killpg(getpid(), SIGINT);
+    exit(EXIT_FAILURE);
+    break;
   case MELTDOWN:
-          fprintf(stderr,"MELTDOWN - FORK-ERROR -TERMINATION\n");
-          remove_ipc();
-          killpg(getpid(),SIGINT);
-          exit(EXIT_FAILURE);
-          break;
-     default:
-      return term_reason; 
+    fprintf(stderr, "MELTDOWN - FORK-ERROR -TERMINATION\n");
+    remove_ipc();
+    killpg(getpid(), SIGINT);
+    exit(EXIT_FAILURE);
+    break;
+  default:
+    return term_reason;
     break;
   }
 }
@@ -500,7 +501,7 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "%s\n", strerror(errno));
     exit(EXIT_FAILURE);
   };
-//  sem_reset();
+  //  sem_reset();
   srand(time(NULL));
   printf("-> Main %d <-\n", getpid());
   scan_data();
@@ -517,28 +518,26 @@ int main(int argc, char const *argv[])
   fuel_args[0] = (char **)FUEL_PATH;
   inebitore_args[0] = (char **)INHIBITOR_PATH;
 
-   activator_pid = activator(config);
+  activator_pid = activator(config);
   printf("activator pid %d\n", activator_pid);
-//  kill(activator_pid, SIGSTOP);
+  //  kill(activator_pid, SIGSTOP);
   printf("activator generated and stopped\n");
-    #ifdef _PRINT_TEST
-    printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
-	   activator_pid);
-  #endif
+#ifdef _PRINT_TEST
+  printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
+	 activator_pid);
+#endif
   pid_t fuel_pid = fuel_generator();
-//  kill(fuel_pid, SIGSTOP);
- if(config.INHIBITOR ==1)
+  //  kill(fuel_pid, SIGSTOP);
+  if (config.INHIBITOR == 1)
   {
-   inhibitor_pid = inhibitor();
-//  kill(inhibitor_pid, SIGSTOP);
+    inhibitor_pid = inhibitor();
+    //  kill(inhibitor_pid, SIGSTOP);
   }
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
-     atom_pid = atom_gen(config);
-//  kill(atom_pid, SIGSTOP);
+    atom_pid = atom_gen(config);
+    //  kill(atom_pid, SIGSTOP);
   }
-
-
 
   printf("atoms generated and stopped\n");
   store_pid_atom();
@@ -547,23 +546,26 @@ int main(int argc, char const *argv[])
   //print_all_pid();
 #endif
 */
-  /** TODO: qui dovremmo aver finito di creare i processi, a sto punto facciamo
+  /* TODO: qui dovremmo aver finito di creare i processi, a sto punto facciamo
    *sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e
    * propria ?
    */
-  // shutdown(); // FIXME: master process killhimself
+  // shutdown(); 
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
-  alarm(config.SIM_DURATION); 
+  alarm(config.SIM_DURATION);
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
+/* FIXME: here we have the seg fault
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
   {
     printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
   }
+*/
   shmdt(rcv_pid);
+  /*
   kill(activator_pid, SIGCONT);
   // kill(fuel_pid, SIGCONT);
   kill(inhibitor_pid, SIGCONT);
@@ -577,7 +579,8 @@ int main(int argc, char const *argv[])
   kill(inhibitor_pid, SIGCONT);
 
 
+  //why_term(TIMEOUT);
 
-  why_term(TIMEOUT);
+*/
   return 0;
 }

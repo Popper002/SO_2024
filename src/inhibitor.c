@@ -66,8 +66,10 @@ int main(int argc, char const *argv[])
       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
 	      strerror(errno), getpid());
     }
+    #ifdef _PRINT_TEST
     printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__, getpid(),inhibitor_command,
 	   inhibitor_send.text);
+    #endif
   }
 
   return 0;

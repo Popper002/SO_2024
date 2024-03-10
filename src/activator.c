@@ -2,10 +2,10 @@
 #include "header/atom.h"
 #include "header/common.h"
 #include "header/ipc.h"
+#include "util/my_sem_lib.h"
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <unistd.h>
-#include "util/my_sem_lib.h"
 
 #include "header/ipc.h"
 
@@ -44,40 +44,45 @@ void fetch_args(char const *argv[])
 
 int main(int argc, char const *argv[])
 {
-  srand(time(NULL));
-  #ifdef _PRINT_TEST
+#ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
 #endif
   static int q_id, i;
+  int command;
   fetch_args(argv);
+  srand(time(NULL));
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
-  int sem_master_activator_id = semget(MASTER_ACTIVATOR_SEM, 0, 0600|IPC_CREAT); /* return the id of the sem associated with this key */
+  int sem_master_activator_id = semget(
+      MASTER_ACTIVATOR_SEM, 0,
+      0600 | IPC_CREAT); /* return the id of the sem associated with this key */
   printf("[%s] QUEUEU : %d CREATED \n ", __FILE__, q_id);
   for (i = 0; i < config.N_ATOMI_INIT; i++)
   {
     send.m_type = 1;
-    int command = randomic_activation();
+    command = randomic_activation();
 #ifdef _PRINT_TEST
     printf("\ncommand %d\n", command);
 #endif
     sprintf(send.text, "%d", command);
     if (msgsnd(q_id, &send, sizeof(send) - sizeof(long), 0) <= -1)
     {
-      fprintf(stderr, "%s Error in msgsnd\n",__FILE__);
+      fprintf(stderr, "%s Error in msgsnd\n", __FILE__);
     };
 #ifdef _PRINT_TEST
-    printf("[%s %s SENDED THIS MESSAGE %s IN QUEUE %d TYPE:%ld\n",__FILE__,__func__, send.text, q_id,
-	   send.m_type);
+    printf("[%s %s SENDED THIS MESSAGE %s IN QUEUE %d TYPE:%ld\n", __FILE__,
+	   __func__, send.text, q_id, send.m_type);
 #endif
   }
-  //sem_release(sem_master_activator_id, 0, config.N_ATOMI_INIT +1);
-  /*  
-  struct sembuf operation; 
-  operation.sem_num=0; 
+  // sem_release(sem_master_activator_id, 0, config.N_ATOMI_INIT +1);
+
+  /*
+  struct sembuf operation;
+  operation.sem_num=0;
   operation.sem_op = config.N_ATOMI_INIT+config.N_NUOVI_ATOMI;
   semop(sem_master_activator_id,&operation,1);
-  */ 
-  printf("[ %s ] [ %s ] SEM_OP_SEND\n",__FILE__ , __func__);
-  fflush(stdout);  
+  */
+
+  printf("[ %s ] [ %s ] SEM_OP_SEND\n", __FILE__, __func__);
+  fflush(stdout);
   return 0;
 }

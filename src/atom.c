@@ -61,7 +61,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
   {
-    fprintf(stderr, "Atom with %d atomic number can't be fissioned\n",
+    fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
 	    atom->atomic_number);
   }
   if (atom->atomic_flag == 1)
@@ -152,10 +152,8 @@ int main(int argc, char const *argv[])
   atom.atomic_flag = atoi(rcv.text);
 #ifdef _PRINT_TEST
   printf("ATOM FLAG IS %d FOR ATOM %d\n", atom.atomic_flag, atom.pid);
-#endif
   atom.atomic_number = get_atomic_number();
   printf("atom.atomic_number %d\n", atom.atomic_number);
-#ifdef _PRINT_TEST
   printf("ATOMIC NUMBER FOR ATOM %d IS %d \n", atom.pid, atom.atomic_number);
 #endif
   atom_fission(&atom, atom.atomic_flag, config);
