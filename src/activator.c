@@ -1,8 +1,8 @@
 // TODO move this in a separate header file
-#include "header/atom.h"
 #include "header/common.h"
 #include "header/ipc.h"
 #include "util/my_sem_lib.h"
+#include <stdlib.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <unistd.h>
@@ -49,6 +49,11 @@ int main(int argc, char const *argv[])
 #endif
   static int q_id, i;
   int command;
+  if (argc < 8)
+  {
+    fprintf(stderr, "[%s] Not enough arguments", __FILE__);
+    exit(EXIT_FAILURE);
+  }
   fetch_args(argv);
   srand(time(NULL));
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);

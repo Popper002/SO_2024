@@ -1,5 +1,7 @@
 #include "header/common.h"
 #include "header/ipc.h"
+#include <stdio.h>
+#include <stdlib.h>
 static int msg_id;
 struct message inhibitor_send;
 struct config config;
@@ -10,7 +12,7 @@ struct config config;
     P(FISSIONE) = P(1)|P(INEBITORE) * P(1) * P(ATTIVATORE) /  */
 int fission_flag() { return rand() % 2; }
 
-void fetch_args_inibitore(char const *argv[])
+void fetch_args_inhibitor(char const *argv[])
 {
 
   int n_atom_init = atoi(argv[1]);
@@ -40,8 +42,13 @@ int main(int argc, char const *argv[])
 
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
-  fetch_args_inibitore(argv);
-  int inhibitor_command; 
+  if (argc < 8)
+  {
+    fprintf(stderr, "[%s] Not enoough arguments", __FILE__);
+    exit(EXIT_FAILURE);
+  }
+  fetch_args_inhibitor(argv);
+  int inhibitor_command;
   /* idea sarebbe quella che inebitore insieme a attivatore in modo sincrono
     inseriscono dentro la message queue i dati della fissione
     siccome inebitore ha il compito di ridurre le fissioni pushiamo molti piû
@@ -66,10 +73,10 @@ int main(int argc, char const *argv[])
       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
 	      strerror(errno), getpid());
     }
-    #ifdef _PRINT_TEST
-    printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__, getpid(),inhibitor_command,
-	   inhibitor_send.text);
-    #endif
+#ifdef _PRINT_TEST
+    printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
+	   getpid(), inhibitor_command, inhibitor_send.text);
+#endif
   }
 
   return 0;

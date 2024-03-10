@@ -228,7 +228,7 @@ int main(int argc, char const *argv[])
   fflush(stdout);
   if (shmdt(new_pid_atom) < 0)
   {
-    fprintf(stderr, "");
+    fprintf(stderr, "Shared memory ");
   }
 #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);

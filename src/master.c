@@ -1,4 +1,3 @@
-#include "header/master.h"
 #include "header/common.h"
 #include "header/ipc.h"
 #include "util/hash_table.h"
@@ -503,10 +502,10 @@ void fill_sem()
   sops[3].sem_op = config.INHIBITOR;
   semop(sem_id, sops, TYPE_PROC);
 }
-int main(int argc, char const *argv[])
+int main(void)
 {
   shm_fuel *rcv_pid;
-  init_table(table);
+  // init_table(table);
   struct sigaction sa;
   sa.sa_handler = handle_signal;
 	sa.sa_flags = 0; 	

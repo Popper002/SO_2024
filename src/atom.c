@@ -1,5 +1,4 @@
 #include "header/atom.h"
-#include <math.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
@@ -27,7 +26,6 @@ static void print_para_TEST(struct config config)
 
 void fetch_args_atom(char const *argv[])
 {
-
   int n_atom_init = atoi(argv[1]);
   int energy_demand = atoi(argv[2]);
   int n_atom_max = atoi(argv[3]);
@@ -125,6 +123,11 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf("HELLO IS ATOM %d\n", atom.pid);
 #endif
+  if (argc < 8)
+  {
+    fprintf(stderr, "[%s]]Not enough argument", __FILE__);
+    exit(EXIT_FAILURE);
+  }
   fetch_args_atom(argv);
 
   rcv.m_type = 1;
@@ -139,7 +142,7 @@ int main(int argc, char const *argv[])
   }
   if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
   {
-    fprintf(stderr, "%s Error in msg_rcv\n",__FILE__);
+    fprintf(stderr, "%s Error in msg_rcv\n", __FILE__);
   }
 
   // Assegna la stringa ricevuta al membro appropriato della struct atom
