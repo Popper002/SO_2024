@@ -553,7 +553,7 @@ int main(void)
   srand(time(NULL));
   signal(SIGUSR1, handle_signal);
   signal(SIGALRM, handle_signal);
-
+  
   printf("-> Main %d <-\n", getpid());
   scan_data();
 
