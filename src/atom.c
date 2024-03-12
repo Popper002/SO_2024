@@ -155,6 +155,10 @@ int main(int argc, char const *argv[])
   printf("atom.atomic_number %d\n", atom.atomic_number);
   printf("ATOMIC NUMBER FOR ATOM %d IS %d \n", atom.pid, atom.atomic_number);
 #endif
+  //fprintf(stdout, "ATOM ID%d FINISH INIT NOW STOP AND WAIT THE START\n",atom.pid);
+  /*finish init*/
+  kill(atom.pid,SIGSTOP); //Send Sigstop signal to atom 
+  fprintf(stdout,"ATOM %d START\n",atom.pid);
   atom_fission(&atom, atom.atomic_flag, config);
   while (1)
   {

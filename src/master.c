@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#define START 10
 #define CONFIG_PATH "src/config/config1.txt"
 
 char **args_atom[100];
@@ -19,6 +18,8 @@ static int activator_array_pid[10];
 static int fuel_array_pid[100];
 static int sem_id;
 static int shm_id;
+shm_fuel *rcv_pid;
+int *atom_array_pid;
 static key_t key_shm;
 pid_t atom_pid;
 static pid_t inhibitor_pid;
@@ -29,7 +30,6 @@ struct hash_table table;
 enum term_reason term_reason;
 int sem_master_activator_id;
 // static int atom_array_pid[100];
-pid_t atom_array_pid[100];
 
 #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -255,9 +255,7 @@ pid_t atom_gen(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-#ifdef _PRINT_TEST
-    printf("atom case 0\n");
-#endif
+
     //    sem_reserve(sem_master_activator_id, 0 , -1);
     /*
        operation.sem_num=0;
@@ -349,10 +347,10 @@ void shutdown()
   */
 }
 
-//FIXME seg fault
+
 void store_pid_atom()
 {
-  int *atom_array_pid = malloc(config.N_ATOMI_INIT * sizeof(int));
+  atom_array_pid = (int*)malloc(config.N_ATOMI_INIT * sizeof(pid_t));
   if(atom_array_pid == NULL) {
     fprintf(stdout,"malloc error %s",strerror(errno));
     exit(EXIT_FAILURE);
@@ -367,6 +365,10 @@ void store_pid_atom()
   }
   free(atom_array_pid);
 }
+
+
+
+
 void handle_signal(int signum)
 {
   switch (signum)
@@ -389,6 +391,7 @@ void handle_signal(int signum)
     killpg(atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
+    killpg(rcv_pid->array , SIGKILL);
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
     exit(EXIT_SUCCESS);
 
@@ -402,7 +405,7 @@ void remove_ipc()
   semctl(sem_master_activator_id, NULL, IPC_RMID);
   shmctl(shm_id, IPC_RMID, NULL);
   semctl(sem_id, NULL, IPC_RMID);
-
+  msgctl(msg)
   printf("REMOVED ALL IPC'ITEM\n");
 }
 
@@ -500,6 +503,24 @@ void sem_reset()
   semctl(sem_id, SEM_ID_INIBITOR, SETVAL, 0);
   semctl(sem_master_activator_id, 0, SETVAL, 0);
 }
+void start_atom()
+{
+  int i,j; 
+  for (i= 0; i < config.N_ATOMI_INIT ; i++)
+  {
+    kill(atom_array_pid[i], SIGCONT);
+    printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
+  }
+  //@Popper002//@TODO /* SEGFAULT HERE*/
+  /*
+  for(j=0;j<config.N_NUOVI_ATOMI;j++)
+  {
+    kill(rcv_pid->array[i],SIGCONT);
+    printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
+
+  }
+  */
+}
 void fill_sem()
 {
   struct sembuf sops[TYPE_PROC];
@@ -520,7 +541,8 @@ void fill_sem()
 }
 int main(void)
 {
-  shm_fuel *rcv_pid;
+  int i,start;
+
   // init_table(table);
   struct sigaction sa;
   // sa.sa_handler = handle_signal;
@@ -586,14 +608,17 @@ int main(void)
     inhibitor_pid = inhibitor();
     //  kill(inhibitor_pid, SIGSTOP);
   }
-  for (int i = 0; i < config.N_ATOMI_INIT; i++)
-  {
-    atom_pid = atom_gen(config);
-    //  kill(atom_pid, SIGSTOP);
-  }
-
-  // printf("atoms generated and stopped\n");
   store_pid_atom();
+  rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
+
+  /* FIXME: here we have the seg fault  */
+  for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
+  {
+    
+    printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
+  
+  }
+  fprintf(stdout,"atoms generated and stopped\n");
 
 #ifdef _PRINT_TEST
   print_all_pid();
@@ -612,38 +637,23 @@ int main(void)
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
-  int start = START;
-  for (int i = start; i < start; start--)
+  
+  for ( start=10;  start; start--)
   {
-    printf("\r IN %d SEC SIMULATION START\n", START);
+    printf("\r IN %d SEC SIMULATION START\n", start);
     fflush(stdout);
-  }
-  sleep(start);
+    sleep(1);
 
+  }
+  fprintf(stdout,"MASTER:[PID%d] STARTING THE SIMULATION\n",getpid());
   alarm(config.SIM_DURATION);
-  rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
-
-  /* FIXME: here we have the seg fault  */
-  for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
-  {
-    /*
-    printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
-*/
-  }
+  
 
   shmdt(rcv_pid);
 
   printf("\033[1;32m starting atom as last process \033[0m\n");
+  start_atom(); 
 
-  for (int i = 0; i < config.N_ATOMI_INIT; i++)
-  {
-    kill(atom_array_pid[i], SIGCONT);
-    printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
-  }
-  kill(activator_pid, SIGCONT);
-  // kill(fuel_pid, SIGCONT);
-  kill(inhibitor_pid, SIGCONT);
-  // why_term(TIMEOUT);
 
   while (1)
   {

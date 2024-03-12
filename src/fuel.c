@@ -2,7 +2,7 @@
 #include "header/ipc.h"
 struct config config;
 char **new_atom_args[100];
-pid_t atom_new_pid[100];
+pid_t *atom_new_pid;
 shm_fuel *new_pid_atom;
 pid_t new_atom;
 static int shm_id;
@@ -203,7 +203,11 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf(" [%s] [N_NUOVI_ATOMI : %d ]\n", __FILE__, config.N_NUOVI_ATOMI);
 #endif
-
+  atom_new_pid = (pid_t*)malloc(sizeof(pid_t)*config.N_ATOMI_INIT);
+   if(atom_new_pid == NULL) {
+    fprintf(stdout,"malloc error %s",strerror(errno));
+    exit(EXIT_FAILURE);
+   }
   // store__new_pid_atom();
 
   //*new_pid_atom->array = (shm_fuel * )
@@ -215,7 +219,7 @@ int main(int argc, char const *argv[])
   }
 
 #ifdef _PRINT_TEST
-  for (int l = 0; l < 10; l++)
+  for (int l = 0; l < config.N_NUOVI_ATOMI; l++)
   {
     printf("\n[FUEL %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	   atom_new_pid[l], l);

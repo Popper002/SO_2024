@@ -2,7 +2,7 @@
 
 #include "library.h"
 #define STOP_PATH "./stop"
-#define NUM_PROC 3
+#define NUM_PROC 10
 int *pid_collect;
 pid_t generator()
 {   
@@ -40,8 +40,7 @@ void handle(int signum)
 int main(int argc, char const *argv[])
 {
     
-    int sim_time = 10; 
-    int start_sim = 10; 
+    int sim_time = 5; 
     int time;
     pid_collect = (int * ) malloc(sizeof(pid_t)*NUM_PROC);
     signal(SIGALRM , handle); 
@@ -58,6 +57,7 @@ int main(int argc, char const *argv[])
     { 
             pid_collect[i] = generator(); 
     }
+    sleep(1);
     fprintf(stdout,"MASTER COMPLEATE GENERATION NOW WAIT\n");
     for(time= 10 ; time ; time--)
     {
