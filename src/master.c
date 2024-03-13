@@ -185,15 +185,6 @@ static void fuel_argument_ipc(char *argv[])
   argv[10] = NULL;
 }
 
-int randomize_atom(int atomic_number)
-{
-  struct timespec ts;
-  clock_gettime(CLOCK_REALTIME, &ts);
-  unsigned long long seed = (ts.tv_sec * 1000000000 + ts.tv_nsec);
-  srand(seed);
-  atomic_number = rand() % config.N_ATOM_MAX;
-  return atomic_number;
-}
 
 pid_t inhibitor()
 {
@@ -253,7 +244,6 @@ pid_t fuel_generator()
 pid_t atom_gen(struct config config)
 {
   struct sembuf operation;
-  int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
   switch (atom_pid = fork())
   {
   case -1:
@@ -582,9 +572,7 @@ int main(void)
   scan_data();
 
 // ipc_init();
-#ifdef _PRINT_TEST
-  printf("");
-#endif
+
 #ifdef _PRINT_TEST
   print_para_TEST(config);
 #endif
@@ -613,6 +601,7 @@ int main(void)
   store_pid_atom();
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
+#ifdef _PRINT_TEST
   /* FIXME: here we have the seg fault  */
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
   {
@@ -620,6 +609,7 @@ int main(void)
     printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
   }
   fprintf(stdout, "atoms generated and stopped\n");
+#endif
 
 #ifdef _PRINT_TEST
   print_all_pid();
@@ -636,11 +626,11 @@ int main(void)
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
 
-  for (start = 10; start; start--)
+  for (start = 10; start > 0; start--)
   {
-    printf("\r IN %d SEC SIMULATION START\n", start);
-    fflush(stdout);
+    printf("\rIn %d seconds simulation will start...\n", start);
     sleep(1);
+    printf("\033[23A\r");
   }
   fprintf(stdout, "MASTER:[PID%d] STARTING THE SIMULATION\n", getpid());
   alarm(config.SIM_DURATION);
