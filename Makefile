@@ -21,11 +21,12 @@ debug:
 	$(CC)	$(CFLAGS) $(D_FLAG) src/inhibitor.c $(UTILS) -o bin/inhibitor -lm
 
 clean:
-		$(IPC_RM)
 		$(RM) -f bin/*
 
 mem_check: 
 	valgrind ./bin/master
+
+
 
 run: 
 	./bin/master
@@ -33,6 +34,8 @@ run:
 gdb:
 	gdb ./bin/master
 
+ipc_clean:
+		$(IPC_RM)
 
 docs:
 	pdflatex docs/Relazione.tex 
