@@ -149,21 +149,23 @@ int main(int argc, char const *argv[])
   fflush(stdout);
 #endif
   atom.atomic_flag = atoi(rcv.text);
+  /*
 #ifdef _PRINT_TEST
   printf("ATOM FLAG IS %d FOR ATOM %d\n", atom.atomic_flag, atom.pid);
-  atom.atomic_number = get_atomic_number();
   printf("atom.atomic_number %d\n", atom.atomic_number);
-  printf("ATOMIC NUMBER FOR ATOM %d IS %d \n", atom.pid, atom.atomic_number);
 #endif
-  //fprintf(stdout, "ATOM ID%d FINISH INIT NOW STOP AND WAIT THE START\n",atom.pid);
-  /*finish init*/
-  kill(atom.pid,SIGSTOP); //Send Sigstop signal to atom 
-  fprintf(stdout,"ATOM %d START\n",atom.pid);
+
+  */
+
+  atom.atomic_number = get_atomic_number();
+  printf("The atomic number of atom [%d] is %d \n", atom.pid,
+	 atom.atomic_number);
+  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
+  fprintf(stdout, "ATOM %d START\n", atom.pid);
   atom_fission(&atom, atom.atomic_flag, config);
   while (1)
   {
-    
   }
-  
+
   return 0;
 }

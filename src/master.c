@@ -185,7 +185,6 @@ static void fuel_argument_ipc(char *argv[])
   argv[10] = NULL;
 }
 
-
 pid_t inhibitor()
 {
   switch (inhiitor_pid = fork())
@@ -497,6 +496,7 @@ void sem_reset()
 }
 void start_atom()
 {
+  printf("\033[1;32m starting atom as last process \033[0m\n");
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(atom_array_pid[i], SIGCONT);
@@ -533,7 +533,6 @@ void fill_sem()
 }
 int main(void)
 {
-  int i, start;
 
   // init_table(table);
   struct sigaction sa;
@@ -571,7 +570,7 @@ int main(void)
   printf("-> Main %d <-\n", getpid());
   scan_data();
 
-// ipc_init();
+  // ipc_init();
 
 #ifdef _PRINT_TEST
   print_para_TEST(config);
@@ -626,18 +625,17 @@ int main(void)
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
 
-  for (start = 10; start > 0; start--)
+  for (int start = 10; start > 0; start--)
   {
-    printf("\rIn %d seconds simulation will start...\n", start);
+    printf("\rStarting the simulation in %d...\n", start);
     sleep(1);
-    printf("\033[23A\r");
+    //  printf("\033[23A\r");
   }
-  fprintf(stdout, "MASTER:[PID%d] STARTING THE SIMULATION\n", getpid());
+  fprintf(stdout, "Master: [PID %d] is starting the simulation\n", getpid());
   alarm(config.SIM_DURATION);
 
   shmdt(rcv_pid);
 
-  printf("\033[1;32m starting atom as last process \033[0m\n");
   start_atom();
 
   while (1)
