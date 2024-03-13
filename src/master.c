@@ -184,11 +184,17 @@ static void fuel_argument_ipc(char *argv[])
   argv[9] = strdup(key_shm_str);
   argv[10] = NULL;
 }
+
 int randomize_atom(int atomic_number)
 {
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  unsigned long long seed = (ts.tv_sec * 1000000000 + ts.tv_nsec);
+  srand(seed);
   atomic_number = rand() % config.N_ATOM_MAX;
   return atomic_number;
 }
+
 pid_t inhibitor()
 {
   switch (inhiitor_pid = fork())
@@ -347,12 +353,12 @@ void shutdown()
   */
 }
 
-
 void store_pid_atom()
 {
-  atom_array_pid = (int*)malloc(config.N_ATOMI_INIT * sizeof(pid_t));
-  if(atom_array_pid == NULL) {
-    fprintf(stdout,"malloc error %s",strerror(errno));
+  atom_array_pid = (int *)malloc(config.N_ATOMI_INIT * sizeof(pid_t));
+  if (atom_array_pid == NULL)
+  {
+    fprintf(stdout, "malloc error %s", strerror(errno));
     exit(EXIT_FAILURE);
   }
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
@@ -373,9 +379,6 @@ void remove_ipc()
   semctl(sem_id, NULL, IPC_RMID);
   printf("REMOVED ALL IPC'ITEM\n");
 }
-
-
-
 
 void handle_signal(int signum)
 {
@@ -399,7 +402,7 @@ void handle_signal(int signum)
     killpg(atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
-    killpg(rcv_pid->array , SIGKILL);
+    killpg(rcv_pid->array, SIGKILL);
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
     exit(EXIT_SUCCESS);
 
@@ -504,18 +507,18 @@ void sem_reset()
 }
 void start_atom()
 {
-  int i,j; 
-  for (i= 0; i < config.N_ATOMI_INIT ; i++)
+  for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(atom_array_pid[i], SIGCONT);
+#ifdef __PRINT_TEST
     printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
+#endif __PRINT_TEST
   }
-  //@Popper002//@TODO /* SEGFAULT HERE*/
-  /*
-  for(j=0;j<config.N_NUOVI_ATOMI;j++)
+  /*@Popper002 TODO  SEGFAULT HERE
+  for(int j=0;j<config.N_NUOVI_ATOMI;j++)
   {
-    kill(rcv_pid->array[i],SIGCONT);
-    printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
+    kill(rcv_pid->array[j],SIGCONT);
+    printf("\n\tSTART ATOM %d\n", atom_array_pid[j]);
 
   }
   */
@@ -540,7 +543,7 @@ void fill_sem()
 }
 int main(void)
 {
-  int i,start;
+  int i, start;
 
   // init_table(table);
   struct sigaction sa;
@@ -574,7 +577,7 @@ int main(void)
   srand(time(NULL));
   signal(SIGUSR1, handle_signal);
   signal(SIGALRM, handle_signal);
-  
+
   printf("-> Main %d <-\n", getpid());
   scan_data();
 
@@ -613,11 +616,10 @@ int main(void)
   /* FIXME: here we have the seg fault  */
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
   {
-    
+
     printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
-  
   }
-  fprintf(stdout,"atoms generated and stopped\n");
+  fprintf(stdout, "atoms generated and stopped\n");
 
 #ifdef _PRINT_TEST
   print_all_pid();
@@ -633,24 +635,20 @@ int main(void)
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
-  
-  
-  for ( start=10;  start; start--)
+
+  for (start = 10; start; start--)
   {
     printf("\r IN %d SEC SIMULATION START\n", start);
     fflush(stdout);
     sleep(1);
-
   }
-  fprintf(stdout,"MASTER:[PID%d] STARTING THE SIMULATION\n",getpid());
+  fprintf(stdout, "MASTER:[PID%d] STARTING THE SIMULATION\n", getpid());
   alarm(config.SIM_DURATION);
-  
 
   shmdt(rcv_pid);
 
   printf("\033[1;32m starting atom as last process \033[0m\n");
-  start_atom(); 
-
+  start_atom();
 
   while (1)
   {
