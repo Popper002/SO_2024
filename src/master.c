@@ -366,6 +366,14 @@ void store_pid_atom()
   free(atom_array_pid);
 }
 
+void remove_ipc()
+{
+  semctl(sem_master_activator_id, NULL, IPC_RMID);
+  shmctl(shm_id, IPC_RMID, NULL);
+  semctl(sem_id, NULL, IPC_RMID);
+  printf("REMOVED ALL IPC'ITEM\n");
+}
+
 
 
 
@@ -400,15 +408,6 @@ void handle_signal(int signum)
     break;
   }
 }
-void remove_ipc()
-{
-  semctl(sem_master_activator_id, NULL, IPC_RMID);
-  shmctl(shm_id, IPC_RMID, NULL);
-  semctl(sem_id, NULL, IPC_RMID);
-  msgctl(msg)
-  printf("REMOVED ALL IPC'ITEM\n");
-}
-
 int why_term(enum term_reason term_reason)
 {
   switch (term_reason)
@@ -634,9 +633,7 @@ int main(void)
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
-  printf("\n\t-----------------------------------\n");
-  printf("\t\tEverything is ready to start the simulation\n");
-  printf("\n\t-----------------------------------\n");
+  
   
   for ( start=10;  start; start--)
   {
