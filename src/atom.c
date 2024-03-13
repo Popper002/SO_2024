@@ -58,6 +58,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
 
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
+    printf("Starting fissioning atom....\n");
   {
     fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
 	    atom->atomic_number);
@@ -160,8 +161,7 @@ int main(int argc, char const *argv[])
   atom.atomic_number = get_atomic_number();
   printf("The atomic number of atom [%d] is %d \n", atom.pid,
 	 atom.atomic_number);
-  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
-  fprintf(stdout, "ATOM %d START\n", atom.pid);
+//  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
   atom_fission(&atom, atom.atomic_flag, config);
   while (1)
   {
