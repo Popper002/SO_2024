@@ -58,7 +58,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
 
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
-    printf("Starting fissioning atom....\n");
+    fprintf(stdout,"Starting fissioning atom....\n");
   {
     fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
 	    atom->atomic_number);
@@ -83,7 +83,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
 #endif
 
       int energy_released =
-	  energy_free(child1_atomic_number, child2_atomic_number);
+	    energy_free(child1_atomic_number, child2_atomic_number);
       printf("energy released %d\n", energy_released);
 
       printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
