@@ -361,13 +361,7 @@ void store_pid_atom()
   free(atom_array_pid);
 }
 
-void remove_ipc()
-{
-  semctl(sem_master_activator_id, NULL, IPC_RMID);
-  shmctl(shm_id, IPC_RMID, NULL);
-  semctl(sem_id, NULL, IPC_RMID);
-  printf("REMOVED ALL IPC'ITEM\n");
-}
+
 
 void handle_signal(int signum)
 {
@@ -402,10 +396,13 @@ void handle_signal(int signum)
 }
 void remove_ipc()
 {
+  int remove_queue;
   semctl(sem_master_activator_id, NULL, IPC_RMID);
   shmctl(shm_id, IPC_RMID, NULL);
   semctl(sem_id, NULL, IPC_RMID);
-  printf("REMOVED ALL IPC'ITEM\n");
+  remove_queue = msgget(ATOMIC_KEY , IPC_CREAT); /* get the id for the remove */
+  msgctl(remove_queue, IPC_RMID , NULL);
+  fprintf(stdout,"REMOVED ALL IPC'ITEM\n");
 }
 
 int why_term(enum term_reason term_reason)
