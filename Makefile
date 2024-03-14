@@ -6,7 +6,7 @@ IPC_RM =ipcrm --all
 UTILS = src/util/*.c
 
 all:
-	$(CC) $(CFLAGS) src/master.c $(UTILS) -o bin/master -lm
+	$(CC)   $(CFLAGS) src/master.c $(UTILS) -o bin/master -lm
 	$(CC)	$(CFLAGS) src/atom.c $(UTILS) -o bin/atom -lm
 	$(CC)	$(CFLAGS) src/activator.c $(UTILS) -o bin/activator  -lm
 	$(CC)	$(CFLAGS) src/fuel.c $(UTILS) -o bin/fuel -lm

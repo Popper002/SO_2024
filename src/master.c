@@ -268,7 +268,7 @@ pid_t atom_gen(struct config config)
   default:
     fprintf(stdout, "Child process %d created and suspended.\n", atom_pid);
 
-    kill(atom_pid, SIGSTOP);
+    //kill(atom_pid, SIGSTOP);
 #ifdef _PRINT_TEST
     printf("MASTER _ FATHER %d\n", getppid());
 #endif
@@ -400,6 +400,14 @@ void handle_signal(int signum)
     break;
   }
 }
+void remove_ipc()
+{
+  semctl(sem_master_activator_id, NULL, IPC_RMID);
+  shmctl(shm_id, IPC_RMID, NULL);
+  semctl(sem_id, NULL, IPC_RMID);
+  printf("REMOVED ALL IPC'ITEM\n");
+}
+
 int why_term(enum term_reason term_reason)
 {
   switch (term_reason)

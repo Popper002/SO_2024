@@ -42,6 +42,13 @@ int main(int argc, char const *argv[])
     
     int sim_time = 5; 
     int time;
+    int sem_unlock;
+     struct sembuf seop;
+    sem_unlock = semget(0x21 , 1, IPC_CREAT |0666); 
+    if(sem_unlock < 0 ){
+         fprintf(stderr , "ERROR INIT SEM\n"); 
+         exit(EXIT_FAILURE);   
+    }
     pid_collect = (int * ) malloc(sizeof(pid_t)*NUM_PROC);
     signal(SIGALRM , handle); 
     /*
@@ -53,6 +60,8 @@ int main(int argc, char const *argv[])
         semctl(sem_id , 0,SETVAL,NUM_PROC); 
     }
     */
+    semctl(sem_unlock,0,SETVAL,1);
+
     for(int i =0 ; i< NUM_PROC ; i++)
     { 
             pid_collect[i] = generator(); 
@@ -71,6 +80,18 @@ int main(int argc, char const *argv[])
            kill(pid_collect[i],SIGCONT);
            fprintf(stdout,"PROC %d RAISED\n",pid_collect[i]);
     }
+    seop.sem_flg=0;
+    seop.sem_num=0;
+    seop.sem_op=-1; 
+    semop(sem_unlock,&seop,1); 
+
+    fprintf(stdout,"SLEEP FOR 3 SEC\n");
+    sleep(3); 
+ 
+    seop.sem_flg=0;
+    seop.sem_num=0;
+    seop.sem_op=1; 
+    semop(sem_unlock,&seop,1); 
     while (1)
     {
             
