@@ -2,6 +2,8 @@
 #include "header/ipc.h"
 #include "util/hash_table.h"
 #include "util/my_sem_lib.h"
+#include "util/shared_memory.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +31,7 @@ struct config config;
 struct hash_table table;
 enum term_reason term_reason;
 int sem_master_activator_id;
-// static int atom_array_pid[100];
+
 
 #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -266,7 +268,6 @@ pid_t atom_gen(struct config config)
     break;
 
   default:
-    fprintf(stdout, "Child process %d created and suspended.\n", atom_pid);
 
     //kill(atom_pid, SIGSTOP);
 #ifdef _PRINT_TEST
@@ -358,7 +359,21 @@ void store_pid_atom()
 	   atom_array_pid[i], i);
 #endif
   }
+
+  fprintf(stdout, "Child process %d created and suspended.\n", atom_pid);
   free(atom_array_pid);
+}
+
+
+void remove_ipc()
+{
+  int remove_queue;
+  semctl(sem_master_activator_id, NULL, IPC_RMID);
+  shmctl(shm_id, IPC_RMID, NULL);
+  semctl(sem_id, NULL, IPC_RMID);
+  remove_queue = msgget(ATOMIC_KEY , IPC_CREAT); /* get the id for the remove */
+  msgctl(remove_queue, IPC_RMID , NULL);
+  fprintf(stdout,"REMOVED ALL IPC'ITEM\n");
 }
 
 
@@ -393,16 +408,6 @@ void handle_signal(int signum)
   default:
     break;
   }
-}
-void remove_ipc()
-{
-  int remove_queue;
-  semctl(sem_master_activator_id, NULL, IPC_RMID);
-  shmctl(shm_id, IPC_RMID, NULL);
-  semctl(sem_id, NULL, IPC_RMID);
-  remove_queue = msgget(ATOMIC_KEY , IPC_CREAT); /* get the id for the remove */
-  msgctl(remove_queue, IPC_RMID , NULL);
-  fprintf(stdout,"REMOVED ALL IPC'ITEM\n");
 }
 
 int why_term(enum term_reason term_reason)
@@ -545,9 +550,13 @@ int main(void)
   // sa.sa_flags = 0;
   pid_t atom;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
+  init_shared_memory();
+  int total_energy = 0;
 #ifdef _PRINT_TEST
   printf("KEY IS %d \n", key_shm);
 #endif
+
+
   if (key_shm < 0)
   {
     fprintf(stderr, "PROBLEM KEY\n");
@@ -645,7 +654,13 @@ int main(void)
 
   while (1)
   {
+   int energy_released = read_shared_memory();
+    total_energy += energy_released;
+    //TODO call a function that displays statistic
+    printf("total energy realeased: %d\n",total_energy);
   }
+
+  cleanup_shared_memory();
 
   return 0;
 }

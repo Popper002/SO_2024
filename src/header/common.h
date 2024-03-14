@@ -29,6 +29,7 @@
 #include <sys/param.h>
 #include <signal.h>
 #include <sys/signal.h>
+
 #define ATOM_PATH "./bin/atom"
 #define ACTIVATOR_PATH "./bin/activator"
 #define FUEL_PATH "./bin/fuel"
@@ -75,5 +76,8 @@ enum term_reason
     BLACKOUT = 2,
     MELTDOWN = 3,
 
-}; 
+};
+
+
+
 //TODO Creare una serie di cofigurazioni in modo tale da avere almeno una per ogni term_reason

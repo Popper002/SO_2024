@@ -1,12 +1,9 @@
 #include "header/atom.h"
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
+#include "util/shared_memory.h"
 
 struct atom atom;
 static struct message rcv;
 struct config config;
-
 static void print_para_TEST(struct config config)
 {
   printf("\t\n----------\n");
@@ -46,19 +43,18 @@ void fetch_args_atom(char const *argv[])
   printf("[ATOM %d] {FETCHED ARGV COMPLETED}\n", getpid());
 #endif
 }
-/* ALPHA _-_*/
+
 static int energy_free(int atomic_a1, int atomic_a2)
 {
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
-//__-_-_
 
 void atom_fission(struct atom *atom, int command, struct config config)
 {
 
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
-    fprintf(stdout,"Starting fissioning atom....\n");
+    fprintf(stdout, "Starting fissioning atom....\n");
   {
     fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
 	    atom->atomic_number);
@@ -83,9 +79,9 @@ void atom_fission(struct atom *atom, int command, struct config config)
 #endif
 
       int energy_released =
-	    energy_free(child1_atomic_number, child2_atomic_number);
+	  energy_free(child1_atomic_number, child2_atomic_number);
       printf("energy released %d\n", energy_released);
-
+      update_shared_memory(energy_released);
       printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
 	     __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
 	     energy_released);
@@ -127,6 +123,9 @@ int main(int argc, char const *argv[])
 
   fetch_args_atom(argv);
 
+  init_shared_memory();
+  int total_energy = 0;
+
   rcv.m_type = 1;
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
 #ifdef _PRINT_TEST
@@ -155,16 +154,18 @@ int main(int argc, char const *argv[])
   printf("ATOM FLAG IS %d FOR ATOM %d\n", atom.atomic_flag, atom.pid);
   printf("atom.atomic_number %d\n", atom.atomic_number);
 #endif
-
   */
 
   atom.atomic_number = get_atomic_number();
   printf("The atomic number of atom [%d] is %d \n", atom.pid,
 	 atom.atomic_number);
-//  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
+  //  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
   atom_fission(&atom, atom.atomic_flag, config);
   while (1)
   {
+    int energy_released = read_shared_memory();
+    total_energy += energy_released;
   }
+  cleanup_shared_memory();
   return 0;
 }
