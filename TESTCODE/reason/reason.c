@@ -37,8 +37,21 @@ int reaoson(enum term_reason termination)
     }
     return termination; 
 }
+void alarm_handle(int signum)
+{ 
+    switch (signum)
+    {
+    case SIGALRM: 
+            reaoson(TIMEOUT);
+        break;
+    
+    default:
+        break;
+    }
+}
 int main(int argc, char const *argv[])
 {
+    signal(SIGALRM, alarm_handle); 
     /* NO_SPACE 
     int no_space = (char )malloc(sizeof(-1)); 
     if(no_space<0 )
@@ -65,7 +78,9 @@ int main(int argc, char const *argv[])
         log_reason = reaoson(NO_REASOURCE);
     }
     */ 
+   /* time out 
+   */
 
-
+    alarm(10); 
     return 0;
 }

@@ -2,6 +2,7 @@
     "files.associations": {
         "unistd.h": "c",
         "common.h": "c",
-        "library.h": "c"
+        "library.h": "c",
+        "shared_memory.h": "c"
     }
 }

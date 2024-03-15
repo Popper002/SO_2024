@@ -15,6 +15,7 @@ char **args_atom[100];
 char **activator_args[100];
 char **fuel_args[100];
 char **inebitore_args[100];
+statistiche *print_stats;
 // char const *args_[100];
 static int activator_array_pid[10];
 static int fuel_array_pid[100];
@@ -373,6 +374,7 @@ void remove_ipc()
   semctl(sem_id, NULL, IPC_RMID);
   remove_queue = msgget(ATOMIC_KEY , IPC_CREAT); /* get the id for the remove */
   msgctl(remove_queue, IPC_RMID , NULL);
+  cleanup_shared_memory(); 
   fprintf(stdout,"REMOVED ALL IPC'ITEM\n");
 }
 
@@ -549,6 +551,7 @@ int main(void)
   // sa.sa_handler = handle_signal;
   // sa.sa_flags = 0;
   pid_t atom;
+  int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
   init_shared_memory();
   int total_energy = 0;
@@ -639,7 +642,7 @@ int main(void)
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
 
-  for (int start = 10; start > 0; start--)
+  for (start = 10; start > 0; start--)
   {
     printf("\rStarting the simulation in %d...\n", start);
     sleep(1);
@@ -657,10 +660,7 @@ int main(void)
    int energy_released = read_shared_memory();
     total_energy += energy_released;
     //TODO call a function that displays statistic
-    printf("total energy realeased: %d\n",total_energy);
+    fprintf(stdout,"total energy realeased: %d\n",total_energy);
   }
-
-  cleanup_shared_memory();
-
   return 0;
 }

@@ -157,7 +157,7 @@ int main(int argc, char const *argv[])
   */
 
   atom.atomic_number = get_atomic_number();
-  printf("The atomic number of atom [%d] is %d \n", atom.pid,
+  fprintf(stdout,"The atomic number of atom [%d] is %d \n", atom.pid,
 	 atom.atomic_number);
   //  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
   atom_fission(&atom, atom.atomic_flag, config);
@@ -166,6 +166,8 @@ int main(int argc, char const *argv[])
     int energy_released = read_shared_memory();
     total_energy += energy_released;
   }
-  cleanup_shared_memory();
+ /* cleanup_shared_memory(); */ 
+ /* Never lunched this function ,this is caused from the while loop never end's*/
+
   return 0;
 }

@@ -9,6 +9,9 @@ void init_shared_memory(){
 
 
   shmid = shmget(ENERGY_KEY,sizeof(struct energy_released),IPC_CREAT | 0666);
+  #ifdef _PRINT_DEBUG
+    fprintf(stdout,"SHARED_MEMORY_ENERGY ID:%d\n",shmid);
+  #endif
   if(shmid == -1){
     fprintf(stderr,"[%s]Error in shmget\n",__FILE__);
     exit(EXIT_FAILURE);

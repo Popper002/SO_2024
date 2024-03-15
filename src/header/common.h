@@ -49,7 +49,7 @@ struct config
     float STEP;
     int  INHIBITOR;
 };
-struct statistiche
+typedef struct 
 {
     struct config conf; 
     int num_activation;
@@ -65,7 +65,7 @@ struct statistiche
     /* Forse servono altri parametri --> punto:8 ,.pdf*/
 
 
-}; 
+}statistiche; 
 /* RIPASSO ENUM: 
 * Sono un modo per rappresentare un gruppo di constanti ,di default i valori vanno da 
 * 0 a n costanti   */
