@@ -1,9 +1,9 @@
+#include "header/atom.h"
 #include "header/common.h"
 #include "header/ipc.h"
 #include "util/hash_table.h"
 #include "util/my_sem_lib.h"
 #include "util/shared_memory.h"
-#include "header/atom.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,7 +37,6 @@ struct config config;
 struct hash_table table;
 enum term_reason term_reason;
 int sem_master_activator_id;
-
 
 #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -112,10 +111,10 @@ static int scan_data()
       config.INHIBITOR = value;
       errno = 0;
     }
-    else if(strcmp(name_param,"STEP")==0)
+    else if (strcmp(name_param, "STEP") == 0)
     {
       config.STEP = value;
-      errno = 0; 
+      errno = 0;
     }
     else
     {
@@ -280,7 +279,7 @@ pid_t atom_gen(struct config config)
 
   default:
 
-    //kill(atom_pid, SIGSTOP);
+    // kill(atom_pid, SIGSTOP);
 #ifdef _PRINT_TEST
     printf("MASTER _ FATHER %d\n", getppid());
 #endif
@@ -375,20 +374,17 @@ void store_pid_atom()
   free(atom_array_pid);
 }
 
-
 void remove_ipc()
 {
   int remove_queue;
   semctl(sem_master_activator_id, NULL, IPC_RMID);
   shmctl(shm_id, IPC_RMID, NULL);
   semctl(sem_id, NULL, IPC_RMID);
-  remove_queue = msgget(ATOMIC_KEY , IPC_CREAT); /* get the id for the remove */
-  msgctl(remove_queue, IPC_RMID , NULL);
-  cleanup_shared_memory(); 
-  fprintf(stdout,"REMOVED ALL IPC'ITEM\n");
+  remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
+  msgctl(remove_queue, IPC_RMID, NULL);
+  cleanup_shared_memory();
+  fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
 }
-
-
 
 void handle_signal(int signum)
 {
@@ -412,7 +408,7 @@ void handle_signal(int signum)
     killpg(atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
-    killpg(fuel_pid , SIGKILL); 
+    killpg(fuel_pid, SIGKILL);
     killpg(rcv_pid->array, SIGKILL);
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
     exit(EXIT_SUCCESS);
@@ -447,7 +443,7 @@ int why_term(enum term_reason term_reason)
     }
     kill(inhiitor_pid, SIGINT);
     kill(activator_pid, SIGINT);
-   
+
     exit(EXIT_SUCCESS);
     break;
   case BLACKOUT:
@@ -555,23 +551,28 @@ void fill_sem()
   sops[3].sem_op = config.INHIBITOR;
   semop(sem_id, sops, TYPE_PROC);
 }
+
 void printer()
 {
-  fprintf(stdout,"PROC     --PID--------ENERGY--------N_FORK-------ATOMIC_NUMBER-------STATUS--------------------------------\n");
-  fprintf(stdout,"MASTER    --%d-----------%d-------------%d-------------%d----------------%s---------------------------------\n",getpid(),NULL,NULL,NULL,"OK");
-  fprintf(stdout,"FUEL      --%d-----------%d-------------%d-------------%d----------------%s---------------------------------\n",fuel_pid,NULL,config.N_NUOVI_ATOMI,NULL,"OK");
-  fprintf(stdout,"ACTIVATOR --%d-----------%d-------------%d-------------%d----------------%s-------------------------------\n",activator_pid,NULL,NULL,NULL,"OK" );
-  fprintf(stdout,"INHIBITOR --%d-----------%d-------------%d-------------%d----------------%s-------------------------------\n",inhibitor_pid,NULL,NULL,NULL,"OK");
+  printf(stdout, "PROC\tPID\tENERGY\tN_FORK\tATOMIC_NUMBER\tSTATUS\n");
+  printf(stdout, "MASTER\t%d\t%d\t%d\t%d\t%s\n", getpid(), NULL, NULL, NULL,
+	 "OK");
+  printf(stdout, "FUEL\t%d\t%d\t%d\t%d\t%s\n", fuel_pid, NULL,
+	 config.N_NUOVI_ATOMI, NULL, "OK");
+  printf(stdout, "ACTIVATOR\t%d\t%d\t%d\t%d\t%s\n", activator_pid, NULL, NULL,
+	 NULL, "OK");
+  printf(stdout, "INHIBITOR\t%d\t%d\t%d\t%d\t%s\n", inhibitor_pid, NULL, NULL,
+	 NULL, "OK");
 
-  fprintf(stdout, "STATS ----------------------------------------------------------------------------------------------------\n");
+  printf(stdout, "STATS\n");
 
-  fprintf(stdout,"TOT_ENERGY --%d---------------------------------------------------------------------------------------------\n",total_energy);
-  printf(stdout," TOT_ACTIVATION_LAST_SEC--%d---------------------------------------------------------------------------------------------\n",atom_stat);
-  fprintf(stdout,"TOT_ENERGY --%d---------------------------------------------------------------------------------------------\n",total_energy);
-  fprintf(stdout,"TOT_ENERGY --%d---------------------------------------------------------------------------------------------\n",total_energy);
-  fprintf(stdout,"TOT_ENERGY --%d---------------------------------------------------------------------------------------------\n",total_energy);
-
+  printf(stdout, "TOT_ENERGY\t%d\n", total_energy);
+  printf(stdout, "TOT_ACTIVATION_LAST_SEC\t%d\n", atom_stat);
+  printf(stdout, "TOT_ENERGY\t%d\n", total_energy);
+  printf(stdout, "TOT_ENERGY\t%d\n", total_energy);
+  printf(stdout, "TOT_ENERGY\t%d\n", total_energy);
 }
+
 int main(void)
 {
 
@@ -586,7 +587,6 @@ int main(void)
 #ifdef _PRINT_TEST
   printf("KEY IS %d \n", key_shm);
 #endif
-
 
   if (key_shm < 0)
   {
@@ -614,7 +614,7 @@ int main(void)
 
   printf("-> Main %d <-\n", getpid());
   scan_data();
-  
+
   // ipc_init();
 
 #ifdef _PRINT_TEST
@@ -635,7 +635,7 @@ int main(void)
 	 activator_pid);
 #endif
 
-   fuel_pid = fuel_generator();
+  fuel_pid = fuel_generator();
   //  kill(fuel_pid, SIGSTOP);
   if (config.INHIBITOR == 1)
   {
@@ -685,11 +685,11 @@ int main(void)
 
   while (1)
   {
-   int energy_released = read_shared_memory();
+    int energy_released = read_shared_memory();
     total_energy += energy_released;
-    //TODO call a function that displays statistic
-   fprintf(stdout,"total energy realeased: %d\n",total_energy);
-   //printer();
+    // TODO call a function that displays statistic
+    fprintf(stdout, "total energy realeased: %d\n", total_energy);
+    // printer();
   }
   return 0;
 }

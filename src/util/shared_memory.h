@@ -6,8 +6,9 @@
 
 
 #define ENERGY_KEY 0x30
-struct energy_released {
+struct data_to_share {
   int energy_released;
+  int nuclear_waste;
 };
 
 
