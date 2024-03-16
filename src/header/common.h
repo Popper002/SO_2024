@@ -47,25 +47,7 @@ struct config
   double STEP; //da castare
   int INHIBITOR;
 };
-struct statistics
-{
-  struct config conf;
-  int total_num_activation_;
-  int num_activation_last_sec;
-  int num_fission_last_sec;
-  int total_num_fission;
-  int num_energy_produced;
-  int total_num_energy_produced_last_sec;
-  int total_num_energy_consumed;
-  int num_energy_consumed_last_sec;
-  int num_energy_consumed_inhibitor;
-  int num_energy_consumed_inhibitor_last_sec;
-  int total_nuclear_waste;
-  int total_nuclear_waste_last_sec;
-  int energy_absorbed;
-  int fission_limited;
-  // TODO: not sure if this need to be a number or a string
-};
+
 
 /* RIPASSO ENUM:
  * Sono un modo per rappresentare un gruppo di constanti ,di default i valori

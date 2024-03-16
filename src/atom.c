@@ -53,12 +53,15 @@ static int energy_free(int atomic_a1, int atomic_a2)
 void atom_fission(struct atom *atom, int command, struct config config)
 {
 
+  atom_stats.total_nuclear_waste = 0;
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
     fprintf(stdout, "Starting fissioning atom....\n");
   {
     fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
 	    atom->atomic_number);
+    atom_stats.total_nuclear_waste++;
+    update_shared_memory(&atom_stats);
   }
   if (atom->atomic_flag == 1)
   {
@@ -84,7 +87,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
       int energy_released =
 	  energy_free(child1_atomic_number, child2_atomic_number);
       printf("energy released %d\n", energy_released);
-      update_shared_memory(energy_released);
+      update_shared_memory(&atom_stats);
       printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
 	     __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
 	     energy_released);
@@ -169,6 +172,7 @@ int main(int argc, char const *argv[])
     int energy_released = read_shared_memory();
     total_energy += energy_released;
     atom_stats.total_num_fission +=atom_stats.num_fission_last_sec;
+    update_shared_memory(&atom_stats);
   }
  /* cleanup_shared_memory(); */ 
  /* Never lunched this function ,this is caused from the while loop never end's*/
