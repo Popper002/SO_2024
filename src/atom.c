@@ -4,6 +4,7 @@
 struct atom atom;
 static struct message rcv;
 struct config config;
+struct statistics atom_stats;
 static void print_para_TEST(struct config config)
 {
   printf("\t\n----------\n");
@@ -61,6 +62,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
   }
   if (atom->atomic_flag == 1)
   {
+
     pid_t atom_child = fork();
     switch (atom_child)
     {
@@ -68,6 +70,7 @@ void atom_fission(struct atom *atom, int command, struct config config)
       TEST_ERROR
       exit(EXIT_FAILURE);
     case 0:
+      atom_stats.num_activation_last_sec++;
       child1_atomic_number = rand() % (atom->atomic_number - 1) +
 			     1; // -1 and +1 so we are sure to not exceed the
 				// starting atomic number
@@ -165,6 +168,7 @@ int main(int argc, char const *argv[])
   {
     int energy_released = read_shared_memory();
     total_energy += energy_released;
+    atom_stats.total_num_fission +=atom_stats.num_fission_last_sec;
   }
  /* cleanup_shared_memory(); */ 
  /* Never lunched this function ,this is caused from the while loop never end's*/
