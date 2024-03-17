@@ -26,9 +26,8 @@ void init_shared_memory(){
 void update_shared_memory(struct statistics *stats){
   memcpy(shared_data_in_shm,stats,sizeof(struct statistics));
 }
-
-int read_shared_memory(){
-  return shared_data_in_shm->energy_produced_value;
+struct  statistics* read_shared_memory(){
+  return shared_data_in_shm;
 }
 
 void cleanup_shared_memory(){

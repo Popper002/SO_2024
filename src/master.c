@@ -688,8 +688,8 @@ int main(void)
     int energy_released = read_shared_memory();
     total_energy += energy_released;
     // TODO call a function that displays statistic
-    fprintf(stdout, "total energy realeased: %d\n", total_energy);
+    //fprintf(stdout, "total energy realeased: %d\n", total_energy);
     // printer();
   }
   return 0;
-}
+} 

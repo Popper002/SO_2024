@@ -29,7 +29,7 @@ struct statistics
 
 void init_shared_memory();
 void update_shared_memory(struct statistics *stats);
-int read_shared_memory();
+struct  statistics* read_shared_memory();
 void cleanup_shared_memory();
 
 

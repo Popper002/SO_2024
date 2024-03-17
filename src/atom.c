@@ -142,6 +142,7 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "error in rcv_id queue %s\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
+  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
   if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
   {
     fprintf(stderr, "%s Error in msg_rcv\n", __FILE__);
@@ -161,11 +162,11 @@ int main(int argc, char const *argv[])
   printf("atom.atomic_number %d\n", atom.atomic_number);
 #endif
   */
-
+  
   atom.atomic_number = get_atomic_number();
   fprintf(stdout,"The atomic number of atom [%d] is %d \n", atom.pid,
 	 atom.atomic_number);
-  //  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
+  
   atom_fission(&atom, atom.atomic_flag, config);
   while (1)
   {
