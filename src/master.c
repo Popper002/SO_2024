@@ -522,7 +522,7 @@ void start_atom()
     kill(atom_array_pid[i], SIGCONT);
 #ifdef __PRINT_TEST
     printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
-#endif __PRINT_TEST
+#endif
   }
   /*@Popper002 TODO  SEGFAULT HERE
   for(int j=0;j<config.N_NUOVI_ATOMI;j++)
@@ -688,11 +688,13 @@ int main(void)
 
   while (1)
   {
+    /*
     int energy_released = read_shared_memory();
     total_energy += energy_released;
-    // TODO call a function that displays statistic
-    //fprintf(stdout, "total energy realeased: %d\n", total_energy);
+     TODO call a function that displays statistic
+    fprintf(stdout, "total energy realeased: %d\n", total_energy);
     printer();
+     */
   }
   return 0;
 } 

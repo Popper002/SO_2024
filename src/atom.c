@@ -126,7 +126,11 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf("HELLO IS ATOM %d\n", atom.pid);
 #endif
-
+  if (argc <= 9)
+  {
+    fprintf(stderr, "[%s]Not enough argument", __FILE__);
+    exit(EXIT_FAILURE);
+  }
   fetch_args_atom(argv);
 
   init_shared_memory();
@@ -162,21 +166,22 @@ int main(int argc, char const *argv[])
   printf("atom.atomic_number %d\n", atom.atomic_number);
 #endif
   */
-  
+
   atom.atomic_number = get_atomic_number();
-  fprintf(stdout,"The atomic number of atom [%d] is %d \n", atom.pid,
-	 atom.atomic_number);
-  
+  fprintf(stdout, "The atomic number of atom [%d] is %d \n", atom.pid,
+	  atom.atomic_number);
+
   atom_fission(&atom, atom.atomic_flag, config);
   while (1)
   {
     int energy_released = read_shared_memory();
     total_energy += energy_released;
-    atom_stats.total_num_fission +=atom_stats.num_fission_last_sec;
+    atom_stats.total_num_fission += atom_stats.num_fission_last_sec;
     update_shared_memory(&atom_stats);
   }
- /* cleanup_shared_memory(); */ 
- /* Never lunched this function ,this is caused from the while loop never end's*/
+  /* cleanup_shared_memory(); */
+  /* Never lunched this function ,this is caused from the while loop never
+   * end's*/
 
   return 0;
 }

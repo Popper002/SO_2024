@@ -8,7 +8,6 @@ pid_t new_atom;
 static int shm_id;
 static key_t shm_key;
 
-
 void atom_argument_creator(char *argv[])
 {
   char n_atomi_init[10];
@@ -176,24 +175,23 @@ void signal_handle(int signum)
 {
   switch (signum)
   {
-  case SIGALRM: 
-        write(STDOUT_FILENO,"FUEL : FINISH CREATE NEW ATOM'S..BYE\n",38); 
-        shmctl(shm_id , IPC_RMID , NULL); 
-        kill(getpid(),SIGTERM); 
+  case SIGALRM:
+    write(STDOUT_FILENO, "FUEL : FINISH CREATE NEW ATOM'S..BYE\n", 38);
+    shmctl(shm_id, IPC_RMID, NULL);
+    kill(getpid(), SIGTERM);
     break;
-  
+
   default:
     break;
   }
-
 }
 double step_nanosec()
 {
   double retNsec;
-  struct timespec ts; 
-  clock_gettime(CLOCK_REALTIME,&ts); 
-  retNsec= ts.tv_nsec;
-  return retNsec; 
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  retNsec = ts.tv_nsec;
+  return retNsec;
 }
 /**
  * inseriamo l'array di pid nuovo in memoria condivisa in modo da essere
@@ -207,20 +205,26 @@ double step_nanosec()
 int main(int argc, char const *argv[])
 {
   srand(time(NULL));
-  signal(SIGALRM , signal_handle) ; 
+  signal(SIGALRM, signal_handle);
 #ifdef _PRINT_TEST
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
+  if (argc <= 9)
+  {
+    fprintf(stderr, "Not enough arguments");
+    exit(EXIT_FAILURE);
+  }
   fetch_args_fuel(argv);
-  config.STEP=step_nanosec();
-  fprintf(stdout,"NANOSEC VALUE :%lf\n",config.STEP);
+  config.STEP = step_nanosec();
+  fprintf(stdout, "NANOSEC VALUE :%lf\n", config.STEP);
+
 #ifdef _PRINT_TEST
   print_ALL_IPC();
   print_para_TEST();
-  fprintf(stdout,"NANOSEC VALUE :%lf\n",config.STEP);
+  fprintf(stdout, "NANOSEC VALUE :%lf\n", config.STEP);
   // value_in_memory();
 #endif
-  
+
   shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t),
 		  IPC_CREAT | 0666);
   if (shm_id < 0)
@@ -231,32 +235,33 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf(" [%s] [N_NUOVI_ATOMI : %d ]\n", __FILE__, config.N_NUOVI_ATOMI);
 #endif
-  atom_new_pid = (pid_t*)malloc(sizeof(pid_t)*config.N_ATOMI_INIT);
-   if(atom_new_pid == NULL) {
-    fprintf(stdout,"malloc error %s",strerror(errno));
+  atom_new_pid = (pid_t *)malloc(sizeof(pid_t) * config.N_ATOMI_INIT);
+  if (atom_new_pid == NULL)
+  {
+    fprintf(stdout, "malloc error %s", strerror(errno));
     exit(EXIT_FAILURE);
-   }
+  }
   // store__new_pid_atom();
 
   //*new_pid_atom->array = (shm_fuel * )
   // malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t));
-    //alarm(config.STEP); 
-    /* Indecisione o ogni STEP nanosecondi viene interpretato come Fuel runna fino a STEP nanosecondi o 
-    lo facciamo dormire per STEP nonosecondi finchè non finisce la simulazione
-    */
+  // alarm(config.STEP);
+  /* Indecisione o ogni STEP nanosecondi viene interpretato come Fuel runna fino
+  a STEP nanosecondi o lo facciamo dormire per STEP nonosecondi finchè non
+  finisce la simulazione
+  */
 
-   /*Altra idea STEP facciamo randomico numeri floating point compreso tra 0.N e 1,N */
+  /*Altra idea STEP facciamo randomico numeri floating point compreso tra 0.N e
+   * 1,N */
 
-
-  struct timespec ns_step,sec_step;
+  struct timespec ns_step, sec_step;
   sec_step.tv_sec = config.STEP;
   ns_step.tv_nsec = config.STEP * 1000000000LL;
-    for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
-    {
-       atom_new_pid[i] = born_new_atom(config);
-       nanosleep(&ns_step,&sec_step);
-    }
-
+  for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
+  {
+    atom_new_pid[i] = born_new_atom(config);
+    nanosleep(&ns_step, &sec_step);
+  }
 
 #ifdef _PRINT_TEST
   for (int l = 0; l < config.N_NUOVI_ATOMI; l++)
@@ -280,8 +285,7 @@ int main(int argc, char const *argv[])
 
   while (1)
   {
-    
   }
-  
+
   return 0;
 }
