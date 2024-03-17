@@ -554,23 +554,25 @@ void fill_sem()
 
 void printer()
 {
-  printf(stdout, "PROC\tPID\tENERGY\tN_FORK\tATOMIC_NUMBER\tSTATUS\n");
-  printf(stdout, "MASTER\t%d\t%d\t%d\t%d\t%s\n", getpid(), NULL, NULL, NULL,
+  printf( "PROC\tPID\tENERGY\tN_FORK\tATOMIC_NUMBER\tSTATUS\n");
+  printf( "MASTER\t%d\t%d\t%d\t%d\t%s\n", getpid(), NULL, NULL, NULL,
 	 "OK");
-  printf(stdout, "FUEL\t%d\t%d\t%d\t%d\t%s\n", fuel_pid, NULL,
+  printf( "FUEL\t%d\t%d\t%d\t%d\t%s\n", fuel_pid, NULL,
 	 config.N_NUOVI_ATOMI, NULL, "OK");
-  printf(stdout, "ACTIVATOR\t%d\t%d\t%d\t%d\t%s\n", activator_pid, NULL, NULL,
+  printf( "ACTIVATOR\t%d\t%d\t%d\t%d\t%s\n", activator_pid, NULL, NULL,
 	 NULL, "OK");
-  printf(stdout, "INHIBITOR\t%d\t%d\t%d\t%d\t%s\n", inhibitor_pid, NULL, NULL,
+  printf( "INHIBITOR\t%d\t%d\t%d\t%d\t%s\n", inhibitor_pid, NULL, NULL,
 	 NULL, "OK");
 
-  printf(stdout, "STATS\n");
+  printf( "STATS\n");
 
-  printf(stdout, "TOT_ENERGY\t%d\n", total_energy);
-  printf(stdout, "TOT_ACTIVATION_LAST_SEC\t%d\n", atom_stat);
-  printf(stdout, "TOT_ENERGY\t%d\n", total_energy);
-  printf(stdout, "TOT_ENERGY\t%d\n", total_energy);
-  printf(stdout, "TOT_ENERGY\t%d\n", total_energy);
+  printf( "TOT_ENERGY\t%d\n", total_energy);
+  printf( "TOT_ACTIVATION_LAST_SEC\t%d\n", atom_stat);
+  printf( "TOT_ENERGY\t%d\n", total_energy);
+  printf( "TOT_ENERGY\t%d\n", total_energy);
+  printf( "TOT_ENERGY\t%d\n", total_energy);
+  printf("--------------------------------------------------------------\n");
+  printf("\n");
 }
 
 int main(void)
@@ -612,7 +614,7 @@ int main(void)
   signal(SIGUSR1, handle_signal);
   signal(SIGALRM, handle_signal);
 
-  printf("-> Main %d <-\n", getpid());
+  //printf("-> Main %d <-\n", getpid());
   scan_data();
 
   // ipc_init();
@@ -664,12 +666,13 @@ int main(void)
    * propria ?
    */
   // shutdown();
+  #ifdef _PRINT_TEST
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
-
+  #endif
   for (start = 10; start > 0; start--)
   {
     printf("\rStarting the simulation in %d...\n", start);
@@ -689,7 +692,7 @@ int main(void)
     total_energy += energy_released;
     // TODO call a function that displays statistic
     //fprintf(stdout, "total energy realeased: %d\n", total_energy);
-    // printer();
+    printer();
   }
   return 0;
 } 
