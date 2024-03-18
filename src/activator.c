@@ -49,11 +49,7 @@ int main(int argc, char const *argv[])
 #endif
   static int q_id, i;
   int command;
-  if (argc < 8)
-  {
-    fprintf(stderr, "[%s] Not enough arguments", __FILE__);
-    exit(EXIT_FAILURE);
-  }
+  
   fetch_args(argv);
   srand(time(NULL));
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);

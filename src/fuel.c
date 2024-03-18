@@ -209,11 +209,7 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
-  if (argc <= 9)
-  {
-    fprintf(stderr, "Not enough arguments");
-    exit(EXIT_FAILURE);
-  }
+  
   fetch_args_fuel(argv);
   config.STEP = step_nanosec();
   fprintf(stdout, "NANOSEC VALUE :%lf\n", config.STEP);

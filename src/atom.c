@@ -126,11 +126,7 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf("HELLO IS ATOM %d\n", atom.pid);
 #endif
-  if (argc <= 9)
-  {
-    fprintf(stderr, "[%s]Not enough argument", __FILE__);
-    exit(EXIT_FAILURE);
-  }
+  
   fetch_args_atom(argv);
 
   init_shared_memory();
