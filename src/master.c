@@ -554,20 +554,21 @@ void fill_sem()
 
 void printer()
 {
+  // TODO all of this print are place holder
   printf( "PROC\tPID\tENERGY\tN_FORK\tATOMIC_NUMBER\tSTATUS\n");
-  printf( "MASTER\t%d\t%d\t%d\t%d\t%s\n", getpid(), NULL, NULL, NULL,
+  printf( "MASTER\t%d\t%p\t%p\t%p\t%s\n", getpid(), NULL, NULL, NULL,
 	 "OK");
-  printf( "FUEL\t%d\t%d\t%d\t%d\t%s\n", fuel_pid, NULL,
+  printf( "FUEL\t%d\t%p\t%d\t%p\t%s\n", fuel_pid, NULL,
 	 config.N_NUOVI_ATOMI, NULL, "OK");
-  printf( "ACTIVATOR\t%d\t%d\t%d\t%d\t%s\n", activator_pid, NULL, NULL,
+  printf( "ACTIVATOR\t%d\t%p\t%p\t%p\t%s\n", activator_pid, NULL, NULL,
 	 NULL, "OK");
-  printf( "INHIBITOR\t%d\t%d\t%d\t%d\t%s\n", inhibitor_pid, NULL, NULL,
+  printf( "INHIBITOR\t%d\t%p\t%p\t%p\t%s\n", inhibitor_pid, NULL, NULL,
 	 NULL, "OK");
 
   printf( "STATS\n");
 
   printf( "TOT_ENERGY\t%d\n", total_energy);
-  printf( "TOT_ACTIVATION_LAST_SEC\t%d\n", atom_stat);
+  printf( "TOT_ACTIVATION_LAST_SEC\t%d\n", total_energy);
   printf( "TOT_ENERGY\t%d\n", total_energy);
   printf( "TOT_ENERGY\t%d\n", total_energy);
   printf( "TOT_ENERGY\t%d\n", total_energy);
@@ -662,10 +663,7 @@ int main(void)
   print_all_pid();
 #endif
 
-  /* TODO: qui dovremmo aver finito di creare i processi, a sto punto facciamo
-   *sem_release e da qui sotto in poi dovrebbe iniziare la simulazione vera e
-   * propria ?
-   */
+
   // shutdown();
   #ifdef _PRINT_TEST
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
@@ -678,7 +676,7 @@ int main(void)
   {
     printf("\rStarting the simulation in %d...\n", start);
     sleep(1);
-    //  printf("\033[23A\r");
+//      printf("\033[23A\r");
   }
   fprintf(stdout, "Master: [PID %d] is starting the simulation\n", getpid());
   alarm(config.SIM_DURATION);
@@ -689,13 +687,11 @@ int main(void)
 
   while (1)
   {
-    /*
-    int energy_released = read_shared_memory();
-    total_energy += energy_released;
-     TODO call a function that displays statistic
-    fprintf(stdout, "total energy realeased: %d\n", total_energy);
+    struct statistics *energy_released = read_shared_memory();
+
+    total_energy += energy_released->energy_produced_value;
+//     TODO call a function that displays statistic
     printer();
-     */
   }
   return 0;
 } 
