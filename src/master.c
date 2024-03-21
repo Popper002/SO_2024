@@ -23,7 +23,11 @@ static int activator_array_pid[10];
 static int fuel_array_pid[100];
 static int sem_id;
 static int shm_id;
-static int total_energy = 0;
+static int fork_fuel; 
+static int fork_activator; 
+static int fork_atom;
+static int fork_inhibitor;
+static int total_energy ;
 
 shm_fuel *rcv_pid;
 int *atom_array_pid;
@@ -68,7 +72,9 @@ static int scan_data()
     fprintf(stderr, "%d\n", errno);
     exit(EXIT_FAILURE);
   }
+  #ifdef _PRINT_TEST
   printf("Reading data from file...\n");
+  #endif
   while (fscanf(fp, "%s %d", name_param, &value) != EOF)
   {
     if (strcmp(name_param, "N_ATOMI_INIT") == 0)
@@ -123,11 +129,14 @@ static int scan_data()
   }
 
   fclose(fp);
+  #ifdef _PRINT_TEST
   printf("Data read from file!\n");
   if (config.INHIBITOR == 1)
   {
     printf("Inhibitor is going to be used in this simulation\n");
   }
+  #endif
+
   return error;
 }
 static void argument_creator(char *argv[])
@@ -204,6 +213,7 @@ pid_t inhibitor()
   case -1:
     // why_term(MELTDOWN);
   case 0:
+    fork_inhibitor++;
     argument_creator((char **)inebitore_args);
     execvp(INHIBITOR_PATH, (char **)inebitore_args);
 
@@ -213,8 +223,6 @@ pid_t inhibitor()
     break;
 
   default:
-    printf("Inebitore case default\n");
-    // kill(inhibitor_pid ,SIGSTOP);
     return inhiitor_pid;
     break;
   }
@@ -229,6 +237,7 @@ pid_t fuel_generator()
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
+  fork_fuel++; 
 #ifdef _PRINT_TEST
     printf("fuel case 0\n");
 #endif
@@ -245,8 +254,7 @@ pid_t fuel_generator()
 
   default:
 
-    printf("fuel case default\n");
-    kill(fuel_pid, SIGSTOP);
+    //kill(fuel_pid, SIGSTOP);
     return fuel_pid;
     break;
   }
@@ -297,6 +305,7 @@ pid_t activator(struct config config)
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
+  fork_activator++; 
 #ifdef _PRINT_TEST
     printf("activator case 0\n");
 #endif
@@ -370,7 +379,9 @@ void store_pid_atom()
 #endif
   }
 
+ #ifdef _PRINT_TEST
   fprintf(stdout, "Child process %d created and suspended.\n", atom_pid);
+  #endif
   free(atom_array_pid);
 }
 
@@ -564,7 +575,6 @@ void printer()
 	 NULL, "OK");
   printf( "INHIBITOR\t%d\t%p\t%p\t%p\t%s\n", inhibitor_pid, NULL, NULL,
 	 NULL, "OK");
-
   printf( "STATS\n");
 
   printf( "TOT_ENERGY\t%d\n", total_energy);
@@ -576,7 +586,34 @@ void printer()
   printf("\n");
 }
 
+void logo()
+{ 
+      printf("\t-----------------------------------\n"); 
 
+    printf("\
+           _______ ____  __  __ _____ _____    _____ ______ _   _ ______ _____         \n\
+     /\\|__   __/ __ \\|  \\/  |_   _/ ____|  / ____|  ____| \\ | |  ____|  __ \\     /\\|__   __/ __ \\|  __ \\    \n\
+    /  \\  | | | |  | | \\  / | | || |      | |  __| |__  |  \\| | |__  | |__) |   /  \\  | | | |  | | |__) |   \n\
+   / /\\ \\ | | | |  | | |\\/| | | || |      | | |_ |  __| | . ` |  __| |  _  /   / /\\ \\ | | | |  | |  _  /    \n\
+  / ____ \\| | | |__| | |  | |_| || |____  | |__| | |____| |\\  | |____| | \\ \\  / ____ \\| | | |__| | | \\ \\   \n\
+ /_/    \\_\\_|  \\____/|_|  |_|_____|\\_____|  \\_____|______|_|_\\_|______|_|  \\_\\/_/    \\_\\_|_|\\____/|_|  \\_\\ \n");
+
+    printf("\t-------------------------------------------\n");                                                                                                                                        
+    
+    printf(" By Riccardo Oro & Francesco Mauro \n"); 
+    printf("\n\n\n");
+
+   printf(
+"              _             _         _                 _       _   _              \n"
+"     | |           | |       (_)               | |     | | (_)             \n"
+"  ___| |_ __ _ _ __| |_   ___ _ _ __ ___  _   _| | __ _| |_ _  ___  _ __   \n"
+" / __| __/ _` | '__| __| / __| | '_ ` _ \\| | | | |/ _` | __| |/ _ \\| '_ \\  \n"
+" \\__ \\ || (_| | |  | |_  \\__ \\ | | | | | | |_| | | (_| | |_| | (_) | | | | \n"
+" |___/\\__\\__,_|_|   \\__| |___/_|_| |_| |_|\\__,_|_|\\__,_|\\__|_|\\___/|_| |_| \n"
+"                                                                           \n"
+"                                                                           \n"
+    );
+}
 int main(void)
 {
 
@@ -598,7 +635,6 @@ int main(void)
   }
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT) * sizeof(pid_t),
 		  IPC_CREAT | 0666);
-  printf("SHM ID %d\n ", shm_id);
   sem_id = semget(IPC_PRIVATE, TYPE_PROC, 0600 | IPC_CREAT);
   if (sem_id == -1)
   {
@@ -631,9 +667,7 @@ int main(void)
   inebitore_args[0] = (char **)INHIBITOR_PATH;
 
   activator_pid = activator(config);
-  printf("activator pid %d\n", activator_pid);
   //  kill(activator_pid, SIGSTOP);
-  printf("activator generated and stopped\n");
 #ifdef _PRINT_TEST
   printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
 	 activator_pid);
@@ -672,6 +706,7 @@ int main(void)
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
   #endif
+  logo();
   for (start = 10; start > 0; start--)
   {
     printf("\rStarting the simulation in %d...\n", start);
@@ -693,5 +728,6 @@ int main(void)
 //     TODO call a function that displays statistic
     printer();
   }
+
   return 0;
 } 
