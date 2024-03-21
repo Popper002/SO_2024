@@ -17,7 +17,6 @@ void atom_argument_creator(char *argv[])
   char n_nuovi_atomi[10];
   char sim_duration[10];
   char energy_explode_threshold[10];
-  char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
   sprintf(n_atom_max, "%d", config.N_ATOM_MAX);
@@ -35,7 +34,7 @@ void atom_argument_creator(char *argv[])
   argv[8] = NULL;
 }
 
-pid_t born_new_atom(struct config config)
+pid_t born_new_atom()
 {
 
   // int random_a_number = randomize_atom(config.MIN_A_ATOMICO);
@@ -209,10 +208,14 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
-  
+
+  if(argc < 11){
+    fprintf(stderr,"Not enough arguments");
+    exit(EXIT_FAILURE);
+  }
   fetch_args_fuel(argv);
   config.STEP = step_nanosec();
-  fprintf(stdout, "NANOSEC VALUE :%lf\n", config.STEP);
+  fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);
 
 #ifdef _PRINT_TEST
   print_ALL_IPC();
@@ -255,7 +258,7 @@ int main(int argc, char const *argv[])
   ns_step.tv_nsec = config.STEP * 1000000000LL;
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
   {
-    atom_new_pid[i] = born_new_atom(config);
+    atom_new_pid[i] = born_new_atom();
     nanosleep(&ns_step, &sec_step);
   }
 
@@ -268,7 +271,7 @@ int main(int argc, char const *argv[])
 #endif
   new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
   /* copiamo l'array di pid in memoria condivisa */
-  memcpy(new_pid_atom->array, atom_new_pid, sizeof(atom_new_pid));
+  memcpy(new_pid_atom->array, atom_new_pid, sizeof(int));
   printf("COPY COMPLEATE\n");
   fflush(stdout);
   if (shmdt(new_pid_atom) < 0)

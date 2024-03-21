@@ -49,13 +49,19 @@ int main(int argc, char const *argv[])
 #endif
   static int q_id, i;
   int command;
-  
+
+  if(argc < 9){
+    fprintf(stderr,"Not enough arguments");
+    exit(EXIT_FAILURE);
+  }
   fetch_args(argv);
   srand(time(NULL));
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  /*
   int sem_master_activator_id = semget(
       MASTER_ACTIVATOR_SEM, 0,
-      0600 | IPC_CREAT); /* return the id of the sem associated with this key */
+      0600 | IPC_CREAT);  return the id of the sem associated with this key
+  */
   printf("[%s] QUEUEU : %d CREATED \n ", __FILE__, q_id);
   for (i = 0; i < config.N_ATOMI_INIT; i++)
   {

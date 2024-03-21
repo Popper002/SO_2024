@@ -44,7 +44,7 @@ struct config
   int N_NUOVI_ATOMI;
   int SIM_DURATION;
   int ENERGY_EXPLODE_THRESHOLD;
-  double STEP; //da castare
+  time_t STEP;
   int INHIBITOR;
 };
 
