@@ -21,7 +21,6 @@ struct atom atom_stat;
 // char const *args_[100];
 static int activator_array_pid[10];
 static int fuel_array_pid[100];
-static int sem_id;
 static int shm_id;
 static int fork_fuel; 
 static int fork_activator; 
@@ -40,7 +39,6 @@ pid_t fuel_pid;
 struct config config;
 struct hash_table table;
 enum term_reason term_reason;
-int sem_master_activator_id;
 
 #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -262,7 +260,6 @@ pid_t fuel_generator()
 
 pid_t atom_gen(struct config config)
 {
-  struct sembuf operation;
   switch (atom_pid = fork())
   {
   case -1:
@@ -271,12 +268,6 @@ pid_t atom_gen(struct config config)
     exit(EXIT_FAILURE);
   case 0:
 
-    //    sem_reserve(sem_master_activator_id, 0 , -1);
-    /*
-       operation.sem_num=0;
-       operation.sem_op= 0;
-       semop(sem_master_activator_id ,&operation,1);
-       */
     argument_creator((char **)args_atom);
     execvp(ATOM_PATH, (char **)args_atom);
 
@@ -343,11 +334,10 @@ struct hash_table init_table(struct hash_table table)
   return table;
 }
 
+
+/*
 void shutdown()
 {
-  printf("Removed sem %d\n", sem_id);
-  semctl(sem_id, 0, IPC_RMID);
-  /*
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     if (atom_array_pid[i] != getpid()) {
@@ -359,8 +349,8 @@ void shutdown()
     printf("Killed process with pid %d\n", atom_array_pid[i]);
     printf("Killed process with pid %d\n", activator_array_pid[i]);
   }
-  */
 }
+*/
 
 void store_pid_atom()
 {
@@ -388,9 +378,6 @@ void store_pid_atom()
 void remove_ipc()
 {
   int remove_queue;
-  semctl(sem_master_activator_id, NULL, IPC_RMID);
-  shmctl(shm_id, IPC_RMID, NULL);
-  semctl(sem_id, NULL, IPC_RMID);
   remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
   msgctl(remove_queue, IPC_RMID, NULL);
   cleanup_shared_memory();
@@ -517,14 +504,7 @@ void ipc_init()
   }
 }
 */
-void sem_reset()
-{
-  semctl(sem_id, SEM_ID_ATOM, SETVAL, 0);
-  semctl(sem_id, SEM_ID_ACTIVATOR, SETVAL, 0);
-  semctl(sem_id, SEM_ID_FUEL, SETVAL, 0);
-  semctl(sem_id, SEM_ID_INIBITOR, SETVAL, 0);
-  semctl(sem_master_activator_id, 0, SETVAL, 0);
-}
+
 void start_atom()
 {
   printf("\033[1;32m starting atom as last process \033[0m\n");
@@ -544,24 +524,8 @@ void start_atom()
   }
   */
 }
-void fill_sem()
-{
-  struct sembuf sops[TYPE_PROC];
-  bzero(sops, sizeof(sops));
-  sops[0].sem_flg = 0;
-  sops[0].sem_num = SEM_ID_ATOM;
-  sops[0].sem_num = config.N_ATOMI_INIT;
-  sops[1].sem_flg = 0;
-  sops[1].sem_num = SEM_ID_ACTIVATOR;
-  sops[1].sem_op = 1;
-  sops[2].sem_flg = 0;
-  sops[2].sem_num = SEM_ID_FUEL;
-  sops[2].sem_op = 1;
-  sops[3].sem_flg = 0;
-  sops[3].sem_num = SEM_ID_INIBITOR;
-  sops[3].sem_op = config.INHIBITOR;
-  semop(sem_id, sops, TYPE_PROC);
-}
+
+
 
 void printer()
 {
@@ -635,19 +599,7 @@ int main(void)
   }
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT) * sizeof(pid_t),
 		  IPC_CREAT | 0666);
-  sem_id = semget(IPC_PRIVATE, TYPE_PROC, 0600 | IPC_CREAT);
-  if (sem_id == -1)
-  {
-    fprintf(stderr, "[%s]Error in semget %s\n", __FILE__, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-  if ((sem_master_activator_id =
-	   semget(MASTER_ACTIVATOR_SEM, 1, IPC_CREAT | 0600)) < 0)
-  {
-    fprintf(stderr, "%s\n", strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-  //  sem_reset();
+
   srand(time(NULL));
   signal(SIGUSR1, handle_signal);
   signal(SIGALRM, handle_signal);

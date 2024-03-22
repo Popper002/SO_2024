@@ -47,21 +47,7 @@ pid_t born_new_atom()
 #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
 #endif
-#ifdef _PRINT_TEST
-    // printf("%s %s sem release sem_id: %d \t sem_op: %d\n", __func__,
-    // __FILE__, sem_id, semctl(sem_id, 0, GETVAL));
-#endif
-    /*
-	if (sem_reserve(sem_id, 0) == -1)
-	{
-	  fprintf(stderr, "[%s || %s in sem_reserve %s\n", __FILE__, __func__,
-		  strerror(errno));
-	  exit(EXIT_FAILURE);
-	}
 
-	put(&table, atom_pid, random_a_number);
-	print_hash_table(&table);
-      */
     atom_argument_creator((char **)new_atom_args);
     execvp(ATOM_PATH, (char **)new_atom_args);
 

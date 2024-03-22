@@ -17,10 +17,7 @@ pid_t inib()
 }
 int main(int argc, char const *argv[])
 {
-    struct sembuf op;
-    sem_id = semget(0x22, 1, IPC_CREAT | 0600);
-    semctl(sem_id, 1, SETVAL, 0);
-    pid_t inibitore; 
+    pid_t inibitore;
     inibitore = inib();
     for(int i =0;  i <NUM_PROC; i++ ){      
         printf("iterzaione num: %d\n", i);

@@ -57,11 +57,7 @@ int main(int argc, char const *argv[])
   fetch_args(argv);
   srand(time(NULL));
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
-  /*
-  int sem_master_activator_id = semget(
-      MASTER_ACTIVATOR_SEM, 0,
-      0600 | IPC_CREAT);  return the id of the sem associated with this key
-  */
+
   printf("[%s] QUEUEU : %d CREATED \n ", __FILE__, q_id);
   for (i = 0; i < config.N_ATOMI_INIT; i++)
   {
@@ -80,16 +76,8 @@ int main(int argc, char const *argv[])
 	   __func__, send.text, q_id, send.m_type);
 #endif
   }
-  // sem_release(sem_master_activator_id, 0, config.N_ATOMI_INIT +1);
 
-  /*
-  struct sembuf operation;
-  operation.sem_num=0;
-  operation.sem_op = config.N_ATOMI_INIT+config.N_NUOVI_ATOMI;
-  semop(sem_master_activator_id,&operation,1);
-  */
 
-  printf("[ %s ] [ %s ] SEM_OP_SEND\n", __FILE__, __func__);
   fflush(stdout);
   return 0;
 }
