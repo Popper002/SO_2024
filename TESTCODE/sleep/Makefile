@@ -2,8 +2,10 @@ CC =gcc
 
 all:
 	$(CC) sleep.c -o sleep -lm 
-run: 
+	$(CC) stop.c -o stop -lm 
+sleep: 
 	./sleep
+stop: 
+	./stop
 rm:
-	rm -rf sleep
-	
+	rm -rf sleep stop 
