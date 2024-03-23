@@ -5,4 +5,6 @@
 * TODO Tabella print ogni secondi*
 * TODO step nanosec
 * TODO log su file con tutti i pid degli atomi
-* TODO risolvere i warning
+* DONE risolvere i warning di fuel
+* DONE risolvere i warning di activator
+* TODO risolvere i warning di master 

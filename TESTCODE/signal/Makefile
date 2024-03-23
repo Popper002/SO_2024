@@ -7,11 +7,11 @@ UTILS = src/util/*.c
 
 
 start:
-	$(CC) $(CFLAGS) startandstop.c library.h -o signal 
+	$(CC) $(CFLAGS) startandstop.c ../../src/util/my_sem_lib.c library.h -o signal
 rcv: 
 	$(CC) $(CFLAGS) delivery.c library.h -o rcv 
 
-rm: 
+clean: 
 	$(IPC_RM) $(RM) signal rcv timeout alarm_test 
 
 alarm: 
