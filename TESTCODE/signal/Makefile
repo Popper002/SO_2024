@@ -12,7 +12,8 @@ rcv:
 	$(CC) $(CFLAGS) delivery.c library.h -o rcv 
 
 clean: 
-	$(IPC_RM) $(RM) signal rcv timeout alarm_test 
+	$(IPC_RM) 
+	$(RM) signal rcv timeout alarm_test start stop 
 
 alarm: 
 	
