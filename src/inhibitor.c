@@ -67,6 +67,7 @@ int main(int argc, char const *argv[])
     inhibitor_command = fission_flag();
     /* convert command in to string ,inside the msg_buffer*/
     sprintf(inhibitor_send.text, "%d", inhibitor_command);
+    // FIXME error in this send
     if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
 	       0) < 0)
     {

@@ -1,26 +1,13 @@
 #include "header/atom.h"
 #include "util/shared_memory.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 struct atom atom;
 static struct message rcv;
 struct config config;
 struct statistics atom_stats;
-static void print_para_TEST(struct config config)
-{
-  printf("\t\n----------\n");
-  printf("N_ATOMI_INIT: %d\n"
-	 "ENERGY_DEMAND :%d\n"
-	 "N_ATOM_MAX:%d\n"
-	 "MIN_A_ATOMICO :%d\n"
-	 "N_NUOVI_ATOMI :%d\n"
-	 "SIM_DURATION :%d\n"
-	 "ENERGY_EXPLODE_THRESHOLD :%d\n"
-	 "ATOMIC_NUMBER %d\n",
-	 config.N_ATOMI_INIT, config.ENERGY_DEMAND, config.N_ATOM_MAX,
-	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
-	 config.ENERGY_EXPLODE_THRESHOLD, atom.atomic_number);
-  printf("\t\n----------\n");
-}
+
 
 void fetch_args_atom(char const *argv[])
 {
@@ -50,7 +37,7 @@ static int energy_free(int atomic_a1, int atomic_a2)
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
 
-void atom_fission(struct atom *atom, int command, struct config config)
+void atom_fission(struct atom *atom, struct config config)
 {
 
   atom_stats.total_nuclear_waste = 0;
@@ -121,12 +108,15 @@ int get_atomic_number()
 int main(int argc, char const *argv[])
 {
   srand(time(NULL));
-  static int command;
   atom.pid = getpid();
 #ifdef _PRINT_TEST
   printf("HELLO IS ATOM %d\n", atom.pid);
 #endif
   
+  if(argc < 8){
+    fprintf(stderr,"[%s] Not enough arguments\n",__FILE__);
+    exit(EXIT_FAILURE);
+  }
   fetch_args_atom(argv);
 
   init_shared_memory();
@@ -167,10 +157,10 @@ int main(int argc, char const *argv[])
   fprintf(stdout, "The atomic number of atom [%d] is %d \n", atom.pid,
 	  atom.atomic_number);
 
-  atom_fission(&atom, atom.atomic_flag, config);
+  atom_fission(&atom, config);
   while (1)
   {
-    int energy_released = read_shared_memory();
+    int energy_released = 0;
     total_energy += energy_released;
     atom_stats.total_num_fission += atom_stats.num_fission_last_sec;
     update_shared_memory(&atom_stats);
