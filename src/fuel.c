@@ -206,7 +206,7 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   print_ALL_IPC();
   print_para_TEST();
-  fprintf(stdout, "NANOSEC VALUE :%lf\n", config.STEP);
+  fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);
   // value_in_memory();
 #endif
 

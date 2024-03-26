@@ -406,7 +406,7 @@ void handle_signal(int signum)
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
     killpg(rcv_pid->array, SIGKILL);
-    total_print();
+    // total_print();
 
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
     exit(EXIT_SUCCESS);
@@ -475,23 +475,7 @@ int why_term(enum term_reason term_reason)
     break;
   }
 }
-#ifdef _PRINT_TEST
-void print_all_pid()
-{
-  printf("-----------------------------------\n");
-  for (int i = 0; i < config.N_ATOMI_INIT; i++)
-  {
-    printf("[MASTER %d ][ATOM] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
-	   atom_array_pid[i], i);
-  }
-  for (int i = 0; i < config.ENERGY_DEMAND; i++)
-  {
-    printf("[MASTER %d ][ACTIVATOR] %s ,[PID%d ] [POS %d ]\n", getpid(),
-	   __func__, activator_array_pid[i], i);
-  }
-  printf("-----------------------------------\n");
-}
-#endif
+
 
 /*
 void ipc_init()
@@ -658,10 +642,6 @@ int main(void)
   fprintf(stdout, "atoms generated and stopped\n");
 #endif
 
-#ifdef _PRINT_TEST
-  print_all_pid();
-#endif
-
 
   // shutdown();
   #ifdef _PRINT_TEST
@@ -690,7 +670,7 @@ int main(void)
 
     total_energy += energy_released->energy_produced_value;
 //     TODO call a function that displays statistic
-    print_last_sec();
+    // print_last_sec();
   }
 
   return 0;
