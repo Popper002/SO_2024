@@ -44,6 +44,7 @@ int main(int argc, char const *argv[])
 
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
+
   if (argc < 8)
   {
     fprintf(stderr, "[%s] Not enoough arguments", __FILE__);
@@ -60,7 +61,11 @@ int main(int argc, char const *argv[])
   msg_id =
       msgget(ATOMIC_KEY, IPC_CREAT | ALL); /* @return the same queue of atom */
   inhibitor_send.m_type = 1;
-
+if(msg_id <0 )
+{
+  fprintf(stderr,"INHIBITOR : ERROR IN MSGGET <ERRNO : %s> \n",strerror(errno));
+  exit(EXIT_FAILURE); 
+}
 #ifdef _PRINT_TEST
   printf("ID %d \n", msg_id);
 #endif
@@ -68,25 +73,26 @@ int main(int argc, char const *argv[])
   {
     
     inhibitor_command = fission_flag();
+    #ifdef _PRINT_TEST
+    fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND %d>\n",getpid(),inhibitor_command);
+    #endif
     /* convert command in to string ,inside the msg_buffer*/
     sprintf(inhibitor_send.text, "%d", inhibitor_command);
     if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
 	       0) < 0)
     {
-      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
+       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
 	      strerror(errno), getpid());
+        exit(EXIT_FAILURE);
     }
 
-   inhibitor_stats->inhibitor_balancing++;
+   //inhibitor_stats->inhibitor_balancing++;
     
 #ifdef _PRINT_TEST
     printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
 	   getpid(), inhibitor_command, inhibitor_send.text);
 #endif
   }
- while (1)
-    {
-      
-    }
+
   return 0;
 }

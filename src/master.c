@@ -670,7 +670,7 @@ int main(void)
 
     total_energy += energy_released->energy_produced_value;
 //     TODO call a function that displays statistic
-    // print_last_sec();
+     print_last_sec();
   }
 
   return 0;

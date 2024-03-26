@@ -268,9 +268,7 @@ int main(int argc, char const *argv[])
   stampaStatoMemoria(shm_id);
 #endif
 
-  while (1)
-  {
-  }
+ 
 
   return 0;
 }

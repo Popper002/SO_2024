@@ -113,17 +113,19 @@ int main(int argc, char const *argv[])
   printf("HELLO IS ATOM %d\n", atom.pid);
 #endif
   
+  
   if(argc < 8){
     fprintf(stderr,"[%s] Not enough arguments\n",__FILE__);
     exit(EXIT_FAILURE);
   }
+  
   fetch_args_atom(argv);
 
   init_shared_memory();
   int total_energy = 0;
 
   rcv.m_type = 1;
-  int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL); 
 #ifdef _PRINT_TEST
   printf("[%s] connecting to queue:%d\n", __FILE__, rcv_id);
 #endif
@@ -133,7 +135,7 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
   kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
-  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
+  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), rcv.m_type, IPC_NOWAIT) <= -1)
   {
     fprintf(stderr, "%s Error in msg_rcv\n", __FILE__);
   }
