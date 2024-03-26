@@ -1,10 +1,12 @@
 #include "header/common.h"
 #include "header/ipc.h"
+#include "util/shared_memory.h"
 #include <stdio.h>
 #include <stdlib.h>
 static int msg_id;
 struct message inhibitor_send;
 struct config config;
+struct statistics *inhibitor_stats;
 /* Possibile idea :
     questo processo pusha in message queue ogni tot nanosecondi degli zeri ,in
    modo da limitare le fissioni il tutto sincronizzato con l'attivatore in modo
@@ -64,21 +66,27 @@ int main(int argc, char const *argv[])
 #endif
   for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
   {
+    
     inhibitor_command = fission_flag();
     /* convert command in to string ,inside the msg_buffer*/
     sprintf(inhibitor_send.text, "%d", inhibitor_command);
-    // FIXME error in this send
     if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
 	       0) < 0)
     {
       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
 	      strerror(errno), getpid());
     }
+
+   inhibitor_stats->inhibitor_balancing++;
+    
 #ifdef _PRINT_TEST
     printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
 	   getpid(), inhibitor_command, inhibitor_send.text);
 #endif
   }
-
+ while (1)
+    {
+      
+    }
   return 0;
 }

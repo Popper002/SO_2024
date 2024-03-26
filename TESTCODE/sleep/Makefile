@@ -7,5 +7,7 @@ sleep:
 	./sleep
 stop: 
 	./stop
+sleep2:
+	$(CC) sleep2.c -o sleep2 -lm 
 rm:
-	rm -rf sleep stop 
+	rm -rf sleep stop sleep2

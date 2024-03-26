@@ -19,8 +19,6 @@ char **inebitore_args[100];
 struct statistics *print_stats;
 struct atom atom_stat;
 // char const *args_[100];
-static int activator_array_pid[10];
-static int fuel_array_pid[100];
 static int shm_id;
 static int fork_fuel; 
 static int fork_activator; 
@@ -408,6 +406,8 @@ void handle_signal(int signum)
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
     killpg(rcv_pid->array, SIGKILL);
+    total_print();
+
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
     exit(EXIT_SUCCESS);
 
@@ -526,14 +526,27 @@ void start_atom()
 }
 
 
+void total_print(void)
+{
+  printf( "\rTOTAL ACTIVATION\t%d\n", print_stats->total_num_activation);
+  printf( "\rTOTAL FISSION\t%d\n", print_stats->total_num_fission);
+  printf( "\rTOTAL ENERGY PRODUCED\t%d\n", print_stats->energy_produced_value);
+  printf( "\rTOTAL ENERGY CONSUMED\t%d\n", print_stats->energy_absorbed);
+  printf( "\rTOTAL NUCLEAR WASTE\t%d\n", print_stats->total_nuclear_waste);
+  printf( "\rTOTAL ENERGY INHIBITOR CONSUMED\t%d\n", total_energy);
+  printf( "\rINHIBITOR PUSHED\t%d\n", print_stats->inhibitor_balancing);
+  printf( "\rACTIVATOR PUSHED\t%d\n", print_stats->activator_balancing);
 
-void printer()
+
+
+}
+void print_last_sec()
 {
   // TODO all of this print are place holder
-  printf( "PROC\tPID\tENERGY\tN_FORK\tATOMIC_NUMBER\tSTATUS\n");
+  printf( "PROC\tPID\tENERGY\tN_FORK\tATOMIC NUMBER\tSTATUS\n");
   printf( "MASTER\t%d\t%p\t%p\t%p\t%s\n", getpid(), NULL, NULL, NULL,
 	 "OK");
-  printf( "FUEL\t%d\t%p\t%d\t%p\t%s\n", fuel_pid, NULL,
+  printf( "\rFUEL\t%d\t%p\t%d\t%p\t%s\n", fuel_pid, NULL,
 	 config.N_NUOVI_ATOMI, NULL, "OK");
   printf( "ACTIVATOR\t%d\t%p\t%p\t%p\t%s\n", activator_pid, NULL, NULL,
 	 NULL, "OK");
@@ -541,13 +554,17 @@ void printer()
 	 NULL, "OK");
   printf( "STATS\n");
 
-  printf( "TOT_ENERGY\t%d\n", total_energy);
-  printf( "TOT_ACTIVATION_LAST_SEC\t%d\n", total_energy);
-  printf( "TOT_ENERGY\t%d\n", total_energy);
-  printf( "TOT_ENERGY\t%d\n", total_energy);
-  printf( "TOT_ENERGY\t%d\n", total_energy);
-  printf("--------------------------------------------------------------\n");
+  
+  printf("\n\n\n");
+printf( "LAST SEC TOTAL ACTIVATION\t%d\n", print_stats->num_activation_last_sec);
+printf( "\rLAST SEC TOTAL FISSION\t%d\n", print_stats->num_fission_last_sec);
+printf( "\rLAST SEC TOTAL ENERGY PRODUCED\t%d\n", print_stats->total_num_energy_produced_last_sec);
+printf( "\rLAST SEC TOTAL ENERGY CONSUMED\t%d\n", print_stats->num_energy_consumed_last_sec);
+printf( "\rLAST SEC TOTAL NUCLEAR WASTE\t%d\n", print_stats->total_nuclear_waste_last_sec);
+printf( "\rLAST SEC TOTAL ENERGY INHIBITOR CONSUMED\t%d\n", print_stats->num_energy_consumed_inhibitor_last_sec);
+printf("--------------------------------------------------------------\n");
   printf("\n");
+  sleep(1);
 }
 
 void logo()
@@ -581,12 +598,7 @@ void logo()
 int main(void)
 {
 
-  // init_table(table);
-  struct sigaction sa;
-  sa.sa_handler = handle_signal;
-  // sa.sa_handler = handle_signal;
-  // sa.sa_flags = 0;
-  pid_t atom;
+
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
   init_shared_memory();
@@ -664,7 +676,6 @@ int main(void)
   {
     printf("\rStarting the simulation in %d...\n", start);
     sleep(1);
-//      printf("\033[23A\r");
   }
   fprintf(stdout, "Master: [PID %d] is starting the simulation\n", getpid());
   alarm(config.SIM_DURATION);
@@ -679,7 +690,7 @@ int main(void)
 
     total_energy += energy_released->energy_produced_value;
 //     TODO call a function that displays statistic
-    printer();
+    print_last_sec();
   }
 
   return 0;

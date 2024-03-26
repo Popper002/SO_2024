@@ -11,7 +11,7 @@ int paused = 0;
 pid_t labrat_pid; // PID of the labrat process
 
 void sigint_handler() {
-    if (paused) {
+    if (pause()) {
         printf("Resuming labrat process...\n");
         paused = 0;
         kill(labrat_pid, SIGCONT); // Send SIGCONT to resume labrat
@@ -19,7 +19,7 @@ void sigint_handler() {
     } else {
         printf("Pausing labrat process...\n");
         paused = 1;
-        kill(labrat_pid, SIGSTOP);  // Send SIGSTOP to pause labrat
+        kill(labrat_pid, SIGTSTP);  // Send SIGSTOP to pause labrat
         sem_reserve(semid, 0, 0);   // Acquire semaphore to block main process
     }
 }
@@ -51,7 +51,7 @@ int main() {
 
     if (labrat_pid == 0) {
         // Child process (labrat)
-        execve("labrat", NULL,NULL);
+        execvp("./labrat", NULL);
         perror("execvp"); // Handle errors if execvp fails
         exit(1);
     }

@@ -1,6 +1,7 @@
 // TODO move this in a separate header file
 #include "header/common.h"
 #include "header/ipc.h"
+#include "util/shared_memory.h"
 #include "util/my_sem_lib.h"
 #include <stdlib.h>
 #include <sys/ipc.h>
@@ -11,7 +12,7 @@
 
 struct message send;
 struct config config;
-
+struct statistics *activator_stats;
 /* activator is a message queue*/
 
 static int randomic_activation()
@@ -71,6 +72,8 @@ int main(int argc, char const *argv[])
     {
       fprintf(stderr, "%s Error in msgsnd\n", __FILE__);
     };
+    activator_stats->activator_balancing++;
+
 #ifdef _PRINT_TEST
     printf("[%s %s SENDED THIS MESSAGE %s IN QUEUE %d TYPE:%ld\n", __FILE__,
 	   __func__, send.text, q_id, send.m_type);

@@ -9,7 +9,7 @@
 struct statistics
 {
 //  struct config conf;
-  int total_num_activation_;
+  int total_num_activation;
   int num_activation_last_sec;
   int num_fission_last_sec;
   int total_num_fission;
@@ -23,6 +23,8 @@ struct statistics
   int total_nuclear_waste_last_sec;
   int energy_absorbed;
   int fission_limited;
+  int inhibitor_balancing;
+  int activator_balancing;
 };
 
 
