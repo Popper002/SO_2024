@@ -540,13 +540,13 @@ void print_last_sec()
 
   
   printf("\n\n\n");
-printf( "LAST SEC TOTAL ACTIVATION\t%d\n", print_stats->num_activation_last_sec);
-printf( "\rLAST SEC TOTAL FISSION\t%d\n", print_stats->num_fission_last_sec);
-printf( "\rLAST SEC TOTAL ENERGY PRODUCED\t%d\n", print_stats->total_num_energy_produced_last_sec);
-printf( "\rLAST SEC TOTAL ENERGY CONSUMED\t%d\n", print_stats->num_energy_consumed_last_sec);
-printf( "\rLAST SEC TOTAL NUCLEAR WASTE\t%d\n", print_stats->total_nuclear_waste_last_sec);
-printf( "\rLAST SEC TOTAL ENERGY INHIBITOR CONSUMED\t%d\n", print_stats->num_energy_consumed_inhibitor_last_sec);
-printf("--------------------------------------------------------------\n");
+  printf( "\rLAST SEC TOTAL ACTIVATION\t%d\n", print_stats->num_activation_last_sec);
+  printf( "\rLAST SEC TOTAL FISSION\t%d\n",    print_stats->num_fission_last_sec);
+  printf( "\rLAST SEC TOTAL ENERGY PRODUCED\t%d\n", print_stats->total_num_energy_produced_last_sec);
+  printf( "\rLAST SEC TOTAL ENERGY CONSUMED\t%d\n", print_stats->num_energy_consumed_last_sec);
+  printf( "\rLAST SEC TOTAL NUCLEAR WASTE\t%d\n", print_stats->total_nuclear_waste_last_sec);
+  printf( "\rLAST SEC TOTAL ENERGY INHIBITOR CONSUMED\t%d\n", print_stats->num_energy_consumed_inhibitor_last_sec);
+  printf("--------------------------------------------------------------\n");
   printf("\n");
   sleep(1);
 }
@@ -582,7 +582,7 @@ void logo()
 int main(void)
 {
 
-
+  struct statistics *energy_released;
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
   init_shared_memory();
@@ -666,7 +666,7 @@ int main(void)
 
   while (1)
   {
-    struct statistics *energy_released = read_shared_memory();
+  energy_released= read_shared_memory();
 
     total_energy += energy_released->energy_produced_value;
 //     TODO call a function that displays statistic

@@ -73,7 +73,7 @@ int main(int argc, char const *argv[])
       fprintf(stderr, "%s Error in msgsnd\n", __FILE__);
     };
     activator_stats->activator_balancing++;
-
+   activator_stats->num_activation_last_sec++;
 #ifdef _PRINT_TEST
     printf("[%s %s SENDED THIS MESSAGE %s IN QUEUE %d TYPE:%ld\n", __FILE__,
 	   __func__, send.text, q_id, send.m_type);

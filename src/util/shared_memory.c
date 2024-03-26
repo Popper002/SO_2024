@@ -24,7 +24,7 @@ void init_shared_memory(){
 }
 
 void update_shared_memory(struct statistics *stats){
-  memcpy(shared_data_in_shm,stats,sizeof(struct statistics));
+  memcpy(shared_data_in_shm,stats,sizeof(struct statistics)+1);
 }
 struct  statistics* read_shared_memory(){
   return shared_data_in_shm;

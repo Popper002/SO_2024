@@ -1,4 +1,5 @@
 #include "library.h"
+
 /* SEND : GENERA IPC E LA CHIAVE E L'ID SONO CONVERTITI IN STRINGA E SPEDITI COME PARAMETRO AL
 RCV */
 char **ipc_id[100];

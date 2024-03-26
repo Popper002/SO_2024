@@ -135,7 +135,7 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
   kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
-  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), rcv.m_type, IPC_NOWAIT) <= -1)
+  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long),1, IPC_NOWAIT) <= -1)
   {
     fprintf(stderr, "%s Error in msg_rcv\n", __FILE__);
   }
