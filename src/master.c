@@ -204,7 +204,7 @@ static void fuel_argument_ipc(char *argv[])
   argv[10] = NULL;
 }
 
-pid_t inhibitor()
+pid_t inhibitor(void)
 {
   switch (inhiitor_pid = fork())
   {
@@ -225,7 +225,7 @@ pid_t inhibitor()
     break;
   }
 }
-pid_t fuel_generator()
+pid_t fuel_generator(void)
 {
   pid_t fuel_pid;
   switch (fuel_pid = fork())
@@ -258,7 +258,7 @@ pid_t fuel_generator()
   }
 }
 
-pid_t atom_gen(struct config config)
+pid_t atom_gen(void)
 {
   switch (atom_pid = fork())
   {
@@ -286,7 +286,7 @@ pid_t atom_gen(struct config config)
     break;
   }
 }
-pid_t activator(struct config config)
+pid_t activator(void)
 {
 
   switch (activator_pid = fork())
@@ -362,7 +362,7 @@ void store_pid_atom()
   }
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
-    atom_array_pid[i] = atom_gen(config);
+    atom_array_pid[i] = atom_gen();
 #ifdef _PRINT_TEST
     printf("[MASTER %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	   atom_array_pid[i], i);
@@ -422,7 +422,7 @@ int why_term(enum term_reason term_reason)
   switch (term_reason)
   {
   case EXPLODE:
-    fprintf(stderr, "To much energy -TERMINATION\n");
+    fprintf(stderr, "TOO MUCH ENERGY -TERMINATION\n");
     remove_ipc();
     for (int i = 0; i < config.N_ATOM_MAX; i++)
     {
@@ -445,7 +445,7 @@ int why_term(enum term_reason term_reason)
     exit(EXIT_SUCCESS);
     break;
   case BLACKOUT:
-    fprintf(stderr, "BLACKOUT- ENOUGH ENERGY WE NEED MORE GENERATOR \n");
+    fprintf(stderr, "BLACKOUT- NOT ENOUGH ENERGY\n");
     remove_ipc();
     for (int i = 0; i < config.N_ATOM_MAX; i++)
     {
@@ -583,6 +583,7 @@ int main(void)
 
   // init_table(table);
   struct sigaction sa;
+  sa.sa_handler = handle_signal;
   // sa.sa_handler = handle_signal;
   // sa.sa_flags = 0;
   pid_t atom;
@@ -618,7 +619,7 @@ int main(void)
   fuel_args[0] = (char **)FUEL_PATH;
   inebitore_args[0] = (char **)INHIBITOR_PATH;
 
-  activator_pid = activator(config);
+  activator_pid = activator();
   //  kill(activator_pid, SIGSTOP);
 #ifdef _PRINT_TEST
   printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
