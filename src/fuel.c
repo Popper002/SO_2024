@@ -189,16 +189,14 @@ double step_nanosec()
  */
 int main(int argc, char const *argv[])
 {
+  (void) argc;
   srand(time(NULL));
   signal(SIGALRM, signal_handle);
 #ifdef _PRINT_TEST
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
 
-  if(argc < 11){
-    fprintf(stderr,"Not enough arguments");
-    exit(EXIT_FAILURE);
-  }
+  
   fetch_args_fuel(argv);
   config.STEP = step_nanosec();
   fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);

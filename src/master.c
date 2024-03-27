@@ -17,7 +17,7 @@ char **activator_args[100];
 char **fuel_args[100];
 char **inebitore_args[100];
 
-struct statistics *print_stats;
+struct statistics *shared_data;
 struct atom atom_stat;
 // char const *args_[100];
 static int shm_id;
@@ -514,14 +514,14 @@ void start_atom()
 
 void total_print(void)
 {
-  printf( "\rTOTAL ACTIVATION\t%d\n", print_stats->total_num_activation);
-  printf( "\rTOTAL FISSION\t%d\n", print_stats->total_num_fission);
-  printf( "\rTOTAL ENERGY PRODUCED\t%d\n", print_stats->energy_produced_value);
-  printf( "\rTOTAL ENERGY CONSUMED\t%d\n", print_stats->energy_absorbed);
-  printf( "\rTOTAL NUCLEAR WASTE\t%d\n", print_stats->total_nuclear_waste);
+  printf( "\rTOTAL ACTIVATION\t%d\n", shared_data->total_num_activation);
+  printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
+  printf( "\rTOTAL ENERGY PRODUCED\t%d\n", shared_data->energy_produced_value);
+  printf( "\rTOTAL ENERGY CONSUMED\t%d\n", shared_data->energy_absorbed);
+  printf( "\rTOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste);
   printf( "\rTOTAL ENERGY INHIBITOR CONSUMED\t%d\n", total_energy);
-  printf( "\rINHIBITOR PUSHED\t%d\n", print_stats->inhibitor_balancing);
-  printf( "\rACTIVATOR PUSHED\t%d\n", print_stats->activator_balancing);
+  printf( "\rINHIBITOR PUSHED\t%d\n", shared_data->inhibitor_balancing);
+  printf( "\rACTIVATOR PUSHED\t%d\n", shared_data->activator_balancing);
 
 
 
@@ -542,12 +542,12 @@ void print_last_sec()
 
   
   printf("\n\n\n");
-  printf( "\rLAST SEC TOTAL ACTIVATION\t%d\n", print_stats->num_activation_last_sec);
-  printf( "\rLAST SEC TOTAL FISSION\t%d\n",    print_stats->num_fission_last_sec);
-  printf( "\rLAST SEC TOTAL ENERGY PRODUCED\t%d\n", print_stats->total_num_energy_produced_last_sec);
-  printf( "\rLAST SEC TOTAL ENERGY CONSUMED\t%d\n", print_stats->num_energy_consumed_last_sec);
-  printf( "\rLAST SEC TOTAL NUCLEAR WASTE\t%d\n", print_stats->total_nuclear_waste_last_sec);
-  printf( "\rLAST SEC TOTAL ENERGY INHIBITOR CONSUMED\t%d\n", print_stats->num_energy_consumed_inhibitor_last_sec);
+  printf( "\rLAST SEC TOTAL ACTIVATION\t%d\n", shared_data->num_activation_last_sec);
+  printf( "\rLAST SEC TOTAL FISSION\t%d\n",    shared_data->num_fission_last_sec);
+  printf( "\rLAST SEC TOTAL ENERGY PRODUCED\t%d\n", shared_data->total_num_energy_produced_last_sec);
+  printf( "\rLAST SEC TOTAL ENERGY CONSUMED\t%d\n", shared_data->num_energy_consumed_last_sec);
+  printf( "\rLAST SEC TOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste_last_sec);
+  printf( "\rLAST SEC TOTAL ENERGY INHIBITOR CONSUMED\t%d\n", shared_data->num_energy_consumed_inhibitor_last_sec);
   printf("--------------------------------------------------------------\n");
   printf("\n");
   sleep(1);
@@ -674,8 +674,7 @@ int main(void)
     shared_data = (struct statistics*) rcv_ptr; 
 
 //     TODO call a function that displays statistic
-    printf("Energy shared data: %d\n",shared_data->total_num_energy_produced_last_sec);
-    //  print_last_sec();
+     print_last_sec();
   }
 
   return 0;
