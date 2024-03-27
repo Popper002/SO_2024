@@ -6,6 +6,7 @@
         "shared_memory.h": "c",
         "algorithm": "c",
         "cstdlib": "c",
-        "signal.h": "c"
+        "signal.h": "c",
+        "ctime": "c"
     }
 }

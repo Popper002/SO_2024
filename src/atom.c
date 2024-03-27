@@ -79,7 +79,8 @@ void atom_fission(struct atom *atom, struct config config)
       printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
 	     __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
 	     energy_released);
-      exit(0);
+     // bzero(&atom_stats,sizeof(atom_stats)); 
+     // exit(0);
       break;
 
     default:
@@ -108,21 +109,17 @@ int get_atomic_number()
 
 int main(int argc, char const *argv[])
 {
+  (void)argc;
   srand(time(NULL));
   atom.pid = getpid();
 #ifdef _PRINT_TEST
   printf("HELLO IS ATOM %d\n", atom.pid);
 #endif
   
-  
-  if(argc < 8){
-    fprintf(stderr,"[%s] Not enough arguments\n",__FILE__);
-    exit(EXIT_FAILURE);
-  }
-  
   fetch_args_atom(argv);
 
   init_shared_memory();
+  
   int total_energy = 0;
 
   rcv.m_type = 1;
@@ -159,13 +156,34 @@ int main(int argc, char const *argv[])
   atom.atomic_number = get_atomic_number();
   fprintf(stdout, "The atomic number of atom [%d] is %d \n", atom.pid,
 	  atom.atomic_number);
+ struct statistics *energy_produced = (struct statistics *) malloc(sizeof(struct statistics));
+ if(energy_produced == NULL){
+  fprintf(stderr,"Error in malloc %s\n",strerror(errno));
+  exit(EXIT_FAILURE);
+ }
 
   atom_fission(&atom, config);
+  fprintf(stdout,"AFTER FISSION GDHHDSHDHJDSJDJN\n");
+  int sh_id= shmget(STATISTICS_KEY , sizeof(struct statistics),IPC_CREAT |ALL ); 
+  printf("\t\tBEFORE\n");
   while (1)
   {
-    int energy_released = 0;
+
+    printf("\t\tI'M WHILE LOOP\n");
+    int energy_released = 100;
     total_energy += energy_released;
-    struct atom_stats *energy_produced = (struct atom_stats*) shmat(STATISTICS_KEY,NULL,0);
+    
+   energy_produced = (struct statistics*) shmat(sh_id,NULL,0);
+  energy_produced->total_num_energy_consumed=energy_released;
+   printf("total energy consumend: %d",energy_produced->total_num_energy_consumed);
+       void *shm_ptr = shmat(sh_id, NULL, 0);
+    if (shm_ptr == (void *)-1) {
+        perror("shmat");
+        exit(EXIT_FAILURE);
+    }
+
+    // Copia le statistiche nella memoria condivisa
+    memcpy(shm_ptr, energy_produced, sizeof(struct statistics));
     // atom_stats.total_num_fission += atom_stats.num_fission_last_sec;
   }
   /* cleanup_shared_memory(); */

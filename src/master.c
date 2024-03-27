@@ -26,7 +26,7 @@ static int fork_activator;
 static int fork_atom;
 static int fork_inhibitor;
 static int total_energy ;
-
+static  int id;
 shm_fuel *rcv_pid;
 int *atom_array_pid;
 static key_t key_shm;
@@ -409,7 +409,7 @@ void handle_signal(int signum)
     killpg(fuel_pid, SIGKILL);
     killpg(rcv_pid->array, SIGKILL);
     // total_print();
-
+    
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
     exit(EXIT_SUCCESS);
 
@@ -540,6 +540,9 @@ void print_last_sec()
 	 NULL, "OK");
   printf( "STATS\n");
 
+
+  printf( "\r TOTAL ENERGY CONSUMED\t%d\n", shared_data->total_num_energy_consumed);
+
   
   printf("\n\n\n");
   printf( "\rLAST SEC TOTAL ACTIVATION\t%d\n", shared_data->num_activation_last_sec);
@@ -667,12 +670,18 @@ int main(void)
 
   start_atom();
 
+
+
   while (1)
   {
-    int id = shmget(STATISTICS_KEY,sizeof(struct statistics),IPC_CREAT|0666);
+     id = shmget(STATISTICS_KEY,sizeof(struct statistics),IPC_CREAT|0666);
+    #ifdef _PRINT_DEBUG
+    fprintf(stdout , "SHARED MEMORY ID STATISTICS : %d\n",id); 
+
+    #endif
     rcv_ptr = shmat(id, NULL,0);
     shared_data = (struct statistics*) rcv_ptr; 
-
+    fprintf(stdout , "[MASTER ----] TOTAL ENERGY SH_MEM %d \n", shared_data->total_num_energy_consumed);
 //     TODO call a function that displays statistic
      print_last_sec();
   }

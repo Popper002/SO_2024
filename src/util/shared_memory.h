@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <errno.h>
+#include <time.h>
 #define STATISTICS_KEY 0x30
 struct statistics
 {
@@ -34,4 +35,4 @@ void update_shared_memory(struct statistics *stats);
 struct  statistics* read_shared_memory();
 void cleanup_shared_memory();
 
-
+int stampaStatoMemoria(int shid) ;
