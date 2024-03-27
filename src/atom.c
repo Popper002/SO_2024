@@ -2,6 +2,7 @@
 #include "util/shared_memory.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/shm.h>
 
 struct atom atom;
 static struct message rcv;
@@ -164,8 +165,8 @@ int main(int argc, char const *argv[])
   {
     int energy_released = 0;
     total_energy += energy_released;
-    atom_stats.total_num_fission += atom_stats.num_fission_last_sec;
-    update_shared_memory(&atom_stats);
+    struct atom_stats *energy_produced = (struct atom_stats*) shmat(STATISTICS_KEY,NULL,0);
+    // atom_stats.total_num_fission += atom_stats.num_fission_last_sec;
   }
   /* cleanup_shared_memory(); */
   /* Never lunched this function ,this is caused from the while loop never

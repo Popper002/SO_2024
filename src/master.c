@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/shm.h>
 #include <unistd.h>
 #define CONFIG_PATH "src/config/config1.txt"
 
@@ -37,6 +38,7 @@ pid_t fuel_pid;
 struct config config;
 struct hash_table table;
 enum term_reason term_reason;
+struct statistics *shared_data;
 
 #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -585,6 +587,7 @@ int main(void)
   struct statistics *energy_released;
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
+  void *rcv_ptr;
   init_shared_memory();
 #ifdef _PRINT_TEST
   printf("KEY IS %d \n", key_shm);
@@ -666,11 +669,13 @@ int main(void)
 
   while (1)
   {
-  energy_released= read_shared_memory();
+    int id = shmget(STATISTICS_KEY,sizeof(struct statistics),IPC_CREAT|0666);
+    rcv_ptr = shmat(id, NULL,0);
+    shared_data = (struct statistics*) rcv_ptr; 
 
-    total_energy += energy_released->energy_produced_value;
 //     TODO call a function that displays statistic
-     print_last_sec();
+    printf("Energy shared data: %d\n",shared_data->total_num_energy_produced_last_sec);
+    //  print_last_sec();
   }
 
   return 0;
