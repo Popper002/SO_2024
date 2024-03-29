@@ -1,13 +1,25 @@
 #include "header/atom.h"
 #include "util/shared_memory.h"
+#include "util/hash_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/shm.h>
 
+
 struct atom atom;
 static struct message rcv;
 struct config config;
-struct statistics atom_stats;
+
+void update_statistics(struct hash_table *stats_map, char *field,int value){
+  int curr = get(stats_map,field);
+
+  if(curr != -1){
+    put(stats_map, (char *)field, curr + value);
+  } else {
+    put(stats_map, (char *) field, value);
+  }
+}
+
 
 
 void fetch_args_atom(char const *argv[])
@@ -38,18 +50,19 @@ static int energy_free(int atomic_a1, int atomic_a2)
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
 
-void atom_fission(struct atom *atom, struct config config)
+void atom_fission(struct atom *atom, struct config config,struct hash_table *stats)
 {
 
-  atom_stats.total_nuclear_waste = 0;
+  int total_nuclear_waste = 0;
+  int total_num_activation = 0;
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
     fprintf(stdout, "Starting fissioning atom....\n");
   {
     fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
 	    atom->atomic_number);
-    atom_stats.total_nuclear_waste++;
-    update_shared_memory(&atom_stats);
+   total_nuclear_waste++;
+   update_statistics(stats, "nuclear waste",total_nuclear_waste);
   }
   if (atom->atomic_flag == 1)
   {
@@ -61,7 +74,7 @@ void atom_fission(struct atom *atom, struct config config)
       TEST_ERROR
       exit(EXIT_FAILURE);
     case 0:
-      atom_stats.num_activation_last_sec++;
+     total_num_activation++;
       child1_atomic_number = rand() % (atom->atomic_number - 1) +
 			     1; // -1 and +1 so we are sure to not exceed the
 				// starting atomic number
@@ -75,7 +88,7 @@ void atom_fission(struct atom *atom, struct config config)
       int energy_released =
 	  energy_free(child1_atomic_number, child2_atomic_number);
       printf("energy released %d\n", energy_released);
-      update_shared_memory(&atom_stats);
+    update_statistics(stats, "energy produced",energy_released);
       printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
 	     __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
 	     energy_released);
@@ -118,7 +131,7 @@ int main(int argc, char const *argv[])
   
   fetch_args_atom(argv);
 
-  init_shared_memory();
+  struct hash_table *stats = attach_shared_memory();
   
   int total_energy = 0;
 
@@ -156,36 +169,22 @@ int main(int argc, char const *argv[])
   atom.atomic_number = get_atomic_number();
   fprintf(stdout, "The atomic number of atom [%d] is %d \n", atom.pid,
 	  atom.atomic_number);
- struct statistics *energy_produced = (struct statistics *) malloc(sizeof(struct statistics));
- if(energy_produced == NULL){
-  fprintf(stderr,"Error in malloc %s\n",strerror(errno));
-  exit(EXIT_FAILURE);
- }
+ 
 
-  atom_fission(&atom, config);
+  atom_fission(&atom, config,stats);
   fprintf(stdout,"AFTER FISSION GDHHDSHDHJDSJDJN\n");
-  int sh_id= shmget(STATISTICS_KEY , sizeof(struct statistics),IPC_CREAT |ALL ); 
   printf("\t\tBEFORE\n");
+  /*
   while (1)
   {
 
     printf("\t\tI'M WHILE LOOP\n");
-    int energy_released = 100;
+    int energy_released = 0;
     total_energy += energy_released;
-    
-   energy_produced = (struct statistics*) shmat(sh_id,NULL,0);
-  energy_produced->total_num_energy_consumed=energy_released;
-   printf("total energy consumend: %d",energy_produced->total_num_energy_consumed);
-       void *shm_ptr = shmat(sh_id, NULL, 0);
-    if (shm_ptr == (void *)-1) {
-        perror("shmat");
-        exit(EXIT_FAILURE);
-    }
-
-    // Copia le statistiche nella memoria condivisa
-    memcpy(shm_ptr, energy_produced, sizeof(struct statistics));
-    // atom_stats.total_num_fission += atom_stats.num_fission_last_sec;
   }
+*/
+  detach_shared_memory(stats);
+
   /* cleanup_shared_memory(); */
   /* Never lunched this function ,this is caused from the while loop never
    * end's*/

@@ -23,7 +23,7 @@ struct atom atom_stat;
 static int shm_id;
 static int fork_fuel; 
 static int fork_activator; 
-static int fork_atom;
+// static int fork_atom;
 static int fork_inhibitor;
 static int total_energy ;
 static  int id;
@@ -321,6 +321,7 @@ pid_t activator(void)
 }
 
 // TODO remove
+/*
 struct hash_table init_table(struct hash_table table)
 {
   table.max = config.N_ATOM_MAX;
@@ -333,6 +334,7 @@ struct hash_table init_table(struct hash_table table)
   table.garbage_collector = garbage_collect;
   return table;
 }
+*/
 
 
 /*
@@ -380,7 +382,7 @@ void remove_ipc()
   int remove_queue;
   remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
   msgctl(remove_queue, IPC_RMID, NULL);
-  cleanup_shared_memory();
+  // cleanup_shared_memory();
   fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
 }
 
@@ -512,22 +514,23 @@ void start_atom()
 }
 
 
-void total_print(void)
+void total_print(struct hash_table *stats_map)
 {
-  printf( "\rTOTAL ACTIVATION\t%d\n", shared_data->total_num_activation);
-  printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
-  printf( "\rTOTAL ENERGY PRODUCED\t%d\n", shared_data->energy_produced_value);
-  printf( "\rTOTAL ENERGY CONSUMED\t%d\n", shared_data->energy_absorbed);
-  printf( "\rTOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste);
-  printf( "\rTOTAL ENERGY INHIBITOR CONSUMED\t%d\n", total_energy);
-  printf( "\rINHIBITOR PUSHED\t%d\n", shared_data->inhibitor_balancing);
-  printf( "\rACTIVATOR PUSHED\t%d\n", shared_data->activator_balancing);
+  printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
+  // printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
+  printf( "\rTOTAL ENERGY PRODUCED\t%d\n", get(stats_map,"energy produced"));
+  // printf( "\rTOTAL ENERGY CONSUMED\t%d\n", shared_data->energy_absorbed);
+  // printf( "\rTOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste);
+  // printf( "\rTOTAL ENERGY INHIBITOR CONSUMED\t%d\n", total_energy);
+  // printf( "\rINHIBITOR PUSHED\t%d\n", shared_data->inhibitor_balancing);
+  // printf( "\rACTIVATOR PUSHED\t%d\n", shared_data->activator_balancing);
 
 
 
 }
+/*
 void print_last_sec()
-{
+shared_data->energy_produced_value{
   // TODO all of this print are place holder
   printf( "PROC\tPID\tENERGY\tN_FORK\tATOMIC NUMBER\tSTATUS\n");
   printf( "MASTER\t%d\t%p\t%p\t%p\t%s\n", getpid(), NULL, NULL, NULL,
@@ -546,7 +549,7 @@ void print_last_sec()
   
   printf("\n\n\n");
   printf( "\rLAST SEC TOTAL ACTIVATION\t%d\n", shared_data->num_activation_last_sec);
-  printf( "\rLAST SEC TOTAL FISSION\t%d\n",    shared_data->num_fission_last_sec);
+  printf( "\rLAST SEC TOTAL FISSION\t\t%d\n",    shared_data->num_fission_last_sec);
   printf( "\rLAST SEC TOTAL ENERGY PRODUCED\t%d\n", shared_data->total_num_energy_produced_last_sec);
   printf( "\rLAST SEC TOTAL ENERGY CONSUMED\t%d\n", shared_data->num_energy_consumed_last_sec);
   printf( "\rLAST SEC TOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste_last_sec);
@@ -555,6 +558,7 @@ void print_last_sec()
   printf("\n");
   sleep(1);
 }
+*/
 
 void logo()
 { 
@@ -591,7 +595,6 @@ int main(void)
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
   void *rcv_ptr;
-  init_shared_memory();
 #ifdef _PRINT_TEST
   printf("KEY IS %d \n", key_shm);
 #endif
@@ -602,6 +605,8 @@ int main(void)
   }
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT) * sizeof(pid_t),
 		  IPC_CREAT | 0666);
+
+struct hash_table *stats = attach_shared_memory(); 
 
   srand(time(NULL));
   signal(SIGUSR1, handle_signal);
@@ -620,7 +625,6 @@ int main(void)
   activator_args[0] = (char **)ACTIVATOR_PATH;
   fuel_args[0] = (char **)FUEL_PATH;
   inebitore_args[0] = (char **)INHIBITOR_PATH;
-
   activator_pid = activator();
   //  kill(activator_pid, SIGSTOP);
 #ifdef _PRINT_TEST
@@ -674,17 +678,12 @@ int main(void)
 
   while (1)
   {
-     id = shmget(STATISTICS_KEY,sizeof(struct statistics),IPC_CREAT|0666);
-    #ifdef _PRINT_DEBUG
-    fprintf(stdout , "SHARED MEMORY ID STATISTICS : %d\n",id); 
-
-    #endif
-    rcv_ptr = shmat(id, NULL,0);
-    shared_data = (struct statistics*) rcv_ptr; 
-    fprintf(stdout , "[MASTER ----] TOTAL ENERGY SH_MEM %d \n", shared_data->total_num_energy_consumed);
+    total_print(stats);
 //     TODO call a function that displays statistic
-     print_last_sec();
   }
 
+detach_shared_memory(stats);
   return 0;
+
 } 
+

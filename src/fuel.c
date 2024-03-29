@@ -199,8 +199,9 @@ int main(int argc, char const *argv[])
   
   fetch_args_fuel(argv);
   config.STEP = step_nanosec();
+#ifdef _PRINT_TEST
   fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);
-
+#endif
 #ifdef _PRINT_TEST
   print_ALL_IPC();
   print_para_TEST();
@@ -256,16 +257,18 @@ int main(int argc, char const *argv[])
   new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
   /* copiamo l'array di pid in memoria condivisa */
   memcpy(new_pid_atom->array, atom_new_pid, sizeof(int));
+#ifdef _PRINT_TEST
   printf("COPY COMPLEATE\n");
+#endif
   fflush(stdout);
   if (shmdt(new_pid_atom) < 0)
   {
     fprintf(stderr, "Shared memory ");
   }
+
 #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);
 #endif
-
  
 
   return 0;
