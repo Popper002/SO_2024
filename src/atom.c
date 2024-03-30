@@ -132,6 +132,7 @@ int main(int argc, char const *argv[])
   fetch_args_atom(argv);
 
   struct hash_table *stats = attach_shared_memory();
+  stats->max = 1;
   
   int total_energy = 0;
 

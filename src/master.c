@@ -320,23 +320,6 @@ pid_t activator(void)
   }
 }
 
-// TODO remove
-/*
-struct hash_table init_table(struct hash_table table)
-{
-  table.max = config.N_ATOM_MAX;
-  table.number_of_elements = 0;
-  table.elements = malloc(table.max * sizeof(struct elem_hash_table *));
-  table.put = put;
-  table.get = get;
-  table.remove = remove_elem;
-  table.decrement_usage_count = decrement_usage_count;
-  table.garbage_collector = garbage_collect;
-  return table;
-}
-*/
-
-
 /*
 void shutdown()
 {
@@ -607,6 +590,7 @@ int main(void)
 		  IPC_CREAT | 0666);
 
 struct hash_table *stats = attach_shared_memory(); 
+stats->max = 1;
 
   srand(time(NULL));
   signal(SIGUSR1, handle_signal);

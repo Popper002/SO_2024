@@ -3,21 +3,22 @@
 #include <string.h>
 
 /**
- * why +31 ?
- * https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+ * why << 5?
+ * https://stackoverflow.com/questions/7666509/hash-function-for-string
  */
 int hash_function(char *key, int max)
 {
   int hash = 0;
   for (int i = 0; key[i] != '\0'; i++)
   {
-    hash = (hash * 31 + key[i] % max);
+    hash = (hash << 5)  + key[i] % max;
   }
-  printf("%s hash is: %d", __FILE__, hash);
-  return hash;
+  printf("%s hash is: %d", __FILE__, hash); return hash;
 }
+
 void put(struct hash_table *table, char *key, int value)
 {
+  printf("put: hash table max is %d",table->max);
   int index = hash_function(key, table->max);
   struct elem_hash_table *new_elem =
       (struct elem_hash_table *)malloc(sizeof(struct elem_hash_table));
@@ -34,6 +35,7 @@ void put(struct hash_table *table, char *key, int value)
 
 int get(struct hash_table *table, char *key)
 {
+  printf("get: hash table max is %d",table->max);
   int index = hash_function(key, table->max);
   struct elem_hash_table *curr = table->elements[index];
   while (curr)
@@ -47,29 +49,3 @@ int get(struct hash_table *table, char *key)
   return -1;
 }
 
-void remove_elem(struct hash_table *table, char *key)
-{
-  int index = hash_function(key, table->max);
-  struct elem_hash_table *prev = NULL;
-  struct elem_hash_table *curr = table->elements[index];
-  while (curr)
-  {
-    if (strcmp(curr->key, key) == 0)
-    {
-      if (prev)
-      {
-	prev->next = curr->next;
-      }
-      else
-      {
-	table->elements[index] = curr->next;
-      }
-      free(curr->key);
-      free(curr);
-      table->number_of_elements--;
-      return;
-    }
-    prev = curr;
-    curr = curr->next;
-  }
-}

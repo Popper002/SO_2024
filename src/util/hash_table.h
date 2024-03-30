@@ -23,6 +23,3 @@ struct hash_table
 int hash_function(char *key, int max);
 void put(struct hash_table *table, char *key, int value);
 int get(struct hash_table *table, char *key);
-void remove_elem(struct hash_table *table, char *key);
-void garbage_collect(struct hash_table *table);
-void print_hash_table(struct hash_table *table);
