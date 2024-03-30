@@ -20,7 +20,7 @@ struct hash_table
     void (*garbage_collector)(struct hash_table *table);
 };
 
-int hash_function(const char *key, int max);
+int hash_function(char *key, int max);
 void put(struct hash_table *table, char *key, int value);
 int get(struct hash_table *table, char *key);
 void remove_elem(struct hash_table *table, char *key);
