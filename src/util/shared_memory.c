@@ -12,7 +12,7 @@
 
 struct hash_table *attach_shared_memory(){
   
-  int shmid = shmget(KEY,sizeof(struct hash_table *),IPC_CREAT|0666);
+  int shmid = shmget(KEY,sizeof(struct hash_table *) ,IPC_CREAT|0666);
   if(shmid == -1){
     fprintf(stderr,"Error in shmget shared memory %s\n",strerror(errno));
     exit(EXIT_FAILURE);
@@ -33,4 +33,5 @@ void detach_shared_memory(struct hash_table *stats_map){
     fprintf(stderr,"Error detaching in shared memory\n");
     exit(EXIT_FAILURE);
   }
+  
 }

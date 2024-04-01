@@ -175,15 +175,15 @@ int main(int argc, char const *argv[])
   atom_fission(&atom, config,stats);
   fprintf(stdout,"AFTER FISSION GDHHDSHDHJDSJDJN\n");
   printf("\t\tBEFORE\n");
-  /*
+  
   while (1)
   {
 
-    printf("\t\tI'M WHILE LOOP\n");
+    //printf("\t\tI'M WHILE LOOP\n");
     int energy_released = 0;
     total_energy += energy_released;
   }
-*/
+
   detach_shared_memory(stats);
 
   /* cleanup_shared_memory(); */
