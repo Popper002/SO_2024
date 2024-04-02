@@ -12,7 +12,7 @@ static struct message rcv;
 struct config config;
 struct statistics stats;
 int stat_id;
-
+static struct message send_stats;
 
 void update_statistics(struct hash_table *stats_map, char *field, int value)
 {
@@ -68,8 +68,11 @@ void atom_fission(struct atom *atom, struct config config)
     fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
 	    atom->atomic_number);
     stats.total_nuclear_waste++;
-    msgsnd(stat_id,&stats, sizeof(int), 0);
-    
+    send_stats.m_type=1;
+    sprintf(send_stats.text,"%d",stats.total_nuclear_waste);
+    msgsnd(stat_id,&send_stats,sizeof(send_stats),0);
+    //msgsnd(stat_id,&stats, sizeof(int), 0);
+    fprintf(stdout,"\nATOM_SEND_STATS ID:%d,<WASTE %s>\n",stat_id,send_stats.text);
   }
   if (atom->atomic_flag == 1)
   {
@@ -81,7 +84,13 @@ void atom_fission(struct atom *atom, struct config config)
       TEST_ERROR
       exit(EXIT_FAILURE);
     case 0:
-      sta++;
+      //sta++;
+      stats.total_num_activation=2;
+      send_stats.m_type=2;
+      sprintf(send_stats.text,"%d",stats.total_num_activation);
+      msgsnd(stat_id,&send_stats,sizeof(send_stats),0);
+      fprintf(stdout,"ATOM_SEND_STATS ID:%d,<ACTIVATION %s>\n",stat_id,send_stats.text);
+
       child1_atomic_number = rand() % (atom->atomic_number - 1) +
 			     1; // -1 and +1 so we are sure to not exceed the
 				// starting atomic number

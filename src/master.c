@@ -502,6 +502,7 @@ void start_atom()
 void total_print(struct hash_table *stats_map)
 {
   struct statistics stat_rcv;
+  static struct message rcv_stats;
   int rcv_id = msgget(STATISTICS_KEY,0666);
   // printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
   // printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
@@ -512,13 +513,21 @@ void total_print(struct hash_table *stats_map)
   // printf( "\rINHIBITOR PUSHED\t%d\n", shared_data->inhibitor_balancing);
 
   // printf( "\rACTIVATOR PUSHED\t%d\n", shared_data->activator_balancing);
-
+/**
   if(msgrcv(rcv_id,&stat_rcv,sizeof(stat_rcv)-sizeof(long),0, IPC_NOWAIT) > 0){
     printf("Nuclear waste value is: %d",stat_rcv.total_nuclear_waste);
 
   }
+  */
+ msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,0);
+ stat_rcv.total_nuclear_waste = atoi(rcv_stats.text);
+
+ fprintf(stdout,"TEST_QUEUE_RCV %d ,WASTE_VALUE %d\n",rcv_id,stat_rcv.total_nuclear_waste);
 
 
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,0);
+stat_rcv.total_num_activation = atoi(rcv_stats.text);
+fprintf(stdout,"TEST_QUEUE_RCV %d ,ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
 
 
 
