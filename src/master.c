@@ -4,10 +4,12 @@
 #include "util/hash_table.h"
 #include "util/my_sem_lib.h"
 #include "util/shared_memory.h"
+#include <complex.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/msg.h>
 #include <sys/shm.h>
 #include <unistd.h>
 #define CONFIG_PATH "src/config/config1.txt"
@@ -499,14 +501,24 @@ void start_atom()
 
 void total_print(struct hash_table *stats_map)
 {
-  printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
+  struct statistics stat_rcv;
+  int rcv_id = msgget(STATISTICS_KEY,0666);
+  // printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
   // printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
-  printf( "\rTOTAL ENERGY PRODUCED\t%d\n", get(stats_map,"energy produced"));
+  // printf( "\rTOTAL ENERGY PRODUCED\t%d\n", get(stats_map,"energy produced"));
   // printf( "\rTOTAL ENERGY CONSUMED\t%d\n", shared_data->energy_absorbed);
   // printf( "\rTOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste);
   // printf( "\rTOTAL ENERGY INHIBITOR CONSUMED\t%d\n", total_energy);
   // printf( "\rINHIBITOR PUSHED\t%d\n", shared_data->inhibitor_balancing);
+
   // printf( "\rACTIVATOR PUSHED\t%d\n", shared_data->activator_balancing);
+
+  if(msgrcv(rcv_id,&stat_rcv,sizeof(stat_rcv)-sizeof(long),0, IPC_NOWAIT) > 0){
+    printf("Nuclear waste value is: %d",stat_rcv.total_nuclear_waste);
+
+  }
+
+
 
 
 

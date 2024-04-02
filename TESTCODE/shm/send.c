@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
     if(key_ < 0 ){ perror("ERROR IN KEY GEN\n");exit(EXIT_FAILURE);}
     shm_id = shmget(key_, ARRAY_SIZE , IPC_CREAT|0666); 
     if(shm_id <0){perror("ERROR IN GET\n");exit(EXIT_FAILURE);} 
-    printf(" %s SHM ID %d , sizeof(%d)",__FILE__ , shm_id , sizeof(shm_id));
+    printf(" %s SHM ID %d , sizeof(%lu)",__FILE__ , shm_id , sizeof(shm_id));
     ipc_id[0]="./send";
     rcv(); 
     sleep(5);
