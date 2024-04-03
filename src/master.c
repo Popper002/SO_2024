@@ -61,6 +61,59 @@ static void print_para_TEST()
   printf("\t\n----------\n");
 }
 #endif
+
+
+int why_term(enum term_reason term_reason)
+{
+  switch (term_reason)
+  {
+  case EXPLODE:
+    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",49);
+    remove_ipc();
+    killpg(atom_array_pid, SIGKILL);
+    killpg(activator_pid, SIGKILL);
+    killpg(inhibitor_pid, SIGKILL);
+    killpg(fuel_pid, SIGKILL);
+    killpg(rcv_pid->array, SIGKILL);
+    exit(EXIT_FAILURE);
+    break;
+  case TIMEOUT:
+    fprintf(stdout, "TIMEOUT -TERMINATION\n");
+    for (int i = 0; i < config.N_ATOM_MAX; i++)
+    {
+      kill(atom_array_pid[i], SIGINT);
+    }
+    kill(inhiitor_pid, SIGINT);
+    kill(activator_pid, SIGINT);
+
+    exit(EXIT_SUCCESS);
+    break;
+  case BLACKOUT:
+    write(STDOUT_FILENO, "BLACKOUT- NOT ENOUGH ENERGY\n",29);
+    remove_ipc();
+    killpg(atom_array_pid, SIGKILL);
+    killpg(activator_pid, SIGKILL);
+    killpg(inhibitor_pid, SIGKILL);
+    killpg(fuel_pid, SIGKILL);
+    killpg(rcv_pid->array, SIGKILL);
+    exit(EXIT_FAILURE);
+    break;
+  case MELTDOWN:
+    write(STDOUT_FILENO, "MELTDOWN - FORK-ERROR -TERMINATION\n",36);
+    remove_ipc();
+     killpg(atom_array_pid, SIGKILL);
+    killpg(activator_pid, SIGKILL);
+    killpg(inhibitor_pid, SIGKILL);
+    killpg(fuel_pid, SIGKILL);
+    killpg(rcv_pid->array, SIGKILL);
+    exit(EXIT_FAILURE);
+    break;
+  default:
+    return term_reason;
+    break;
+  }
+}
+
 static int scan_data()
 {
   int value;
@@ -211,7 +264,8 @@ pid_t inhibitor(void)
   switch (inhiitor_pid = fork())
   {
   case -1:
-    // why_term(MELTDOWN);
+     why_term(MELTDOWN);
+     break;
   case 0:
     fork_inhibitor++;
     argument_creator((char **)inebitore_args);
@@ -233,16 +287,14 @@ pid_t fuel_generator(void)
   switch (fuel_pid = fork())
   {
   case -1:
-    // why_term(MELTDOWN);
-    TEST_ERROR;
-    exit(EXIT_FAILURE);
+    why_term(MELTDOWN);
+    break;
   case 0:
   fork_fuel++; 
 #ifdef _PRINT_TEST
     printf("fuel case 0\n");
 #endif
     fuel_argument_ipc((char **)fuel_args);
-    printf("[%s %s %d] got argument ipc\n", __func__, __FILE__, __LINE__);
     execvp(FUEL_PATH, (char *const *)fuel_args);
     fprintf(
 	stderr,
@@ -264,9 +316,8 @@ pid_t atom_gen(void)
   switch (atom_pid = fork())
   {
   case -1:
-    // why_term(MELTDOWN);
-    TEST_ERROR;
-    exit(EXIT_FAILURE);
+    why_term(MELTDOWN);
+    break;
   case 0:
 
     argument_creator((char **)args_atom);
@@ -286,6 +337,7 @@ pid_t atom_gen(void)
     return atom_pid;
     break;
   }
+  return atom_pid;
 }
 pid_t activator(void)
 {
@@ -293,9 +345,9 @@ pid_t activator(void)
   switch (activator_pid = fork())
   {
   case -1:
-    // why_term(MELTDOWN);
-    TEST_ERROR;
-    exit(EXIT_FAILURE);
+    why_term(MELTDOWN);
+    break;
+    break;
   case 0:
   fork_activator++; 
 #ifdef _PRINT_TEST
@@ -319,6 +371,7 @@ pid_t activator(void)
     return activator_pid;
     break;
   }
+  return activator_pid;
 }
 
 /*
@@ -343,7 +396,7 @@ void store_pid_atom()
   atom_array_pid = (int *)malloc(config.N_ATOMI_INIT * sizeof(pid_t));
   if (atom_array_pid == NULL)
   {
-    fprintf(stdout, "malloc error %s", strerror(errno));
+    fprintf(stdout, "malloc error :ERR:%s\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
@@ -406,62 +459,6 @@ void handle_signal(int signum)
   }
 }
 
-int why_term(enum term_reason term_reason)
-{
-  switch (term_reason)
-  {
-  case EXPLODE:
-    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",49);
-    remove_ipc();
-    killpg(atom_array_pid, SIGKILL);
-    killpg(activator_pid, SIGKILL);
-    killpg(inhibitor_pid, SIGKILL);
-    killpg(fuel_pid, SIGKILL);
-    killpg(rcv_pid->array, SIGKILL);
-    exit(EXIT_FAILURE);
-    break;
-  case TIMEOUT:
-    fprintf(stdout, "TIMEOUT -TERMINATION\n");
-    for (int i = 0; i < config.N_ATOM_MAX; i++)
-    {
-      kill(atom_array_pid[i], SIGINT);
-    }
-    kill(inhiitor_pid, SIGINT);
-    kill(activator_pid, SIGINT);
-
-    exit(EXIT_SUCCESS);
-    break;
-  case BLACKOUT:
-    fprintf(stderr, "BLACKOUT- NOT ENOUGH ENERGY\n");
-    remove_ipc();
-    for (int i = 0; i < config.N_ATOM_MAX; i++)
-    {
-      kill(atom_array_pid[i], SIGINT);
-    }
-    kill(inhiitor_pid, SIGINT);
-    kill(activator_pid, SIGINT);
-
-    kill(getpid(), SIGINT);
-    exit(EXIT_FAILURE);
-    break;
-  case MELTDOWN:
-    fprintf(stderr, "MELTDOWN - FORK-ERROR -TERMINATION\n");
-    remove_ipc();
-    for (int i = 0; i < config.N_ATOM_MAX; i++)
-    {
-      kill(atom_array_pid[i], SIGINT);
-    }
-    kill(inhiitor_pid, SIGINT);
-    kill(activator_pid, SIGINT);
-
-    kill(getpid(), SIGINT);
-    exit(EXIT_FAILURE);
-    break;
-  default:
-    return term_reason;
-    break;
-  }
-}
 
 
 /*
@@ -521,12 +518,16 @@ void total_print(struct hash_table *stats_map)
 
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,0);
 stat_rcv.total_num_activation =+ atoi(rcv_stats.text);
-printf("TEST_QUEUE_RCV %d ,ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
+printf("TEST_QUEUE_RCV %d, ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
 
 int total_nuclear_waste = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,0);
 total_nuclear_waste += atoi(rcv_stats.text);
-printf("TEST_QUEUE_RCV %d ,WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
+printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
+
+
+total_nuclear_waste += atoi(rcv_stats.text);
+printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
 
 int energy_produced = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,0);
@@ -538,9 +539,10 @@ if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 printf("Test queue rcv %d, energy produced %d\n",rcv_id,energy_produced);
 
 
-sleep(1);
 
+sleep(1);
 }
+
 /*
 void print_last_sec()
 shared_data->energy_produced_value{
@@ -603,7 +605,6 @@ void logo()
 }
 int main(void)
 {
-
   struct statistics *energy_released;
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
@@ -698,5 +699,6 @@ stats->max = 1;
 
 detach_shared_memory(stats);
   return 0;
+
 
 } 

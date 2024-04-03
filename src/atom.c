@@ -59,8 +59,6 @@ static int energy_free(int atomic_a1, int atomic_a2)
 void atom_fission(struct atom *atom, struct config config)
 {
 
-  int total_nuclear_waste = 0;
-  int total_num_activation = 0;
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
     fprintf(stdout, "Starting fissioning atom....\n");
@@ -160,7 +158,6 @@ int main(int argc, char const *argv[])
     stats->max = 1;
 
     */
-  int total_energy = 0;
 
   rcv.m_type = 1;
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL);
