@@ -5,6 +5,7 @@
 #include <stdlib.h>
 static int msg_id;
 struct message inhibitor_send;
+struct message inhibitor_stats_send;
 struct config config;
 struct statistics *inhibitor_stats;
 /* Possibile idea :
@@ -12,7 +13,10 @@ struct statistics *inhibitor_stats;
    modo da limitare le fissioni il tutto sincronizzato con l'attivatore in modo
    da avere una queue con più quindi la prob di non avere una fissione sarà
     P(FISSIONE) = P(1)|P(INEBITORE) * P(1) * P(ATTIVATORE) /  */
-int fission_flag() { return rand() % 2; }
+int fission_flag() 
+{ 
+  return rand() % 2; 
+}
 
 void fetch_args_inhibitor(char const *argv[])
 {
@@ -44,6 +48,7 @@ int main(int argc, char const *argv[])
 
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
 #endif
+int balance = 0;
 
   if (argc < 8)
   {
@@ -59,7 +64,7 @@ int main(int argc, char const *argv[])
     chi preleva questi parametri sapra se fare o meno la fissione */
 
   msg_id =
-      msgget(ATOMIC_KEY, IPC_CREAT | ALL); /* @return the same queue of atom */
+      msgget(ATOMIC_KEY, IPC_CREAT | 0666); /* @return the same queue of atom */
   inhibitor_send.m_type = 1;
 if(msg_id <0 )
 {
@@ -86,7 +91,20 @@ if(msg_id <0 )
         exit(EXIT_FAILURE);
     }
 
-   //inhibitor_stats->inhibitor_balancing++;
+if(inhibitor_command == 0)
+  balance++;
+
+int stat_id_inhibitor = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
+inhibitor_stats_send.m_type = 7;
+sprintf(inhibitor_stats_send.text, "%d", balance);
+if (msgsnd(stat_id_inhibitor, &inhibitor_stats_send, sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
+{
+  fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
+          strerror(errno), getpid());
+  exit(EXIT_FAILURE);
+}
+
+
     
 #ifdef _PRINT_TEST
     printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,

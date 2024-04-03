@@ -1,7 +1,6 @@
 #include "header/atom.h"
 #include "header/common.h"
-#include "header/ipc.h"
-#include "util/hash_table.h"
+#include "header/ipc.h" #include "util/hash_table.h"
 #include "util/my_sem_lib.h"
 #include "util/shared_memory.h"
 #include <complex.h>
@@ -525,10 +524,6 @@ msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,0);
 total_nuclear_waste += atoi(rcv_stats.text);
 printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
 
-
-total_nuclear_waste += atoi(rcv_stats.text);
-printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
-
 int energy_produced = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,0);
 energy_produced += atoi(rcv_stats.text);
@@ -537,6 +532,11 @@ if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
   why_term(EXPLODE);
 }
 printf("Test queue rcv %d, energy produced %d\n",rcv_id,energy_produced);
+
+int inhibitor_balance = 0;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,0);
+inhibitor_balance += atoi(rcv_stats.text);
+printf("Test queue rcv %d, inhibitor balance %d\n",rcv_id,inhibitor_balance);
 
 
 
