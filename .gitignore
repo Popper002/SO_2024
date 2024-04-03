@@ -2,7 +2,7 @@
 *.aux
 *.log
 *.toc
-
+*.gch
 fuel
 master
 activator

@@ -68,7 +68,7 @@ void atom_fission(struct atom *atom, struct config config)
     fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
 	    atom->atomic_number);
     stats.total_nuclear_waste++;
-    send_stats.m_type=1;
+    send_stats.m_type=5;
     sprintf(send_stats.text,"%d",stats.total_nuclear_waste);
     msgsnd(stat_id,&send_stats,sizeof(send_stats),0);
     fprintf(stdout,"\nATOM_SEND_STATS ID:%d,<WASTE %s>\n",stat_id,send_stats.text);
@@ -84,8 +84,8 @@ void atom_fission(struct atom *atom, struct config config)
       exit(EXIT_FAILURE);
     case 0:
       //sta++;
-      stats.total_num_activation=2;
-      send_stats.m_type=2;
+      stats.total_num_activation++;
+      send_stats.m_type=1;
       sprintf(send_stats.text,"%d",stats.total_num_activation);
       msgsnd(stat_id,&send_stats,sizeof(send_stats),0);
       fprintf(stdout,"ATOM_SEND_STATS ID:%d,<ACTIVATION %s>\n",stat_id,send_stats.text);
@@ -98,12 +98,18 @@ void atom_fission(struct atom *atom, struct config config)
       printf("child2 atomic number %d\n", child2_atomic_number);
 #endif
 
-      int energy_released =
-	  energy_free(child1_atomic_number, child2_atomic_number);
+      int energy_released = energy_free(child1_atomic_number, child2_atomic_number);
       printf("energy released %d\n", energy_released);
       printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
 	     __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
 	     energy_released);
+      stats.energy_produced_value = energy_released;
+      send_stats.m_type = 3;
+      sprintf(send_stats.text,"%d",stats.energy_produced_value);
+      msgsnd(stat_id,&send_stats,sizeof(send_stats),0);
+
+
+
       // bzero(&atom_stats,sizeof(atom_stats));
       // exit(0);
       break;
@@ -188,8 +194,8 @@ int main(int argc, char const *argv[])
   */
 
   atom.atomic_number = get_atomic_number();
-  fprintf(stdout, "The atomic number of atom [%d] is %d \n", atom.pid,
-	  atom.atomic_number);
+  /*fprintf(stdout, "The atomic number of atom [%d] is %d \n", atom.pid,
+	  atom.atomic_number);*/
 
   atom_fission(&atom, config);
 

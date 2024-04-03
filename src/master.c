@@ -25,10 +25,10 @@ struct atom atom_stat;
 static int shm_id;
 static int fork_fuel; 
 static int fork_activator; 
+static int rcv_id;
 // static int fork_atom;
 static int fork_inhibitor;
 static int total_energy ;
-static  int id;
 shm_fuel *rcv_pid;
 int *atom_array_pid;
 static key_t key_shm;
@@ -241,7 +241,6 @@ pid_t fuel_generator(void)
 #ifdef _PRINT_TEST
     printf("fuel case 0\n");
 #endif
-    printf("fuel generator pid %d\n", getpid());
     fuel_argument_ipc((char **)fuel_args);
     printf("[%s %s %d] got argument ipc\n", __func__, __FILE__, __LINE__);
     execvp(FUEL_PATH, (char *const *)fuel_args);
@@ -367,6 +366,7 @@ void remove_ipc()
   int remove_queue;
   remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
   msgctl(remove_queue, IPC_RMID, NULL);
+  msgctl(rcv_id,IPC_RMID,NULL);
   // cleanup_shared_memory();
   fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
 }
@@ -411,15 +411,13 @@ int why_term(enum term_reason term_reason)
   switch (term_reason)
   {
   case EXPLODE:
-    fprintf(stderr, "TOO MUCH ENERGY -TERMINATION\n");
+    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",49);
     remove_ipc();
-    for (int i = 0; i < config.N_ATOM_MAX; i++)
-    {
-      kill(atom_array_pid[i], SIGINT);
-    }
-    kill(inhiitor_pid, SIGINT);
-    kill(activator_pid, SIGINT);
-
+    killpg(atom_array_pid, SIGKILL);
+    killpg(activator_pid, SIGKILL);
+    killpg(inhibitor_pid, SIGKILL);
+    killpg(fuel_pid, SIGKILL);
+    killpg(rcv_pid->array, SIGKILL);
     exit(EXIT_FAILURE);
     break;
   case TIMEOUT:
@@ -503,7 +501,7 @@ void total_print(struct hash_table *stats_map)
 {
   struct statistics stat_rcv;
   static struct message rcv_stats;
-  int rcv_id = msgget(STATISTICS_KEY,0666);
+   rcv_id = msgget(STATISTICS_KEY,0666);
   // printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
   // printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
   // printf( "\rTOTAL ENERGY PRODUCED\t%d\n", get(stats_map,"energy produced"));
@@ -519,15 +517,26 @@ void total_print(struct hash_table *stats_map)
 
   }
   */
-  int total_nuclear_waste;
- msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,0);
- total_nuclear_waste += atoi(rcv_stats.text);
- fprintf(stdout,"TEST_QUEUE_RCV %d ,WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
 
 
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,0);
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,0);
 stat_rcv.total_num_activation =+ atoi(rcv_stats.text);
-fprintf(stdout,"TEST_QUEUE_RCV %d ,ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
+printf("TEST_QUEUE_RCV %d ,ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
+
+int total_nuclear_waste = 0;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,0);
+total_nuclear_waste += atoi(rcv_stats.text);
+printf("TEST_QUEUE_RCV %d ,WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
+
+int energy_produced = 0;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,0);
+energy_produced += atoi(rcv_stats.text);
+if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
+{
+  why_term(EXPLODE);
+}
+printf("Test queue rcv %d, energy produced %d\n",rcv_id,energy_produced);
+
 
 sleep(1);
 
@@ -691,4 +700,3 @@ detach_shared_memory(stats);
   return 0;
 
 } 
-
