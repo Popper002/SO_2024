@@ -71,7 +71,6 @@ void atom_fission(struct atom *atom, struct config config)
     send_stats.m_type=1;
     sprintf(send_stats.text,"%d",stats.total_nuclear_waste);
     msgsnd(stat_id,&send_stats,sizeof(send_stats),0);
-    //msgsnd(stat_id,&stats, sizeof(int), 0);
     fprintf(stdout,"\nATOM_SEND_STATS ID:%d,<WASTE %s>\n",stat_id,send_stats.text);
   }
   if (atom->atomic_flag == 1)
@@ -91,9 +90,7 @@ void atom_fission(struct atom *atom, struct config config)
       msgsnd(stat_id,&send_stats,sizeof(send_stats),0);
       fprintf(stdout,"ATOM_SEND_STATS ID:%d,<ACTIVATION %s>\n",stat_id,send_stats.text);
 
-      child1_atomic_number = rand() % (atom->atomic_number - 1) +
-			     1; // -1 and +1 so we are sure to not exceed the
-				// starting atomic number
+      child1_atomic_number = rand() % (atom->atomic_number - 1) + 1; // -1 and +1 so we are sure to not exceed the starting atomic number
       child2_atomic_number = atom->atomic_number - child1_atomic_number;
 
 #ifdef _PRINT_TEST

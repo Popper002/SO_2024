@@ -519,14 +519,14 @@ void total_print(struct hash_table *stats_map)
 
   }
   */
+  int total_nuclear_waste;
  msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,0);
- stat_rcv.total_nuclear_waste = atoi(rcv_stats.text);
-
- fprintf(stdout,"TEST_QUEUE_RCV %d ,WASTE_VALUE %d\n",rcv_id,stat_rcv.total_nuclear_waste);
+ total_nuclear_waste += atoi(rcv_stats.text);
+ fprintf(stdout,"TEST_QUEUE_RCV %d ,WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
 
 
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,0);
-stat_rcv.total_num_activation = atoi(rcv_stats.text);
+stat_rcv.total_num_activation =+ atoi(rcv_stats.text);
 fprintf(stdout,"TEST_QUEUE_RCV %d ,ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
 
 
