@@ -529,7 +529,7 @@ msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,0);
 stat_rcv.total_num_activation =+ atoi(rcv_stats.text);
 fprintf(stdout,"TEST_QUEUE_RCV %d ,ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
 
-
+sleep(1);
 
 }
 /*
@@ -683,7 +683,7 @@ stats->max = 1;
 
   while (1)
   {
-    total_print(stats);
+      total_print(stats);
 //     TODO call a function that displays statistic
   }
 
