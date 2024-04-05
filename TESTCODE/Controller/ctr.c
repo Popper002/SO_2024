@@ -46,12 +46,14 @@ void resume_inhibitor_process() {
 }
 
 int main() {
-    char command[MAX_COMMAND_LENGTH];
+    // char command[MAX_COMMAND_LENGTH];
+    char command;
 
     // Imposta il gestore del segnale per SIGSTOP e SIGCONT
     signal(SIGSTOP, signal_handler);
     signal(SIGCONT, signal_handler);
 
+/*
     while (1) {
         // Stampa il prompt della CLI
         fprintf(stdout,"Comando (start/stop/resume/quit): ");
@@ -79,6 +81,29 @@ int main() {
         }
     }
 
+*/
     // Termina il programma
+
+    while(1){
+        printf("Comando S=start, s= stop, r= resume q:quit\n");
+        command = fgetc(stdin);
+        switch(command){
+            case 'S':
+                start_inhibitor_process();
+                break;
+            case 's':
+                stop_inhibitor_process();
+                break;
+            case 'r':
+                resume_inhibitor_process();
+                break;
+            case 'q':
+                return 0;
+            default:
+                printf("Wrong command, use S,s,r or q\n");
+                while(getchar() != '\n');
+                break;
+        }
+    }
     return 0;
 }
