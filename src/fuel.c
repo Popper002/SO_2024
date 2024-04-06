@@ -241,6 +241,14 @@ int main(int argc, char const *argv[])
   struct timespec ns_step, sec_step;
   sec_step.tv_sec = config.STEP;
   ns_step.tv_nsec = config.STEP * 1000000000LL;
+
+
+
+
+
+
+  while (1)
+  {
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
   {
     atom_new_pid[i] = born_new_atom();
@@ -264,7 +272,15 @@ int main(int argc, char const *argv[])
   if (shmdt(new_pid_atom) < 0)
   {
     fprintf(stderr, "Shared memory ");
+   }
+  
   }
+
+
+
+
+
+
 
 #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);

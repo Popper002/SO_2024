@@ -419,6 +419,8 @@ void remove_ipc()
   remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
   msgctl(remove_queue, IPC_RMID, NULL);
   msgctl(rcv_id,IPC_RMID,NULL);
+  //shmctl(rcv_pid,IPC_RMID,NULL); 
+
   // cleanup_shared_memory();
   fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
 }
