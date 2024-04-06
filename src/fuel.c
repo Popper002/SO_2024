@@ -209,7 +209,7 @@ int main(int argc, char const *argv[])
   // value_in_memory();
 #endif
 
-  shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t),
+  shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t) ,
 		  IPC_CREAT | 0666);
   if (shm_id < 0)
   {
@@ -219,7 +219,7 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TEST
   printf(" [%s] [N_NUOVI_ATOMI : %d ]\n", __FILE__, config.N_NUOVI_ATOMI);
 #endif
-  atom_new_pid = (pid_t *)malloc(sizeof(pid_t) * config.N_ATOMI_INIT);
+  atom_new_pid = (pid_t *)malloc(sizeof(pid_t) * config.N_ATOMI_INIT  );
   if (atom_new_pid == NULL)
   {
     fprintf(stdout, "malloc error %s", strerror(errno));
@@ -253,6 +253,10 @@ int main(int argc, char const *argv[])
   {
     atom_new_pid[i] = born_new_atom();
     nanosleep(&ns_step, &sec_step);
+
+    new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
+  /* copiamo l'array di pid in memoria condivisa */
+  memcpy(new_pid_atom->array[i], atom_new_pid, sizeof(pid_t));
   }
 
 #ifdef _PRINT_TEST
@@ -262,9 +266,7 @@ int main(int argc, char const *argv[])
 	   atom_new_pid[l], l);
   }
 #endif
-  new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
-  /* copiamo l'array di pid in memoria condivisa */
-  memcpy(new_pid_atom->array, atom_new_pid, sizeof(int));
+  
 #ifdef _PRINT_TEST
   printf("COPY COMPLEATE\n");
 #endif
