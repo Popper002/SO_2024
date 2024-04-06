@@ -14,20 +14,6 @@ struct statistics stats;
 int stat_id;
 static struct message send_stats;
 
-void update_statistics(struct hash_table *stats_map, char *field, int value)
-{
-  int curr = get(stats_map, field);
-
-  if (curr != -1)
-  {
-    put(stats_map, (char *)field, curr + value);
-  }
-  else
-  {
-    put(stats_map, (char *)field, value);
-  }
-}
-
 void fetch_args_atom(char const *argv[])
 {
   int n_atom_init = atoi(argv[1]);

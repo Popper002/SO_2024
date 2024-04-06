@@ -60,7 +60,7 @@ static void print_para_TEST()
   printf("\t\n----------\n");
 }
  #endif */
-*/
+
 int why_term(enum term_reason term_reason)
 {
   switch (term_reason)
@@ -459,27 +459,58 @@ stat_rcv.total_num_activation=0 ;
 stat_rcv.total_num_activation+= atoi(rcv_stats.text);
 printf("TEST_QUEUE_RCV %d, ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
 
-int total_nuclear_waste = 0;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
-total_nuclear_waste += atoi(rcv_stats.text);
-printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,IPC_NOWAIT);
+int fission_last_sec = 0;
+stat_rcv.num_fission_last_sec +=atoi(rcv_stats.text); 
+printf("TEST_QUEUE_RCV %d, FISSIONE_VALUE %d\n",rcv_id,stat_rcv.num_fission_last_sec);
 
 int energy_produced = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,IPC_NOWAIT);
 energy_produced += atoi(rcv_stats.text);
+
 if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 {
   why_term(EXPLODE);
 }
 printf("Test queue rcv %d, energy produced %d\n",rcv_id,energy_produced);
 
+printf("Energy removed is equal to: %d",stat_rcv.num_energy_consumed_last_sec);
+
+
+/*
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),6,IPC_NOWAIT);
+stat_rcv.energy_absorbed += atoi(rcv_stats.text);
+printf("Energy absorbed by inhibitor is: %d", stat_rcv.energy_absorbed);
+*/
+// int total_nuclear_waste = 0;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
+stat_rcv.total_nuclear_waste_last_sec += atoi(rcv_stats.text);
+printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,stat_rcv.total_nuclear_waste_last_sec);
+
+
+/*
 int inhibitor_balance = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,IPC_NOWAIT);
 inhibitor_balance += atoi(rcv_stats.text);
 printf("Test queue rcv %d, inhibitor balance %d\n",rcv_id,inhibitor_balance);
+*/
+while(energy_produced > 0)
+  stat_rcv.total_num_energy_produced_last_sec -= config.ENERGY_DEMAND;
+if(energy_produced <= 0)
+  why_term(BLACKOUT);
 sleep(1);
 }
 
+void final_print(struct statistics final_print)
+{
+    final_print.total_num_activation =final_print.num_activation_last_sec;
+    final_print.total_nuclear_waste = final_print.total_nuclear_waste_last_sec; 
+    final_print.total_num_fission = final_print.num_fission_last_sec; 
+    final_print.total_num_energy_consumed = final_print.total_num_energy_produced_last_sec; 
+    final_print.energy_absorbed = final_print.energy_absorbed_last_sec; 
+    final_print.total_num_energy_consumed = final_print.energy_absorbed_last_sec; 
+    final_print.inhibitor_balancing = final_print.inhibitor_balancing_last_sec; 
+}
 
 void logo()
 { 
@@ -593,6 +624,8 @@ stats->max = 1;
 
   while (1)
   {
+      fprintf(stdout,"TIME REMANING FOR SIMULATION %d \n",config.SIM_DURATION);
+      config.SIM_DURATION--; 
       total_print(stats);
 //     TODO: call a function that displays statistic
   }

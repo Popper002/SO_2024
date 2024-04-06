@@ -72,10 +72,10 @@ void store__new_pid_atom()
 /* #ifdef _PRINT_TEST
     printf("[MASTER %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	   new_pid_atom[i], i);
- #endif */
+ #endif 
   }
 }
-*/
+*/ 
 void fetch_args_fuel(char const *argv[])
 {
 
