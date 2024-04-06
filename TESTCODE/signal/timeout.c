@@ -55,9 +55,9 @@ int main(int argc, char const *argv[])
             send.msg_type =0; 
              rcv.msg_type =0; 
             return_num =random_data();
-            #ifdef _PRINT_TEST
+            /* #ifdef _PRINT_TEST
             fprintf(stdout,"ret_val %d\n",return_num);
-            #endif
+             #endif */
             sprintf(send.text , "%d",return_num); 
             msgsnd(msg_id , &send ,sizeof(send),0);// { fprintf(stderr , "ERROR IN SEND MSG : ERR: %d ",errno); exit(EXIT_FAILURE);}
             

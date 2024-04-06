@@ -40,8 +40,8 @@ struct config config;
 struct hash_table table;
 enum term_reason term_reason;
 struct statistics *shared_data;
-
-#ifdef _PRINT_TEST
+/*
+/* #ifdef _PRINT_TEST
 static void print_para_TEST()
 {
 
@@ -59,9 +59,8 @@ static void print_para_TEST()
 
   printf("\t\n----------\n");
 }
-#endif
-
-
+ #endif */
+*/
 int why_term(enum term_reason term_reason)
 {
   switch (term_reason)
@@ -76,17 +75,6 @@ int why_term(enum term_reason term_reason)
     write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",49);
 
     exit(EXIT_FAILURE);
-    break;
-  case TIMEOUT:
-    fprintf(stdout, "TIMEOUT -TERMINATION\n");
-    for (int i = 0; i < config.N_ATOM_MAX; i++)
-    {
-      kill(atom_array_pid[i], SIGINT);
-    }
-    kill(inhiitor_pid, SIGINT);
-    kill(activator_pid, SIGINT);
-
-    exit(EXIT_SUCCESS);
     break;
   case BLACKOUT:
     write(STDOUT_FILENO, "BLACKOUT- NOT ENOUGH ENERGY\n",29);
@@ -125,9 +113,9 @@ static int scan_data()
     fprintf(stderr, "%d\n", errno);
     exit(EXIT_FAILURE);
   }
-  #ifdef _PRINT_TEST
+  /* #ifdef _PRINT_TEST
   printf("Reading data from file...\n");
-  #endif
+   #endif */
   while (fscanf(fp, "%s %d", name_param, &value) != EOF)
   {
     if (strcmp(name_param, "N_ATOMI_INIT") == 0)
@@ -182,13 +170,13 @@ static int scan_data()
   }
 
   fclose(fp);
-  #ifdef _PRINT_TEST
+  /* #ifdef _PRINT_TEST
   printf("Data read from file!\n");
   if (config.INHIBITOR == 1)
   {
     printf("Inhibitor is going to be used in this simulation\n");
   }
-  #endif
+   #endif */
 
   return error;
 }
@@ -291,9 +279,9 @@ pid_t fuel_generator(void)
     break;
   case 0:
   fork_fuel++; 
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("fuel case 0\n");
-#endif
+ #endif */
     fuel_argument_ipc((char **)fuel_args);
     execvp(FUEL_PATH, (char *const *)fuel_args);
     fprintf(
@@ -331,9 +319,9 @@ pid_t atom_gen(void)
   default:
 
     // kill(atom_pid, SIGSTOP);
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("MASTER _ FATHER %d\n", getppid());
-#endif
+ #endif */
     return atom_pid;
     break;
   }
@@ -350,9 +338,9 @@ pid_t activator(void)
     break;
   case 0:
   fork_activator++; 
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("activator case 0\n");
-#endif
+ #endif */
 
     argument_creator((char **)activator_args);
     execvp(ACTIVATOR_PATH, (char **)activator_args);
@@ -364,32 +352,16 @@ pid_t activator(void)
 
   default:
     kill(activator_pid, SIGSTOP);
-    /*waitpid(activator_pid, NULL, 0);*/
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("activator case default\n");
-#endif
+ #endif */
     return activator_pid;
     break;
   }
   return activator_pid;
 }
 
-/*
-void shutdown()
-{
-  for (int i = 0; i < config.N_ATOMI_INIT; i++)
-  {
-    if (atom_array_pid[i] != getpid()) {
-      kill(atom_array_pid[i], SIGKILL);
-    }
-    if (activator_array_pid[i] != getpid()) {
-      kill(activator_array_pid[i], SIGKILL);
-    }
-    printf("Killed process with pid %d\n", atom_array_pid[i]);
-    printf("Killed process with pid %d\n", activator_array_pid[i]);
-  }
-}
-*/
+
 
 void store_pid_atom()
 {
@@ -402,15 +374,15 @@ void store_pid_atom()
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     atom_array_pid[i] = atom_gen();
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("[MASTER %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	   atom_array_pid[i], i);
-#endif
+ #endif */
   }
 
- #ifdef _PRINT_TEST
+ /* #ifdef _PRINT_TEST
   fprintf(stdout, "Child process %d created and suspended.\n", atom_pid);
-  #endif
+   #endif */
   free(atom_array_pid);
 }
 
@@ -422,7 +394,6 @@ void remove_ipc()
   msgctl(rcv_id,IPC_RMID,NULL);
   //shmctl(rcv_pid,IPC_RMID,NULL); 
 
-  // cleanup_shared_memory();
   fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
 }
 
@@ -463,17 +434,7 @@ void handle_signal(int signum)
 
 
 
-/*
-void ipc_init()
-{
 
-  if (sem_set_val(sem_id, 0, config.N_ATOMI_INIT) == -1)
-  {
-  fprintf(stderr, "[%s]Error %d in sem_set_val %s\n", __FILE__, errno,
-    strerror(errno));
-  }
-}
-*/
 
 void start_atom()
 {
@@ -483,16 +444,8 @@ void start_atom()
     kill(atom_array_pid[i], SIGCONT);
 #ifdef __PRINT_TEST
     printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
-#endif
+ #endif */
   }
-  /*@Popper002 TODO  SEGFAULT HERE
-  for(int j=0;j<config.N_NUOVI_ATOMI;j++)
-  {
-    kill(rcv_pid->array[j],SIGCONT);
-    printf("\n\tSTART ATOM %d\n", atom_array_pid[j]);
-
-  }
-  */
 }
 
 
@@ -501,23 +454,6 @@ void total_print(struct hash_table *stats_map)
   struct statistics stat_rcv;
   static struct message rcv_stats;
    rcv_id = msgget(STATISTICS_KEY,0666);
-  // printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
-  // printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
-  // printf( "\rTOTAL ENERGY PRODUCED\t%d\n", get(stats_map,"energy produced"));
-  // printf( "\rTOTAL ENERGY CONSUMED\t%d\n", shared_data->energy_absorbed);
-  // printf( "\rTOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste);
-  // printf( "\rTOTAL ENERGY INHIBITOR CONSUMED\t%d\n", total_energy);
-  // printf( "\rINHIBITOR PUSHED\t%d\n", shared_data->inhibitor_balancing);
-
-  // printf( "\rACTIVATOR PUSHED\t%d\n", shared_data->activator_balancing);
-/**
-  if(msgrcv(rcv_id,&stat_rcv,sizeof(stat_rcv)-sizeof(long),0, IPC_NOWAIT) > 0){
-    printf("Nuclear waste value is: %d",stat_rcv.total_nuclear_waste);
-
-  }
-  */
-
-
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,IPC_NOWAIT);
 stat_rcv.total_num_activation=0 ;
 stat_rcv.total_num_activation+= atoi(rcv_stats.text);
@@ -541,43 +477,9 @@ int inhibitor_balance = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,IPC_NOWAIT);
 inhibitor_balance += atoi(rcv_stats.text);
 printf("Test queue rcv %d, inhibitor balance %d\n",rcv_id,inhibitor_balance);
-
-
-
 sleep(1);
 }
 
-/*
-void print_last_sec()
-shared_data->energy_produced_value{
-  // TODO all of this print are place holder
-  printf( "PROC\tPID\tENERGY\tN_FORK\tATOMIC NUMBER\tSTATUS\n");
-  printf( "MASTER\t%d\t%p\t%p\t%p\t%s\n", getpid(), NULL, NULL, NULL,
-	 "OK");
-  printf( "\rFUEL\t%d\t%p\t%d\t%p\t%s\n", fuel_pid, NULL,
-	 config.N_NUOVI_ATOMI, NULL, "OK");
-  printf( "ACTIVATOR\t%d\t%p\t%p\t%p\t%s\n", activator_pid, NULL, NULL,
-	 NULL, "OK");
-  printf( "INHIBITOR\t%d\t%p\t%p\t%p\t%s\n", inhibitor_pid, NULL, NULL,
-	 NULL, "OK");
-  printf( "STATS\n");
-
-
-  printf( "\r TOTAL ENERGY CONSUMED\t%d\n", shared_data->total_num_energy_consumed);
-
-  
-  printf("\n\n\n");
-  printf( "\rLAST SEC TOTAL ACTIVATION\t%d\n", shared_data->num_activation_last_sec);
-  printf( "\rLAST SEC TOTAL FISSION\t\t%d\n",    shared_data->num_fission_last_sec);
-  printf( "\rLAST SEC TOTAL ENERGY PRODUCED\t%d\n", shared_data->total_num_energy_produced_last_sec);
-  printf( "\rLAST SEC TOTAL ENERGY CONSUMED\t%d\n", shared_data->num_energy_consumed_last_sec);
-  printf( "\rLAST SEC TOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste_last_sec);
-  printf( "\rLAST SEC TOTAL ENERGY INHIBITOR CONSUMED\t%d\n", shared_data->num_energy_consumed_inhibitor_last_sec);
-  printf("--------------------------------------------------------------\n");
-  printf("\n");
-  sleep(1);
-}
-*/
 
 void logo()
 { 
@@ -613,9 +515,9 @@ int main(void)
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
   void *rcv_ptr;
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf("KEY IS %d \n", key_shm);
-#endif
+ #endif */
 
   if (key_shm < 0)
   {
@@ -631,55 +533,49 @@ stats->max = 1;
   signal(SIGUSR1, handle_signal);
   signal(SIGALRM, handle_signal);
 
-  //printf("-> Main %d <-\n", getpid());
   scan_data();
 
-  // ipc_init();
 
-#ifdef _PRINT_TEST
-  print_para_TEST(config);
-#endif
+/* #ifdef _PRINT_TEST
+ // print_para_TEST(config);
+ #endif */
 
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
   fuel_args[0] = (char **)FUEL_PATH;
   inebitore_args[0] = (char **)INHIBITOR_PATH;
   activator_pid = activator();
-  //  kill(activator_pid, SIGSTOP);
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
 	 activator_pid);
-#endif
+ #endif */
 
   fuel_pid = fuel_generator();
-  //  kill(fuel_pid, SIGSTOP);
   if (config.INHIBITOR == 1)
   {
     inhibitor_pid = inhibitor();
-    //  kill(inhibitor_pid, SIGSTOP);
   }
   store_pid_atom();
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
-#ifdef _PRINT_TEST
-  /* FIXME: here we have the seg fault  */
+/* #ifdef _PRINT_TEST
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
   {
 
     printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
   }
   fprintf(stdout, "atoms generated and stopped\n");
-#endif
+ #endif */
 
 
   // shutdown();
-  #ifdef _PRINT_TEST
+  /* #ifdef _PRINT_TEST
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
-  #endif
+   #endif */
   logo();
   for (start = 10; start > 0; start--)
   {
@@ -698,7 +594,7 @@ stats->max = 1;
   while (1)
   {
       total_print(stats);
-//     TODO call a function that displays statistic
+//     TODO: call a function that displays statistic
   }
 
 detach_shared_memory(stats);

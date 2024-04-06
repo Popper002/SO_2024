@@ -29,4 +29,4 @@ typedef struct
 }shm_fuel;
 key_t key_sem_m;
 key_t key_sem_acti;
-#endif
+ #endif */

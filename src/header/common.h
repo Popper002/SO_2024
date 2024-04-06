@@ -10,11 +10,11 @@
    source file, as an integer.
      __LINE__ is useful when generating log statements
  */
-#endif
+ #endif */
 
 #ifndef _GNU_SOURCE /* Missing this baby :p */
 #define _GNU_SOURCE
-#endif
+ #endif */
 #include <errno.h>
 #include <math.h>
 #include <signal.h>

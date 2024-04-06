@@ -45,9 +45,9 @@ void fetch_args(char const *argv[])
 
 int main(int argc, char const *argv[])
 {
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
-#endif
+ #endif */
   static int q_id, i;
   int command;
 
@@ -64,9 +64,9 @@ int main(int argc, char const *argv[])
   {
     send.m_type = 1;
     command = randomic_activation();
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("\ncommand %d\n", command);
-#endif
+ #endif */
     sprintf(send.text, "%d", command);
     if (msgsnd(q_id, &send, sizeof(send) - sizeof(long), 0) <= -1)
     {
@@ -74,10 +74,10 @@ int main(int argc, char const *argv[])
     };
     // activator_stats->activator_balancing++;
   //  activator_stats->num_activation_last_sec++;
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("[%s %s SENDED THIS MESSAGE %s IN QUEUE %d TYPE:%ld\n", __FILE__,
 	   __func__, send.text, q_id, send.m_type);
-#endif
+ #endif */
   }
 
 

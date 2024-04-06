@@ -44,9 +44,9 @@ pid_t born_new_atom()
     TEST_ERROR;
     exit(EXIT_FAILURE);
   case 0:
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
-#endif
+ #endif */
 
     atom_argument_creator((char **)new_atom_args);
     execvp(ATOM_PATH, (char **)new_atom_args);
@@ -69,10 +69,10 @@ void store__new_pid_atom()
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     new_pid_atom[i] = born_new_atom();
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("[MASTER %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	   new_pid_atom[i], i);
-#endif
+ #endif */
   }
 }
 */
@@ -99,11 +99,11 @@ void fetch_args_fuel(char const *argv[])
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
   shm_id = ipc_shm_id;
   shm_key = ipc_key_shm;
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}", getpid());
-#endif
+ #endif */
 }
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
 
 void print_para_TEST()
 {
@@ -155,7 +155,7 @@ int stampaStatoMemoria(int shid)
   }
 }
 
-#endif
+ #endif */
 void signal_handle(int signum)
 {
   switch (signum)
@@ -192,22 +192,22 @@ int main(int argc, char const *argv[])
   (void) argc;
   srand(time(NULL));
   signal(SIGALRM, signal_handle);
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
-#endif
+ #endif */
 
   
   fetch_args_fuel(argv);
   config.STEP = step_nanosec();
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);
-#endif
-#ifdef _PRINT_TEST
+ #endif */
+/* #ifdef _PRINT_TEST
   print_ALL_IPC();
   print_para_TEST();
   fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);
   // value_in_memory();
-#endif
+ #endif */
 
   shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t) ,
 		  IPC_CREAT | 0666);
@@ -216,9 +216,9 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "FUEL , PROBLEM SHMGET\n");
     exit(EXIT_FAILURE);
   }
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf(" [%s] [N_NUOVI_ATOMI : %d ]\n", __FILE__, config.N_NUOVI_ATOMI);
-#endif
+ #endif */
   atom_new_pid = (pid_t *)malloc(sizeof(pid_t) * config.N_ATOMI_INIT  );
   if (atom_new_pid == NULL)
   {
@@ -256,20 +256,20 @@ int main(int argc, char const *argv[])
 
     new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
   /* copiamo l'array di pid in memoria condivisa */
-  memcpy(new_pid_atom->array[i], atom_new_pid, sizeof(pid_t));
+  memcpy(new_pid_atom->array[i], atom_new_pid[i], sizeof(pid_t));
   }
 
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   for (int l = 0; l < config.N_NUOVI_ATOMI; l++)
   {
     printf("\n[FUEL %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	   atom_new_pid[l], l);
   }
-#endif
+ #endif */
   
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf("COPY COMPLEATE\n");
-#endif
+ #endif */
   fflush(stdout);
   if (shmdt(new_pid_atom) < 0)
   {
@@ -284,9 +284,9 @@ int main(int argc, char const *argv[])
 
 
 
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);
-#endif
+ #endif */
  
 
   return 0;
