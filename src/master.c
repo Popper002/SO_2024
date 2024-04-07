@@ -437,9 +437,9 @@ void start_atom()
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(atom_array_pid[i], SIGCONT);
-#ifdef __PRINT_TEST
+/*#ifdef __PRINT_TEST
     printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
-#endif * /
+#endif */
   }
 }
 

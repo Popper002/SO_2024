@@ -149,10 +149,10 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
   kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
-  // FIXME
-  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
+  // FIXME: Invalid argument
+  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) < 0)
   {
-    fprintf(stderr, "%s Error in msg_rcv: %s\n", __FILE__,strerror(errno));
+    fprintf(stderr, "%s Error in msg_rcv: %s\n", __FILE__, strerror(errno));
   }
 
   // Assegna la stringa ricevuta al membro appropriato della struct atom
