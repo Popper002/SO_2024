@@ -623,8 +623,9 @@ int main(void)
 
   while (1)
   {
-    fprintf(stdout, "TIME REMANING FOR SIMULATION %d \n", config.SIM_DURATION);
-    config.SIM_DURATION--;
+    while(config.SIM_DURATION--){
+    printf("TIME REMANING FOR SIMULATION %d \n", config.SIM_DURATION);
+}
     total_print(stats);
     //     TODO: call a function that displays statistic
   }
