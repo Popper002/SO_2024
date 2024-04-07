@@ -63,19 +63,8 @@ pid_t born_new_atom()
     break;
   }
 }
-/*
-void store__new_pid_atom()
-{
-  for (int i = 0; i < config.N_ATOMI_INIT; i++)
-  {
-    new_pid_atom[i] = born_new_atom();
-/* #ifdef _PRINT_TEST
-    printf("[MASTER %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
-	   new_pid_atom[i], i);
- #endif 
-  }
-}
-*/ 
+ 
+
 void fetch_args_fuel(char const *argv[])
 {
 
@@ -256,7 +245,7 @@ int main(int argc, char const *argv[])
 
     new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
   /* copiamo l'array di pid in memoria condivisa */
-  memcpy(new_pid_atom->array[i], atom_new_pid[i], sizeof(pid_t));
+  memcpy(new_pid_atom->array, atom_new_pid, sizeof(pid_t));
   }
 
 /* #ifdef _PRINT_TEST

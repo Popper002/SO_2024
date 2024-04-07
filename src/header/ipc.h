@@ -1,5 +1,4 @@
-#ifndef IPC_H_SO
-#define IPC_H_SO
+#pragma once
 #include <sys/sem.h>
 #include <sys/types.h>
 #include <semaphore.h>
@@ -27,6 +26,6 @@ typedef struct
 {
     int array[100];
 }shm_fuel;
+
 key_t key_sem_m;
 key_t key_sem_acti;
- #endif */

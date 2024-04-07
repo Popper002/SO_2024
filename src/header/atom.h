@@ -1,5 +1,4 @@
-#ifndef ATOM_H
-#define ATOM_H
+#pragma once
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -20,6 +19,3 @@ struct atom
     int atomic_flag;
     
 };
-
-
- #endif */
