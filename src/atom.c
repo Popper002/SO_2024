@@ -1,9 +1,8 @@
 #include "header/atom.h"
 #include "header/common.h"
-#include "util/hash_table.h"
-#include "util/shared_memory.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/msg.h>
 #include <sys/shm.h>
 
@@ -150,9 +149,10 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
   kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
+  // FIXME
   if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) <= -1)
   {
-    fprintf(stderr, "%s Error in msg_rcv\n", __FILE__);
+    fprintf(stderr, "%s Error in msg_rcv: %s\n", __FILE__,strerror(errno));
   }
 
   // Assegna la stringa ricevuta al membro appropriato della struct atom
