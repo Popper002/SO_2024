@@ -10,11 +10,11 @@
    source file, as an integer.
      __LINE__ is useful when generating log statements
  */
-#endif
+ #endif 
 
 #ifndef _GNU_SOURCE /* Missing this baby :p */
 #define _GNU_SOURCE
-#endif
+ #endif 
 #include <errno.h>
 #include <math.h>
 #include <signal.h>
@@ -66,9 +66,9 @@ struct statistics
   int total_nuclear_waste;
   int total_nuclear_waste_last_sec;
   int energy_absorbed;
-  int fission_limited;
+  int energy_absorbed_last_sec;
   int inhibitor_balancing;
-  int activator_balancing;
+  int inhibitor_balancing_last_sec;
 };
 
 /* RIPASSO ENUM:

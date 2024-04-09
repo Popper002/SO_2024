@@ -37,17 +37,17 @@ void fetch_args_inhibitor(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf("[INEBITORE %d] {FETCHED ARGV COMPLEATE\n}", getpid());
-#endif
+ #endif */
 }
 
 int main(int argc, char const *argv[])
 {
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
 
   printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
-#endif
+ #endif */
 int balance = 0;
 
   if (argc < 8)
@@ -71,16 +71,16 @@ if(msg_id <0 )
   fprintf(stderr,"INHIBITOR : ERROR IN MSGGET <ERRNO : %s> \n",strerror(errno));
   exit(EXIT_FAILURE); 
 }
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
   printf("ID %d \n", msg_id);
-#endif
+ #endif */
   for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
   {
     
     inhibitor_command = fission_flag();
-    #ifdef _PRINT_TEST
+    /* #ifdef _PRINT_TEST
     fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND %d>\n",getpid(),inhibitor_command);
-    #endif
+     #endif */
     /* convert command in to string ,inside the msg_buffer*/
     sprintf(inhibitor_send.text, "%d", inhibitor_command);
     if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
@@ -106,10 +106,10 @@ if (msgsnd(stat_id_inhibitor, &inhibitor_stats_send, sizeof(inhibitor_stats_send
 
 
     
-#ifdef _PRINT_TEST
+/* #ifdef _PRINT_TEST
     printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
 	   getpid(), inhibitor_command, inhibitor_send.text);
-#endif
+ #endif */
   }
 
   return 0;

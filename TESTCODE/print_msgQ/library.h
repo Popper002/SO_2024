@@ -1,6 +1,6 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
-#endif 
+ #endif */ 
 #include <stdio.h>
 #include <sys/ipc.h>
 #include <unistd.h>
