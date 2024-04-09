@@ -67,13 +67,14 @@ int why_term(enum term_reason term_reason)
   switch (term_reason)
   {
   case EXPLODE:
-    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",49);
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
     killpg(rcv_pid->array, SIGKILL);
+    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",49);
+
     exit(EXIT_FAILURE);
     break;
   case TIMEOUT:
@@ -517,17 +518,18 @@ void total_print(struct hash_table *stats_map)
   */
 
 
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,0);
-stat_rcv.total_num_activation =+ atoi(rcv_stats.text);
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,IPC_NOWAIT);
+stat_rcv.total_num_activation=0 ;
+stat_rcv.total_num_activation+= atoi(rcv_stats.text);
 printf("TEST_QUEUE_RCV %d, ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
 
 int total_nuclear_waste = 0;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,0);
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
 total_nuclear_waste += atoi(rcv_stats.text);
 printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
 
 int energy_produced = 0;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,0);
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,IPC_NOWAIT);
 energy_produced += atoi(rcv_stats.text);
 if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 {
@@ -536,7 +538,7 @@ if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 printf("Test queue rcv %d, energy produced %d\n",rcv_id,energy_produced);
 
 int inhibitor_balance = 0;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,0);
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,IPC_NOWAIT);
 inhibitor_balance += atoi(rcv_stats.text);
 printf("Test queue rcv %d, inhibitor balance %d\n",rcv_id,inhibitor_balance);
 
