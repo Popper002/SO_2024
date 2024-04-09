@@ -198,9 +198,7 @@ int main(int argc, char const *argv[])
   // value_in_memory();
  #endif */
 
-  shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t) ,
-  shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t) ,
-		  IPC_CREAT | 0666);
+  shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t) ,IPC_CREAT | 0666);
   if (shm_id < 0)
   {
     fprintf(stderr, "FUEL , PROBLEM SHMGET\n");
