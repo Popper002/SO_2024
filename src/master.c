@@ -468,6 +468,14 @@ stat_rcv.total_num_activation=0 ;
 stat_rcv.total_num_activation+= atoi(rcv_stats.text);
 printf("TEST_QUEUE_RCV %d, ACTIVATION_VALUE %d\n",rcv_id,stat_rcv.total_num_activation);
 
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,IPC_NOWAIT);
+stat_rcv.num_fission_last_sec =0 ; 
+stat_rcv.num_fission_last_sec +=atoi(rcv_stats.text);
+printf("TEST_QUEUE_RCV %d, FISSION_VALUE %d\n",rcv_id,stat_rcv.num_fission_last_sec);
+
+
+
+
 int total_nuclear_waste = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
 total_nuclear_waste += atoi(rcv_stats.text);

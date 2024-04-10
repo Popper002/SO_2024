@@ -59,7 +59,10 @@ void atom_fission(struct atom *atom, struct config config)
   }
   if (atom->atomic_flag == 1)
   {
-
+    stats.num_fission_last_sec++;
+    send_stats.m_type=2; 
+    msgsnd(stat_id,&send_stats,sizeof(send_stats),0); 
+    
     pid_t atom_child = fork();
     switch (atom_child)
     {
