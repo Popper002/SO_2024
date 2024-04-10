@@ -153,7 +153,7 @@ int main(int argc, char const *argv[])
   }
   kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
   // FIXME: Invalid argument
-  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, IPC_NOWAIT) < 0)
+  if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, 0) < 0)
   {
     fprintf(stderr, "%s Error in msg_rcv: %s\n", __FILE__, strerror(errno));
   }

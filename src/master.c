@@ -491,7 +491,7 @@ stat_rcv.energy_absorbed_last_sec =0;
 //stat_rcv.energy_absorbed_last_sec +=atoi(rcv_stats.text);
  if (energy_produced > 0)
     stat_rcv.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
-  if (energy_produced <= 0)
+  if (energy_produced < 0)
     why_term(BLACKOUT);
  
 
