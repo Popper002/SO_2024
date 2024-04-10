@@ -489,10 +489,13 @@ total_nuclear_waste += atoi(rcv_stats.text);
 stat_rcv.energy_absorbed_last_sec =0; 
 //msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),4,IPC_NOWAIT); /* @brief to implements a ipc for energy consumed  by master and inibhitor
 //stat_rcv.energy_absorbed_last_sec +=atoi(rcv_stats.text);
- if (energy_produced > 0)
+ if (energy_produced > 0){
     stat_rcv.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
-  if (energy_produced < 0)
+    energy_produced = energy_produced - config.ENERGY_DEMAND; 
+ } 
+  if (energy_produced < 0){
     why_term(BLACKOUT);
+  }
  
 
 
