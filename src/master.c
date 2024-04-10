@@ -473,14 +473,6 @@ stat_rcv.num_fission_last_sec =0 ;
 stat_rcv.num_fission_last_sec +=atoi(rcv_stats.text);
 printf("TEST_QUEUE_RCV %d, FISSION_VALUE %d\n",rcv_id,stat_rcv.num_fission_last_sec);
 
-
-
-
-int total_nuclear_waste = 0;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
-total_nuclear_waste += atoi(rcv_stats.text);
-printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
-
 int energy_produced = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,IPC_NOWAIT);
 energy_produced += atoi(rcv_stats.text);
@@ -490,6 +482,25 @@ if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 }
 printf("Test queue rcv %d, energy produced %d\n",rcv_id,energy_produced);
 
+
+stat_rcv.energy_absorbed_last_sec =0; 
+//msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),4,IPC_NOWAIT); /* @brief to implements a ipc for energy consumed  by master and inibhitor
+//stat_rcv.energy_absorbed_last_sec +=atoi(rcv_stats.text);
+ if (energy_produced > 0){
+    stat_rcv.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
+    printf("Test queue rcv %d, ENERGY_ABSORBED - %d\n",rcv_id,stat_rcv.num_energy_consumed_last_sec);
+  if (energy_produced <= 0)
+    why_term(BLACKOUT);
+ }
+
+int total_nuclear_waste = 0;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
+total_nuclear_waste += atoi(rcv_stats.text);
+printf("TEST_QUEUE_RCV %d, WASTE_VALUE %d\n",rcv_id,total_nuclear_waste);
+/*
+msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
+stat_rcv.num_energy_consumed_inhibitor_last_sec += atoi(rcv_stats.text); 
+*/ 
 int inhibitor_balance = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,IPC_NOWAIT);
 inhibitor_balance += atoi(rcv_stats.text);
