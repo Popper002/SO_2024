@@ -73,7 +73,6 @@ int why_term(enum term_reason term_reason)
     killpg(fuel_pid, SIGKILL);
     killpg(rcv_pid->array, SIGKILL);
     write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",49);
-
     exit(EXIT_FAILURE);
     break;
   case BLACKOUT:
@@ -498,8 +497,7 @@ void final_print(struct statistics final_print)
   final_print.total_num_activation = final_print.num_activation_last_sec;
   final_print.total_nuclear_waste = final_print.total_nuclear_waste_last_sec;
   final_print.total_num_fission = final_print.num_fission_last_sec;
-  final_print.total_num_energy_consumed =
-      final_print.total_num_energy_produced_last_sec;
+  final_print.total_num_energy_consumed =final_print.total_num_energy_produced_last_sec;
   final_print.energy_absorbed = final_print.energy_absorbed_last_sec;
   final_print.total_num_energy_consumed = final_print.energy_absorbed_last_sec;
   final_print.inhibitor_balancing = final_print.inhibitor_balancing_last_sec;
