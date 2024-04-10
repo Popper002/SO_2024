@@ -27,7 +27,6 @@ static int fork_activator;
 static int rcv_id;
 // static int fork_atom;
 static int fork_inhibitor;
-static int total_energy;
 shm_fuel *rcv_pid;
 int *atom_array_pid;
 static key_t key_shm;
@@ -267,6 +266,7 @@ pid_t inhibitor(void)
     return inhiitor_pid;
     break;
   }
+  return inhibitor_pid;
 }
 pid_t fuel_generator(void)
 {
@@ -296,6 +296,7 @@ pid_t fuel_generator(void)
     return fuel_pid;
     break;
   }
+  return fuel_pid;
 }
 
 pid_t atom_gen(void)
@@ -486,9 +487,11 @@ int total_nuclear_waste = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
 total_nuclear_waste += atoi(rcv_stats.text);
 
+/*
 stat_rcv.energy_absorbed_last_sec =0; 
-//msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),4,IPC_NOWAIT); /* @brief to implements a ipc for energy consumed  by master and inibhitor
-//stat_rcv.energy_absorbed_last_sec +=atoi(rcv_stats.text);
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),4,IPC_NOWAIT); /* @brief to implements a ipc for energy consumed  by master and inibhitor
+stat_rcv.energy_absorbed_last_sec +=atoi(rcv_stats.text);
+*/
  if (energy_produced > 0){
     stat_rcv.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
     energy_produced = energy_produced - config.ENERGY_DEMAND; 
@@ -512,7 +515,7 @@ printf("\n|===========================|\n");
 printf("| %-20s %d\n", "ACTIVATION_VALUE", stat_rcv.total_num_activation);
 printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
 printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
-printf("| %-20s %d\n", "ENERGY_ABSORBED", stat_rcv.num_energy_consumed_last_sec);
+// printf("| %-20s %d\n", "ENERGY_ABSORBED", stat_rcv.energy_absorbed_last_sec);
 printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
 printf("| %-20s %d\n", "FISSION_VALUE", stat_rcv.num_fission_last_sec);
 printf("|===========================|\n\n");
