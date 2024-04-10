@@ -215,10 +215,10 @@ int main(int argc, char const *argv[])
   }
   // store__new_pid_atom();
 
-  //*new_pid_atom->array = (shm_fuel * )
+ // new_pid_atom->array = (shm_fuel * )
   // malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t));
   // alarm(config.STEP);
-  /* Indecisione o ogni STEP nanosecondi viene interpretato come Fuel runna fino
+   Indecisione o ogni STEP nanosecondi viene interpretato come Fuel runna fino
   a STEP nanosecondi o lo facciamo dormire per STEP nonosecondi finchè non
   finisce la simulazione
   */
@@ -244,7 +244,7 @@ int main(int argc, char const *argv[])
 
     new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
   /* copiamo l'array di pid in memoria condivisa */
-  memcpy(new_pid_atom->array[i], atom_new_pid, sizeof(pid_t));
+  memcpy(new_pid_atom->array, atom_new_pid, sizeof(pid_t));
   }
 
 /* #ifdef _PRINT_TEST

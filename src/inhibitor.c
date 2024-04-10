@@ -13,10 +13,7 @@ struct statistics *inhibitor_stats;
    modo da limitare le fissioni il tutto sincronizzato con l'attivatore in modo
    da avere una queue con più quindi la prob di non avere una fissione sarà
     P(FISSIONE) = P(1)|P(INEBITORE) * P(1) * P(ATTIVATORE) /  */
-int fission_flag() 
-{ 
-  return rand() % 2; 
-}
+int fission_flag() { return rand() % 2; }
 
 void fetch_args_inhibitor(char const *argv[])
 {
@@ -37,18 +34,19 @@ void fetch_args_inhibitor(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-/* #ifdef _PRINT_TEST
-  printf("[INEBITORE %d] {FETCHED ARGV COMPLEATE\n}", getpid());
- #endif */
+  /* #ifdef _PRINT_TEST
+    printf("[INEBITORE %d] {FETCHED ARGV COMPLEATE\n}", getpid());
+   #endif */
 }
 
 int main(int argc, char const *argv[])
 {
-/* #ifdef _PRINT_TEST
+  /* #ifdef _PRINT_TEST
 
-  printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
- #endif */
-int balance = 0;
+    printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
+   #endif */
+  int inhibitor_command;
+  int balance = 0;
 
   if (argc < 8)
   {
@@ -56,7 +54,6 @@ int balance = 0;
     exit(EXIT_FAILURE);
   }
   fetch_args_inhibitor(argv);
-  int inhibitor_command;
   /* idea sarebbe quella che inebitore insieme a attivatore in modo sincrono
     inseriscono dentro la message queue i dati della fissione
     siccome inebitore ha il compito di ridurre le fissioni pushiamo molti piû
@@ -66,50 +63,50 @@ int balance = 0;
   msg_id =
       msgget(ATOMIC_KEY, IPC_CREAT | 0666); /* @return the same queue of atom */
   inhibitor_send.m_type = 1;
-if(msg_id <0 )
-{
-  fprintf(stderr,"INHIBITOR : ERROR IN MSGGET <ERRNO : %s> \n",strerror(errno));
-  exit(EXIT_FAILURE); 
-}
-/* #ifdef _PRINT_TEST
-  printf("ID %d \n", msg_id);
- #endif */
+  if (msg_id < 0)
+  {
+    fprintf(stderr, "INHIBITOR : ERROR IN MSGGET <ERRNO : %s> \n",
+	    strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  /* #ifdef _PRINT_TEST
+    printf("ID %d \n", msg_id);
+   #endif */
   for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
   {
-    
+
     inhibitor_command = fission_flag();
     /* #ifdef _PRINT_TEST
-    fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND %d>\n",getpid(),inhibitor_command);
-     #endif */
+    fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND
+    %d>\n",getpid(),inhibitor_command); #endif */
     /* convert command in to string ,inside the msg_buffer*/
     sprintf(inhibitor_send.text, "%d", inhibitor_command);
     if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
 	       0) < 0)
     {
-       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
+      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
 	      strerror(errno), getpid());
-        exit(EXIT_FAILURE);
+      exit(EXIT_FAILURE);
     }
 
-if(inhibitor_command == 0)
-  balance++;
+    if (inhibitor_command == 0)
+      balance++;
 
-int stat_id_inhibitor = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
-inhibitor_stats_send.m_type = 7;
-sprintf(inhibitor_stats_send.text, "%d", balance);
-if (msgsnd(stat_id_inhibitor, &inhibitor_stats_send, sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
-{
-  fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
-          strerror(errno), getpid());
-  exit(EXIT_FAILURE);
-}
+    int stat_id_inhibitor = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
+    inhibitor_stats_send.m_type = 7;
+    sprintf(inhibitor_stats_send.text, "%d", balance);
+    if (msgsnd(stat_id_inhibitor, &inhibitor_stats_send,
+	       sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
+    {
+      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
+	      strerror(errno), getpid());
+      exit(EXIT_FAILURE);
+    }
 
-
-    
-/* #ifdef _PRINT_TEST
-    printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
-	   getpid(), inhibitor_command, inhibitor_send.text);
- #endif */
+    /* #ifdef _PRINT_TEST
+	printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
+	       getpid(), inhibitor_command, inhibitor_send.text);
+     #endif */
   }
 
   return 0;

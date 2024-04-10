@@ -52,6 +52,7 @@ void atom_fission(struct atom *atom, struct config config)
 	    atom->atomic_number);
     stats.total_nuclear_waste++;
     send_stats.m_type = 5;
+    
     sprintf(send_stats.text, "%d", stats.total_nuclear_waste);
     msgsnd(stat_id, &send_stats, sizeof(send_stats), 0);
     fprintf(stdout, "\nATOM_SEND_STATS ID:%d,<WASTE %s>\n", stat_id,
