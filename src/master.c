@@ -442,6 +442,27 @@ void start_atom()
   }
 }
 
+void inhibitor_handle(int signum)
+{
+  switch (signum)
+  {
+    case SIGUSR1:
+      fprintf(stdout, "START INHIBITOR\n");
+      kill(inhibitor_pid, SIGCONT);
+      break;
+
+    case SIGUSR2:
+      fprintf(stdout, "STOPPING INHIBITOR\n");
+      kill(inhibitor_pid, SIGSTOP);
+      break;
+
+    default:
+      fprintf(stderr, "Invalid signal received\n");
+      break;
+  }
+}
+
+
 /**
 @brief: string formatting in C https://stackoverflow.com/questions/25626851/align-text-to-right-in-c
 */
@@ -574,6 +595,7 @@ int main(void)
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
   void *rcv_ptr;
+  char command[2];
   /* #ifdef _PRINT_TEST
     printf("KEY IS %d \n", key_shm);
    #endif */
@@ -589,8 +611,9 @@ int main(void)
   stats->max = 1;
 
   srand(time(NULL));
-  signal(SIGUSR1, handle_signal);
   signal(SIGALRM, handle_signal);
+  signal(SIGUSR1, inhibitor_handle);
+  signal(SIGUSR2, inhibitor_handle);
 
   scan_data();
 
@@ -654,6 +677,50 @@ int main(void)
 */
     total_print(stats);
     //     TODO: call a function that displays statistic
+   if (config.INHIBITOR == 1)
+{
+  fprintf(stdout, "Comando <s: start / t:stop >");
+
+  // Legge il comando dall'utente
+  if (fgets(command, sizeof(command), stdin) == NULL)
+  {
+    break;
+  }
+
+  // Rimuove il carattere newline finale se presente
+  command[strcspn(command, "\n")] = '\0';
+
+  // Esegue il comando corrispondente
+  switch (command[0])
+  {
+    case 's':
+      if (inhibitor == 0 || inhibitor == NULL)
+      {
+        inhibitor_pid = inhibitor();
+      }
+      else
+      {
+        kill(inhibitor_pid, SIGUSR1);
+      }
+      break;
+
+    case 't':
+      if (inhibitor == 0 || inhibitor == NULL)
+      {
+        inhibitor_pid = inhibitor();
+      }
+      else
+      {
+        kill(inhibitor_pid, SIGUSR2);
+      }
+      break;
+
+    default:
+      fprintf(stderr, "Comando non valido\n");
+      break;
+  }
+}
+ 
   }
 
   detach_shared_memory(stats);
