@@ -22,7 +22,7 @@ char **inhibitor_args[100];
 struct statistics *shared_data;
 struct atom atom_stat;
 // char const *args_[100];
-bool is_inhibitor_running = false;
+bool is_inhibitor_running = true;
 static int shm_id;
 static int fork_fuel;
 static int fork_activator;
