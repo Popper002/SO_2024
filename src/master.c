@@ -521,7 +521,9 @@ if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 
 int total_nuclear_waste = 0;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
-total_nuclear_waste += atoi(rcv_stats.text);
+int received_value = atoi(rcv_stats.text);
+total_nuclear_waste += received_value;
+
 
 /*
 stat_rcv.energy_absorbed_last_sec =0; 
