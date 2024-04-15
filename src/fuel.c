@@ -214,7 +214,7 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
   // store__new_pid_atom();
-
+>>
  // new_pid_atom->array = (shm_fuel * )
   // malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t));
   // alarm(config.STEP);

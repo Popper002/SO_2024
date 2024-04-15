@@ -52,7 +52,7 @@ int main(int argc, char const *argv[])
   int command;
 
   if(argc < 9){
-    fprintf(stderr,"Not enough arguments");
+    fprintf(stderr,"%s Not enough arguments",__FILE__);
     exit(EXIT_FAILURE);
   }
   fetch_args(argv);
@@ -80,7 +80,9 @@ int main(int argc, char const *argv[])
  #endif */
   }
 
+  while(1){
+    printf("%s\n",__FILE__);
+  }
 
-  fflush(stdout);
   return 0;
 }

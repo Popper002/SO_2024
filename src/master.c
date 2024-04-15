@@ -335,7 +335,6 @@ pid_t activator(void)
   case -1:
     why_term(MELTDOWN);
     break;
-    break;
   case 0:
     fork_activator++;
     /* #ifdef _PRINT_TEST
@@ -343,8 +342,9 @@ pid_t activator(void)
      #endif */
 
     argument_creator((char **)activator_args);
+    printf("\t\texecuting activator\n");
     execvp(ACTIVATOR_PATH, (char **)activator_args);
-    printf("activator executed\n");
+    printf("\t\tactivator executed\n");
     fprintf(stderr, "in: %s line: %d[master %d--> problem in execvp %s}\n",
 	    __func__, __LINE__, getpid(), strerror(errno));
     exit(EXIT_FAILURE);
@@ -604,8 +604,7 @@ int main(void)
   {
     fprintf(stderr, "PROBLEM KEY\n");
   }
-  shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT) * sizeof(pid_t),
-		  IPC_CREAT | 0666);
+  shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT),IPC_CREAT | 0666);
 
   struct hash_table *stats = attach_shared_memory();
   stats->max = 1;
@@ -625,6 +624,8 @@ int main(void)
   activator_args[0] = (char **)ACTIVATOR_PATH;
   fuel_args[0] = (char **)FUEL_PATH;
   inebitore_args[0] = (char **)INHIBITOR_PATH;
+
+  printf("Starting activator here: \n");
   activator_pid = activator();
   /* #ifdef _PRINT_TEST
     printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
