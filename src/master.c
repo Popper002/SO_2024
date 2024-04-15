@@ -645,7 +645,6 @@ int main(void)
   fuel_args[0] = (char **)FUEL_PATH;
   inhibitor_args[0] = (char **)INHIBITOR_PATH;
 
-  printf("Starting activator here: \n");
   activator_pid = activator();
   /* #ifdef _PRINT_TEST
     printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,

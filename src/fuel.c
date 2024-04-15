@@ -1,5 +1,7 @@
 #include "header/common.h"
 #include "header/ipc.h"
+#include <errno.h>
+#include <string.h>
 struct config config;
 char **new_atom_args[100];
 pid_t *atom_new_pid;
@@ -201,7 +203,7 @@ int main(int argc, char const *argv[])
   shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t) ,IPC_CREAT | 0666);
   if (shm_id < 0)
   {
-    fprintf(stderr, "FUEL , PROBLEM SHMGET\n");
+    fprintf(stderr, "%s, error[%s] in shmget\n",__FILE__,strerror(errno),__LINE__);
     exit(EXIT_FAILURE);
   }
 /* #ifdef _PRINT_TEST
@@ -255,8 +257,7 @@ int main(int argc, char const *argv[])
   }
 #endif
   
-#ifdef _PRINT_TEST
-  printf("COPY COMPLEATE\n");
+#ifdef _PRINT_TESPLEATE\n");
  #endif */
   fflush(stdout);
   if (shmdt(new_pid_atom) < 0)
@@ -265,17 +266,8 @@ int main(int argc, char const *argv[])
    }
   
   }
-
-
-
-
-
-
-
 /* #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);
  #endif */
- 
-
   return 0;
 }
