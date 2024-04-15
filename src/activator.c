@@ -80,9 +80,11 @@ int main(int argc, char const *argv[])
  #endif */
   }
 
+  /*
   while(1){
     printf("%s\n",__FILE__);
   }
+   */
 
   return 0;
 }

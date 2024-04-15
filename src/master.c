@@ -11,16 +11,18 @@
 #include <sys/msg.h>
 #include <sys/shm.h>
 #include <unistd.h>
+#include <stdbool.h>
 #define CONFIG_PATH "src/config/config1.txt"
 
 char **args_atom[100];
 char **activator_args[100];
 char **fuel_args[100];
-char **inebitore_args[100];
+char **inhibitor_args[100];
 
 struct statistics *shared_data;
 struct atom atom_stat;
 // char const *args_[100];
+bool is_inhibitor_running = false;
 static int shm_id;
 static int fork_fuel;
 static int fork_activator;
@@ -254,8 +256,8 @@ pid_t inhibitor(void)
     break;
   case 0:
     fork_inhibitor++;
-    argument_creator((char **)inebitore_args);
-    execvp(INHIBITOR_PATH, (char **)inebitore_args);
+    argument_creator((char **)inhibitor_args);
+    execvp(INHIBITOR_PATH, (char **)inhibitor_args);
 
     fprintf(stderr, "%s line: %d [master %s Problem in execvp with pid %d \n",
 	    __func__, __LINE__, __FILE__, getpid());
@@ -342,9 +344,7 @@ pid_t activator(void)
      #endif */
 
     argument_creator((char **)activator_args);
-    printf("\t\texecuting activator\n");
     execvp(ACTIVATOR_PATH, (char **)activator_args);
-    printf("\t\tactivator executed\n");
     fprintf(stderr, "in: %s line: %d[master %d--> problem in execvp %s}\n",
 	    __func__, __LINE__, getpid(), strerror(errno));
     exit(EXIT_FAILURE);
@@ -442,8 +442,22 @@ void start_atom()
   }
 }
 
+// use sigint to start and stop the inhibitor
 void inhibitor_handle(int signum)
 {
+  if (signum == SIGINT) {
+    if (is_inhibitor_running) {
+      kill(inhibitor_pid, SIGSTOP);
+      write(STDOUT_FILENO, "STOPPED INHIBITOR\n", 19);
+      is_inhibitor_running = false;
+    } else {
+      kill(inhibitor_pid, SIGCONT);
+      write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
+      is_inhibitor_running = true;
+    }
+  }
+
+  /*
   switch (signum)
   {
     case SIGUSR1:
@@ -460,6 +474,7 @@ void inhibitor_handle(int signum)
       fprintf(stderr, "Invalid signal received\n");
       break;
   }
+   */
 }
 
 
@@ -611,8 +626,10 @@ int main(void)
 
   srand(time(NULL));
   signal(SIGALRM, handle_signal);
+  /*
   signal(SIGUSR1, inhibitor_handle);
   signal(SIGUSR2, inhibitor_handle);
+   */
 
   scan_data();
 
@@ -623,7 +640,7 @@ int main(void)
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
   fuel_args[0] = (char **)FUEL_PATH;
-  inebitore_args[0] = (char **)INHIBITOR_PATH;
+  inhibitor_args[0] = (char **)INHIBITOR_PATH;
 
   printf("Starting activator here: \n");
   activator_pid = activator();
@@ -636,6 +653,7 @@ int main(void)
   if (config.INHIBITOR == 1)
   {
     inhibitor_pid = inhibitor();
+    signal(SIGINT, inhibitor_handle);
   }
   store_pid_atom();
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
@@ -678,9 +696,11 @@ int main(void)
 */
     total_print(stats);
     //     TODO: call a function that displays statistic
+    /*
    if (config.INHIBITOR == 1)
 {
   fprintf(stdout, "Comando <s: start / t:stop >");
+
 
   // Legge il comando dall'utente
   if (fgets(command, sizeof(command), stdin) == NULL)
@@ -720,9 +740,8 @@ int main(void)
       fprintf(stderr, "Comando non valido\n");
       break;
   }
+     */
 }
- 
-  }
 
   detach_shared_memory(stats);
   return 0;
