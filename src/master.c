@@ -552,7 +552,8 @@ inhibitor_balance += atoi(rcv_stats.text);
 printf("\n|===========================|\n");
 printf("| %-20s %d\n", "ACTIVATION_VALUE", stat_rcv.total_num_activation);
 printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
-printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
+if(config.INHIBITOR == 1)
+  printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
 // printf("| %-20s %d\n", "ENERGY_ABSORBED", stat_rcv.energy_absorbed_last_sec);
 printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
 printf("| %-20s %d\n", "FISSION_VALUE", stat_rcv.num_fission_last_sec);
