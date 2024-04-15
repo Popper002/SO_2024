@@ -45,16 +45,14 @@ void fetch_args(char const *argv[])
 
 int main(int argc, char const *argv[])
 {
+  (void)argc;
 /* #ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
  #endif */
   static int q_id, i;
   int command;
 
-  if(argc < 9){
-    fprintf(stderr,"%s Not enough arguments",__FILE__);
-    exit(EXIT_FAILURE);
-  }
+  
   fetch_args(argv);
   srand(time(NULL));
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
