@@ -572,7 +572,25 @@ void final_print(struct statistics final_print)
   final_print.inhibitor_balancing = final_print.inhibitor_balancing_last_sec;
 }
 
-void logo()
+void print_config(void)
+{
+  printf("\n\n\n");
+  printf("\t-----------------------------------\n");
+  printf("\t\t\tCONFIGURATION\n");
+  printf("\t-----------------------------------\n");
+  printf("\tN_ATOMI_INIT: %d\n", config.N_ATOMI_INIT);
+  printf("\tENERGY_DEMAND: %d\n", config.ENERGY_DEMAND);
+  printf("\tN_ATOM_MAX: %d\n", config.N_ATOM_MAX);
+  printf("\tMIN_A_ATOMICO: %d\n", config.MIN_A_ATOMICO);
+  printf("\tN_NUOVI_ATOMI: %d\n", config.N_NUOVI_ATOMI);
+  printf("\tSIM_DURATION: %d\n", config.SIM_DURATION);
+  printf("\tENERGY_EXPLODE_THRESHOLD: %d\n", config.ENERGY_EXPLODE_THRESHOLD);
+  printf("\tINHIBITOR: %d\n", config.INHIBITOR);
+  printf("\tSTEP: %ld\n", config.STEP);
+  printf("\t-----------------------------------\n");
+
+}
+void logo(void)
 {
   printf("\t-----------------------------------\n");
 
@@ -605,6 +623,8 @@ void logo()
 	 "      \n"
 	 "                                                                     "
 	 "      \n");
+
+   print_config();
 }
 int main(void)
 {
@@ -679,7 +699,8 @@ int main(void)
   logo();
   for (start = 10; start > 0; start--)
   {
-    printf("\rStarting the simulation in %d...\n", start);
+    printf("\rStarting the simulation in %d...", start);
+    fflush(stdout);
     sleep(1);
   }
   fprintf(stdout, "Master: [PID %d] is starting the simulation\n", getpid());
