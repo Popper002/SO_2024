@@ -575,9 +575,9 @@ void final_print(struct statistics final_print)
 void print_config(void)
 {
   printf("\n\n\n");
-  printf("\t\t-----------------------------------\n");
-  printf("\tCONFIGURATION\n");
-  printf("\t\t-----------------------------------\n");
+  printf("\t-----------------------------------\n");
+  printf("\t\tCONFIGURATION\n");
+  printf("\t-----------------------------------\n");
   printf("\tN_ATOMI_INIT: %d\n", config.N_ATOMI_INIT);
   printf("\tENERGY_DEMAND: %d\n", config.ENERGY_DEMAND);
   printf("\tN_ATOM_MAX: %d\n", config.N_ATOM_MAX);
@@ -588,8 +588,8 @@ void print_config(void)
   printf("\tINHIBITOR: %d\n", config.INHIBITOR);
   printf("\tSTEP: %ld\n", config.STEP);
   printf("\t-----------------------------------\n");
-
 }
+
 void logo(void)
 {
   printf("\t-----------------------------------\n");
