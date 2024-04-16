@@ -46,16 +46,14 @@ void atom_fission(struct atom *atom, struct config config)
 
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
-    fprintf(stdout, "Starting fissioning atom....\n");
+    // fprintf(stdout, "Starting fissioning atom....\n");
   {
-    fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",
-	    atom->atomic_number);
+    // fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",atom->atomic_number);
     stats.total_nuclear_waste++;
     send_stats.m_type = 5;
     sprintf(send_stats.text, "%d", stats.total_nuclear_waste);
     msgsnd(stat_id, &send_stats, sizeof(send_stats), 0);
-    fprintf(stdout, "\nATOM_SEND_STATS ID:%d,<WASTE %s>\n", stat_id,
-	    send_stats.text);
+    // fprintf(stdout, "\nATOM_SEND_STATS ID:%d,<WASTE %s>\n", stat_id,send_stats.text);
   }
   if (atom->atomic_flag == 1)
   {
@@ -74,8 +72,7 @@ void atom_fission(struct atom *atom, struct config config)
       send_stats.m_type = 1;
       sprintf(send_stats.text, "%d", stats.total_num_activation);
       msgsnd(stat_id, &send_stats, sizeof(send_stats), 0);
-      fprintf(stdout, "ATOM_SEND_STATS ID:%d,<ACTIVATION %s>\n", stat_id,
-	      send_stats.text);
+      // fprintf(stdout, "ATOM_SEND_STATS ID:%d,<ACTIVATION %s>\n", stat_id,send_stats.text);
 
       child1_atomic_number = rand() % (atom->atomic_number - 1) +
 			     1; // -1 and +1 so we are sure to not exceed the
@@ -89,10 +86,12 @@ void atom_fission(struct atom *atom, struct config config)
 
       int energy_released =
 	  energy_free(child1_atomic_number, child2_atomic_number);
+    /*
       printf("energy released %d\n", energy_released);
       printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
 	     __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
 	     energy_released);
+       */
       stats.energy_produced_value = energy_released;
       send_stats.m_type = 3;
       sprintf(send_stats.text, "%d", stats.energy_produced_value);
