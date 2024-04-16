@@ -200,7 +200,7 @@ int main(int argc, char const *argv[])
   // value_in_memory();
  #endif */
 
-  shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) * sizeof(pid_t) ,IPC_CREAT | 0666);
+  shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) ,IPC_CREAT | 0666);
   if (shm_id < 0)
   {
     fprintf(stderr, "%s, error[%s] in shmget\n",__FILE__,strerror(errno),__LINE__);
