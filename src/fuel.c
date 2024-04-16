@@ -203,7 +203,7 @@ int main(int argc, char const *argv[])
   shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) ,IPC_CREAT | 0666);
   if (shm_id < 0)
   {
-    fprintf(stderr, "%s, error[%s] in shmget\n",__FILE__,strerror(errno),__LINE__);
+    fprintf(stderr, "%s, error[%s] in shmget[LINE %d]\n",__FILE__,strerror(errno),__LINE__);
     exit(EXIT_FAILURE);
   }
 /* #ifdef _PRINT_TEST

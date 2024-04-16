@@ -68,7 +68,8 @@ int main(int argc, char const *argv[])
     sprintf(send.text, "%d", command);
     if (msgsnd(q_id, &send, sizeof(send) - sizeof(long), 0) <= -1)
     {
-      fprintf(stderr, "%s Error in msgsnd\n", __FILE__);
+      fprintf(stderr, "[ACTIVATOR %d] %s Error in msgsnd\n", getpid(),__FILE__);
+      exit(EXIT_FAILURE); 
     };
     // activator_stats->activator_balancing++;
   //  activator_stats->num_activation_last_sec++;

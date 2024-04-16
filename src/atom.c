@@ -142,6 +142,8 @@ int main(int argc, char const *argv[])
   fetch_args_atom(argv);
 
   rcv.m_type = 1;
+  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
+
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL);
   /* #ifdef _PRINT_TEST
     printf("[%s] connecting to queue:%d\n", __FILE__, rcv_id);
@@ -151,7 +153,6 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "error in rcv_id queue %s\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
-  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
   // FIXME: Invalid argument
   if (msgrcv(rcv_id, &rcv, sizeof(rcv) - sizeof(long), 1, 0) < 0)
   {
