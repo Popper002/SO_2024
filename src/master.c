@@ -510,18 +510,21 @@ void total_print(void)
   */
 
 
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,IPC_NOWAIT);
-num_activation_last_sec += rcv_stats.statistics_data.num_activation_last_sec;
-energy_produced += rcv_stats.statistics_data.total_num_energy_produced_last_sec;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,IPC_NOWAIT);//
+num_activation_last_sec += rcv_stats.data;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,IPC_NOWAIT);//
+energy_produced += rcv_stats.data;
 if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 {
   why_term(EXPLODE);
 }
- received_value = rcv_stats.statistics_data.total_nuclear_waste_last_sec;
-total_nuclear_waste += received_value;
-energy_absorbed += rcv_stats.statistics_data.energy_absorbed_last_sec; 
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,IPC_NOWAIT);//
+total_nuclear_waste+= rcv_stats.data;
+
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
+energy_absorbed += rcv_stats.data; 
  if (energy_produced > 0){
-    rcv_stats.statistics_data.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
+    statistics_data.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
     energy_produced = energy_produced - config.ENERGY_DEMAND; 
  } 
   if (energy_produced < 0){
@@ -529,10 +532,12 @@ energy_absorbed += rcv_stats.statistics_data.energy_absorbed_last_sec;
   }
 //msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
 
-
-inhibitor_energy_consumed += rcv_stats.statistics_data.num_energy_consumed_inhibitor_last_sec  ; 
-inhibitor_balance += rcv_stats.statistics_data.inhibitor_balancing_last_sec;
-num_fission_last_sec+=rcv_stats.statistics_data.num_fission_last_sec;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),6,IPC_NOWAIT);
+inhibitor_energy_consumed = statistics_data.num_energy_consumed_inhibitor_last_sec;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,IPC_NOWAIT);//
+inhibitor_balance += rcv_stats.data;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),8,IPC_NOWAIT);//
+num_fission_last_sec+=rcv_stats.data;
 
 printf("\n|===========================|\n");
 printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);

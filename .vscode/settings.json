@@ -7,6 +7,11 @@
         "algorithm": "c",
         "cstdlib": "c",
         "signal.h": "c",
-        "ctime": "c"
+        "ctime": "c",
+        "ipc.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "vector": "c"
     }
 }

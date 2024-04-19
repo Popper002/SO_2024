@@ -95,9 +95,9 @@ int main(int argc, char const *argv[])
       balance++;
 
     
-    inhibitor_stats_send.statistics_data.inhibitor_balancing_last_sec = balance;
-    inhibitor_stats_send.m_type = 2;
-    if(msgsnd(msg_id, &inhibitor_stats_send,sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
+    inhibitor_stats_send.data = balance;
+    inhibitor_stats_send.m_type = 7;
+    if(msgsnd(stat_id, &inhibitor_stats_send,sizeof(inhibitor_stats_send), 0) < 0)
     {
       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
         strerror(errno), getpid());
