@@ -53,8 +53,9 @@ pid_t born_new_atom()
 /* #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
  #endif */
+    send_stats.m_type=1;
     send_stats.statistics_data.num_activation_last_sec++;
-    msgsnd(q_stats, &send_stats, sizeof(send_stats.statistics_data), 0);
+    msgsnd(q_stats, &send_stats, sizeof(send_stats)-sizeof(long), 0);
     atom_argument_creator((char **)new_atom_args);
     execvp(ATOM_PATH, (char **)new_atom_args);
 

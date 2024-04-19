@@ -24,8 +24,6 @@ struct atom atom_stat;
 // char const *args_[100];
 bool is_inhibitor_running = true;
 static int shm_id;
-static int fork_fuel;
-static int fork_activator;
 static int rcv_id;
 // static int fork_atom;
 static int fork_inhibitor;
@@ -40,6 +38,15 @@ pid_t fuel_pid;
 struct config config;
 enum term_reason term_reason;
 struct statistics *shared_data;
+static int inhibitor_energy_consumed ;
+int inhibitor_balance ;
+int total_nuclear_waste ;
+int num_fission_last_sec ; 
+int num_activation_last_sec ;
+int energy_produced ;
+int received_value;
+int energy_absorbed;
+int energy_produced =0 ;
 /*
 /* #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -254,7 +261,6 @@ pid_t inhibitor(void)
     why_term(MELTDOWN);
     break;
   case 0:
-    fork_inhibitor++;
     argument_creator((char **)inhibitor_args);
     execvp(INHIBITOR_PATH, (char **)inhibitor_args);
 
@@ -278,7 +284,6 @@ pid_t fuel_generator(void)
     why_term(MELTDOWN);
     break;
   case 0:
-    fork_fuel++;
     /* #ifdef _PRINT_TEST
 	printf("fuel case 0\n");
      #endif */
@@ -337,7 +342,6 @@ pid_t activator(void)
     why_term(MELTDOWN);
     break;
   case 0:
-    fork_activator++;
     /* #ifdef _PRINT_TEST
 	printf("activator case 0\n");
      #endif */
@@ -482,7 +486,13 @@ void inhibitor_handle(int signum)
 void total_print(void)
 {
   static struct message rcv_stats;
-   rcv_id = msgget(STATISTICS_KEY,0666);
+   rcv_id = msgget(STATISTICS_KEY,IPC_CREAT|0666);
+   if(rcv_id<0 )
+   {
+    fprintf(stderr,"[MASTER] ERROR MSGGET\n");
+    exit(EXIT_FAILURE);
+   }
+
   // printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
   // printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
   // printf( "\rTOTAL ENERGY PRODUCED\t%d\n", get(stats_map,"energy produced"));
@@ -500,26 +510,15 @@ void total_print(void)
   */
 
 
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats.statistics_data),2,IPC_NOWAIT);
-int num_activation_last_sec = 0;
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,IPC_NOWAIT);
 num_activation_last_sec += rcv_stats.statistics_data.num_activation_last_sec;
-
-int num_fission_last_sec =0 ; 
-rcv_stats.statistics_data.num_fission_last_sec +=rcv_stats.statistics_data.num_fission_last_sec;
-
-int energy_produced = 0;
 energy_produced += rcv_stats.statistics_data.total_num_energy_produced_last_sec;
 if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 {
   why_term(EXPLODE);
 }
-
-int total_nuclear_waste = 0;
-int received_value = rcv_stats.statistics_data.total_nuclear_waste_last_sec;
+ received_value = rcv_stats.statistics_data.total_nuclear_waste_last_sec;
 total_nuclear_waste += received_value;
-
-
-int energy_absorbed = 0;
 energy_absorbed += rcv_stats.statistics_data.energy_absorbed_last_sec; 
  if (energy_produced > 0){
     rcv_stats.statistics_data.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
@@ -528,13 +527,12 @@ energy_absorbed += rcv_stats.statistics_data.energy_absorbed_last_sec;
   if (energy_produced < 0){
     why_term(BLACKOUT);
   }
-msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
+//msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
 
-int inhibitor_energy_consumed =0;
+
 inhibitor_energy_consumed += rcv_stats.statistics_data.num_energy_consumed_inhibitor_last_sec  ; 
-int inhibitor_balance = 0;
 inhibitor_balance += rcv_stats.statistics_data.inhibitor_balancing_last_sec;
-
+num_fission_last_sec+=rcv_stats.statistics_data.num_fission_last_sec;
 
 printf("\n|===========================|\n");
 printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);

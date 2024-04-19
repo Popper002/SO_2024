@@ -8,6 +8,7 @@
 #define O_READ  0400
 #define O_WRITE 0020
 #define KEY_SHM 2111
+#define NEW_KEY 0x01
 #define MASTER_ACTIVATOR_SEM 0x123
 /* */
 #define SEM_ID_ATOM 0 
@@ -18,7 +19,7 @@
 struct message
 {
     long m_type;
-    char text[10];
+ 
     struct statistics
     {
       int total_num_activation;
@@ -39,7 +40,11 @@ struct message
       int inhibitor_balancing_last_sec;
     }statistics_data;
 };
-
+struct mes
+{
+    long m_type;
+    char text[10];  
+};
 
 typedef struct 
 {

@@ -7,7 +7,7 @@
 #include <sys/shm.h>
 
 struct atom atom;
-static struct message rcv;
+static struct mes rcv;
 struct config config;
 struct statistics stats;
 int stat_id;
@@ -45,20 +45,22 @@ static int energy_free(int atomic_a1, int atomic_a2)
 void atom_fission(struct atom *atom, struct config config)
 {
 
-  stats.total_num_activation = 0;
+
 
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
     // fprintf(stdout, "Starting fissioning atom....\n");
   {
     // fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",atom->atomic_number);
+    send_stats.m_type=2;
     send_stats.statistics_data.total_nuclear_waste_last_sec++;
     msgsnd(stat_id, &send_stats, sizeof(send_stats), 0);
     // fprintf(stdout, "\nATOM_SEND_STATS ID:%d,<WASTE %s>\n", stat_id,send_stats.text);
   }
   if (atom->atomic_flag == 1)
   {
-    
+    send_stats.statistics_data.num_fission_last_sec ++ ;
+    msgsnd(stat_id,&send_stats,sizeof(send_stats),0);
     pid_t atom_child = fork();
     switch (atom_child)
     {
@@ -68,7 +70,7 @@ void atom_fission(struct atom *atom, struct config config)
     case 0:
       send_stats.m_type=2;
       send_stats.statistics_data.num_activation_last_sec++;
-      msgsnd(stat_id, &send_stats, sizeof(send_stats.statistics_data), 0);
+      msgsnd(stat_id, &send_stats, sizeof(send_stats), 0);
       // fprintf(stdout, "ATOM_SEND_STATS ID:%d,<ACTIVATION %s>\n", stat_id,send_stats.text);
 
       child1_atomic_number = rand() % (atom->atomic_number - 1) + 1; // -1 and +1 so we are sure to not exceed the starting atomic number
@@ -88,7 +90,7 @@ void atom_fission(struct atom *atom, struct config config)
        */
       send_stats.m_type=2;
       send_stats.statistics_data.total_num_energy_produced_last_sec = energy_released;
-      msgsnd(stat_id, &send_stats, sizeof(send_stats.statistics_data), 0);
+      msgsnd(stat_id, &send_stats, sizeof(send_stats), 0);
 
       break;
 

@@ -52,7 +52,7 @@ struct config
 };
 
 
-;
+
 
 /* RIPASSO ENUM:
  * Sono un modo per rappresentare un gruppo di constanti ,di default i valori

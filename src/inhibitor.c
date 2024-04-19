@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <sys/msg.h>
 int msg_id,stat_id;
-struct message inhibitor_send;
+struct mes inhibitor_send;
 struct message inhibitor_stats_send;
 struct config config;
 struct statistics *inhibitor_stats;
@@ -103,13 +103,6 @@ int main(int argc, char const *argv[])
         strerror(errno), getpid());
       exit(EXIT_FAILURE);
     }
-    if (msgsnd(stat_id, &inhibitor_stats_send,sizeof(inhibitor_stats_send.statistics_data) , 0) < 0)
-    {
-      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
-	      strerror(errno), getpid());
-      exit(EXIT_FAILURE);
-    }
-
     /* #ifdef _PRINT_TEST
 	printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
 	       getpid(), inhibitor_command, inhibitor_send.text);
