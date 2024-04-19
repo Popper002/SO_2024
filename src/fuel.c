@@ -1,11 +1,15 @@
 #include "header/common.h"
 #include "header/ipc.h"
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/msg.h>
 struct config config;
+struct message send_stats;
 char **new_atom_args[100];
 pid_t *atom_new_pid;
 shm_fuel *new_pid_atom;
+static int  q_stats; 
 pid_t new_atom;
 static int shm_id;
 static key_t shm_key;
@@ -49,7 +53,8 @@ pid_t born_new_atom()
 /* #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
  #endif */
-
+    send_stats.statistics_data.num_activation_last_sec++;
+    msgsnd(q_stats, &send_stats, sizeof(send_stats.statistics_data), 0);
     atom_argument_creator((char **)new_atom_args);
     execvp(ATOM_PATH, (char **)new_atom_args);
 
@@ -199,7 +204,8 @@ int main(int argc, char const *argv[])
   fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);
   // value_in_memory();
  #endif */
-
+  q_stats = msgget(STATISTICS_KEY,IPC_CREAT|0666);
+  if(q_stats < 0 ){fprintf(stderr,"[FUEL %d] ERROR MSGGET STATISTICS Q \n",getpid());exit(EXIT_FAILURE);} 
   shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) ,IPC_CREAT | 0666);
   if (shm_id < 0)
   {

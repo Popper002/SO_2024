@@ -3,7 +3,8 @@
 #include "util/shared_memory.h"
 #include <stdio.h>
 #include <stdlib.h>
-static int msg_id;
+#include <sys/msg.h>
+int msg_id,stat_id;
 struct message inhibitor_send;
 struct message inhibitor_stats_send;
 struct config config;
@@ -60,8 +61,8 @@ int main(int argc, char const *argv[])
     comandi anti fissione in queue e poi gli atomi pescano dentro questa queue e
     chi preleva questi parametri sapra se fare o meno la fissione */
 
-  msg_id =
-      msgget(ATOMIC_KEY, IPC_CREAT | 0666); /* @return the same queue of atom */
+  msg_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666); /* @return the same queue of atom */
+  stat_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666); /* @return the same queue of atom */
   inhibitor_send.m_type = 1;
   if (msg_id < 0)
   {
@@ -75,11 +76,12 @@ int main(int argc, char const *argv[])
   for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
   {
 
-    inhibitor_command = fission_flag();
+    inhibitor_command =fission_flag();
     /* #ifdef _PRINT_TEST
     fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND
     %d>\n",getpid(),inhibitor_command); #endif */
     /* convert command in to string ,inside the msg_buffer*/
+    inhibitor_stats_send.m_type = 1 ;
     sprintf(inhibitor_send.text, "%d", inhibitor_command);
     if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
 	       0) < 0)
@@ -92,11 +94,16 @@ int main(int argc, char const *argv[])
     if (inhibitor_command == 0)
       balance++;
 
-    int stat_id_inhibitor = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
-    inhibitor_stats_send.m_type = 7;
-    sprintf(inhibitor_stats_send.text, "%d", balance);
-    if (msgsnd(stat_id_inhibitor, &inhibitor_stats_send,
-	       sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
+    
+    inhibitor_stats_send.statistics_data.inhibitor_balancing_last_sec = balance;
+    inhibitor_stats_send.m_type = 2;
+    if(msgsnd(msg_id, &inhibitor_stats_send,sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
+    {
+      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
+        strerror(errno), getpid());
+      exit(EXIT_FAILURE);
+    }
+    if (msgsnd(stat_id, &inhibitor_stats_send,sizeof(inhibitor_stats_send.statistics_data) , 0) < 0)
     {
       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
 	      strerror(errno), getpid());

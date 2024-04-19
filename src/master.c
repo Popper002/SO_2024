@@ -38,7 +38,6 @@ pid_t inhiitor_pid;
 pid_t activator_pid;
 pid_t fuel_pid;
 struct config config;
-struct hash_table table;
 enum term_reason term_reason;
 struct statistics *shared_data;
 /*
@@ -480,9 +479,8 @@ void inhibitor_handle(int signum)
 /**
 @brief: string formatting in C https://stackoverflow.com/questions/25626851/align-text-to-right-in-c
 */
-void total_print(struct hash_table *stats_map)
+void total_print(void)
 {
-  struct statistics stat_rcv;
   static struct message rcv_stats;
    rcv_id = msgget(STATISTICS_KEY,0666);
   // printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
@@ -502,60 +500,52 @@ void total_print(struct hash_table *stats_map)
   */
 
 
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,IPC_NOWAIT);
-stat_rcv.total_num_activation=0 ;
-stat_rcv.total_num_activation+= atoi(rcv_stats.text);
+msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats.statistics_data),2,IPC_NOWAIT);
+int num_activation_last_sec = 0;
+num_activation_last_sec += rcv_stats.statistics_data.num_activation_last_sec;
 
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,IPC_NOWAIT);
-stat_rcv.num_fission_last_sec =0 ; 
-stat_rcv.num_fission_last_sec +=atoi(rcv_stats.text);
+int num_fission_last_sec =0 ; 
+rcv_stats.statistics_data.num_fission_last_sec +=rcv_stats.statistics_data.num_fission_last_sec;
 
 int energy_produced = 0;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,IPC_NOWAIT);
-energy_produced += atoi(rcv_stats.text);
+energy_produced += rcv_stats.statistics_data.total_num_energy_produced_last_sec;
 if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
 {
   why_term(EXPLODE);
 }
 
 int total_nuclear_waste = 0;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
-int received_value = atoi(rcv_stats.text);
+int received_value = rcv_stats.statistics_data.total_nuclear_waste_last_sec;
 total_nuclear_waste += received_value;
 
 
-/*
-stat_rcv.energy_absorbed_last_sec =0; 
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),4,IPC_NOWAIT); /* @brief to implements a ipc for energy consumed  by master and inibhitor
-stat_rcv.energy_absorbed_last_sec +=atoi(rcv_stats.text);
-*/
+int energy_absorbed = 0;
+energy_absorbed += rcv_stats.statistics_data.energy_absorbed_last_sec; 
  if (energy_produced > 0){
-    stat_rcv.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
+    rcv_stats.statistics_data.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
     energy_produced = energy_produced - config.ENERGY_DEMAND; 
  } 
   if (energy_produced < 0){
     why_term(BLACKOUT);
   }
- 
-
-
-/*
 msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
-stat_rcv.num_energy_consumed_inhibitor_last_sec += atoi(rcv_stats.text); 
-*/ 
+
+int inhibitor_energy_consumed =0;
+inhibitor_energy_consumed += rcv_stats.statistics_data.num_energy_consumed_inhibitor_last_sec  ; 
 int inhibitor_balance = 0;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,IPC_NOWAIT);
-inhibitor_balance += atoi(rcv_stats.text);
+inhibitor_balance += rcv_stats.statistics_data.inhibitor_balancing_last_sec;
 
 
 printf("\n|===========================|\n");
-printf("| %-20s %d\n", "ACTIVATION_VALUE", stat_rcv.total_num_activation);
+printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);
 printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
-if(config.INHIBITOR == 1)
+if(config.INHIBITOR == 1) {
   printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
-// printf("| %-20s %d\n", "ENERGY_ABSORBED", stat_rcv.energy_absorbed_last_sec);
+  printf("| %-20s %d\n", "ENERGY CONSUMED IN INHBITOR", inhibitor_energy_consumed);
+}
+printf("| %-20s %d\n", "ENERGY_ABSORBED", energy_absorbed);
 printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
-printf("| %-20s %d\n", "FISSION_VALUE", stat_rcv.num_fission_last_sec);
+printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
 printf("|===========================|\n\n");
 
 sleep(1);
@@ -643,9 +633,6 @@ int main(void)
   }
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT),IPC_CREAT | 0666);
 
-  struct hash_table *stats = attach_shared_memory();
-  stats->max = 1;
-
   srand(time(NULL));
   signal(SIGALRM, handle_signal);
   /*
@@ -716,7 +703,7 @@ int main(void)
     while(config.SIM_DURATION--){
     printf("TIME REMANING FOR SIMULATION %d \n", config.SIM_DURATION);
 */
-    total_print(stats);
+    total_print();
     //     TODO: call a function that displays statistic
     /*
    if (config.INHIBITOR == 1)
@@ -765,6 +752,6 @@ int main(void)
      */
 }
 
-  detach_shared_memory(stats);
+  // detach_shared_memory();
   return 0;
 }
