@@ -37,6 +37,25 @@ void fetch_args_atom(char const *argv[])
    #endif */
 }
 
+void insert_value_in_shm(int energy_released)
+{
+  int shm_id = shmget(ENERGY_ABSORBED_KEY, sizeof(int), IPC_CREAT | 0666);
+  if (shm_id < 0)
+  {
+    fprintf(stderr, "%s Error in shmget: %s\n", __FILE__, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  int *shm = (int *)shmat(shm_id, NULL, 0);
+  if (shm == (void *)-1)
+  {
+    fprintf(stderr, "%s Error in shmat: %s\n", __FILE__, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  *shm = energy_released;
+  shmdt(shm);
+
+}
+
 static int energy_free(int atomic_a1, int atomic_a2)
 {
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
@@ -88,6 +107,10 @@ void atom_fission(struct atom *atom, struct config config)
        #endif */
 
       int energy_released = energy_free(child1_atomic_number, child2_atomic_number);
+      if(config.INHIBITOR == 1)
+      {
+        insert_value_in_shm(energy_released);
+      }
     /*
       printf("energy released %d\n", energy_released);
       printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",

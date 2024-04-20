@@ -16,6 +16,33 @@ struct statistics *inhibitor_stats;
     P(FISSIONE) = P(1)|P(INEBITORE) * P(1) * P(ATTIVATORE) /  */
 int fission_flag() { return rand() % 2; }
 
+
+/*take the value from shared memory with key ENERGY_ABSORBED_KEY, do a substraction and send it in msgque to master.c for energy_absorbed statistic*/
+void energy_absorbed_value(){
+  int shm_id = shmget(ENERGY_ABSORBED_KEY, sizeof(int), IPC_CREAT | 0666);
+  if (shm_id < 0)
+  {
+    fprintf(stderr, "%s Error in shmget: %s\n", __FILE__, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  int *shm = (int *)shmat(shm_id, NULL, 0);
+  if (shm == (void *)-1)
+  {
+    fprintf(stderr, "%s Error in shmat: %s\n", __FILE__, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  int energy_absorbed = *shm;
+  shmdt(shm);
+  energy_absorbed -= config.ENERGY_DEMAND;
+  inhibitor_stats_send.m_type = 5;
+  inhibitor_stats_send.data = energy_absorbed;
+  if (msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
+  {
+    fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__, strerror(errno), getpid());
+    exit(EXIT_FAILURE);
+  }
+}
+
 void fetch_args_inhibitor(char const *argv[])
 {
 
@@ -66,8 +93,7 @@ int main(int argc, char const *argv[])
   inhibitor_send.m_type = 1;
   if (msg_id < 0)
   {
-    fprintf(stderr, "INHIBITOR : ERROR IN MSGGET <ERRNO : %s> \n",
-	    strerror(errno));
+    fprintf(stderr, "INHIBITOR : ERROR IN MSGGET <ERRNO : %s> \n",strerror(errno));
     exit(EXIT_FAILURE);
   }
   /* #ifdef _PRINT_TEST
@@ -99,8 +125,7 @@ int main(int argc, char const *argv[])
     inhibitor_stats_send.m_type = 7;
     if(msgsnd(stat_id, &inhibitor_stats_send,sizeof(inhibitor_stats_send), 0) < 0)
     {
-      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
-        strerror(errno), getpid());
+      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,strerror(errno), getpid());
       exit(EXIT_FAILURE);
     }
     /* #ifdef _PRINT_TEST

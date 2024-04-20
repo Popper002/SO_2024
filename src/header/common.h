@@ -34,7 +34,7 @@
 #define INHIBITOR_PATH "./bin/inhibitor"
 #define ATOMIC_KEY 0x221
 #define STATISTICS_KEY 0x11
-
+#define ENERGY_ABSORBED_KEY 0x22
 
 void fetch_args(char const *argv[]);
 int randomize_atom(int atomic_number);

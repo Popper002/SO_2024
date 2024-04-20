@@ -262,6 +262,7 @@ pid_t inhibitor(void)
     break;
   case 0:
     argument_creator((char **)inhibitor_args);
+    printf("\tStarting inhbitior HERE\n");
     execvp(INHIBITOR_PATH, (char **)inhibitor_args);
 
     fprintf(stderr, "%s line: %d [master %s Problem in execvp with pid %d \n",
@@ -480,6 +481,7 @@ void inhibitor_handle(int signum)
 }
 
 
+
 /**
 @brief: string formatting in C https://stackoverflow.com/questions/25626851/align-text-to-right-in-c
 */
@@ -519,7 +521,7 @@ if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
   why_term(EXPLODE);
 }
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,IPC_NOWAIT);//
-total_nuclear_waste+= rcv_stats.data;
+total_nuclear_waste = rcv_stats.data;
 
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
 energy_absorbed += rcv_stats.data; 
@@ -533,7 +535,7 @@ energy_absorbed += rcv_stats.data;
 //msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
 
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),6,IPC_NOWAIT);
-inhibitor_energy_consumed = statistics_data.num_energy_consumed_inhibitor_last_sec;
+inhibitor_energy_consumed += statistics_data.num_energy_consumed_inhibitor_last_sec;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,IPC_NOWAIT);//
 inhibitor_balance += rcv_stats.data;
 msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),8,IPC_NOWAIT);//
@@ -664,6 +666,7 @@ int main(void)
   if (config.INHIBITOR == 1)
   {
     inhibitor_pid = inhibitor();
+    printf("\tInhibitor started\n");
     signal(SIGINT, inhibitor_handle);
   }
   store_pid_atom();
