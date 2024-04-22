@@ -112,9 +112,8 @@ int main(int argc, char const *argv[])
     sprintf(inhibitor_send.text, "%d", inhibitor_command);
     if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
 	       0) < 0)
-    {
-      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
-	      strerror(errno), getpid());
+    { //FIXME: identifier removed error
+      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d,at line: %d\n", __FILE__, __func__,strerror(errno), getpid(),__LINE__);
       exit(EXIT_FAILURE);
     }
 
