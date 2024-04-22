@@ -532,7 +532,6 @@ msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
 energy_absorbed += rcv_stats.data; 
  if (energy_produced > 0){
     statistics_data.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
-    energy_produced = energy_produced - config.ENERGY_DEMAND; 
  } 
   if (energy_produced < 0){
     why_term(BLACKOUT);
