@@ -59,15 +59,13 @@ pid_t born_new_atom()
     msgsnd(q_stats, &send_stats, sizeof(int), 0);
     atom_argument_creator((char **)new_atom_args);
     execvp(ATOM_PATH, (char **)new_atom_args);
-
-    printf("[%s] [%s] atomi pid inserted in table %d\n", __FILE__, __func__,
-	   new_atom);
     fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
 	    __func__, __LINE__, __FILE__, getpid());
     exit(EXIT_FAILURE);
     break;
 
   default:
+    waitpid(new_atom, NULL, 0);
     return new_atom;
     break;
   }
@@ -238,7 +236,7 @@ int main(int argc, char const *argv[])
 
   struct timespec ns_step, sec_step;
   sec_step.tv_sec = config.STEP;
-  ns_step.tv_nsec = config.STEP * 1000000000LL;
+  ns_step.tv_nsec = config.STEP * 1000000000;
 
 
 
@@ -249,12 +247,13 @@ int main(int argc, char const *argv[])
   {
   for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
   {
-    atom_new_pid[i] = born_new_atom();
+   // atom_new_pid[i] =
+     born_new_atom();
     nanosleep(&ns_step, &sec_step);
 
-    new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
+   // new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
   /* copiamo l'array di pid in memoria condivisa */
-  memcpy(new_pid_atom->array, atom_new_pid, sizeof(pid_t));
+ // memcpy(new_pid_atom->array, atom_new_pid, sizeof(pid_t));
   }
 
 /* #ifdef _PRINT_TEST
@@ -268,11 +267,12 @@ int main(int argc, char const *argv[])
 #ifdef _PRINT_TESPLEATE\n");
  #endif */
   fflush(stdout);
+  /**
   if (shmdt(new_pid_atom) < 0)
   {
     fprintf(stderr, "Shared memory ");
    }
-  
+  */
   }
 /* #ifdef _PRINT_TEST
   stampaStatoMemoria(shm_id);

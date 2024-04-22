@@ -99,6 +99,7 @@ int main(int argc, char const *argv[])
   /* #ifdef _PRINT_TEST
     printf("ID %d \n", msg_id);
    #endif */
+   while(1){
   for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
   {
 
@@ -128,11 +129,14 @@ int main(int argc, char const *argv[])
       fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,strerror(errno), getpid());
       exit(EXIT_FAILURE);
     }
+   
+
+   
     /* #ifdef _PRINT_TEST
 	printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
 	       getpid(), inhibitor_command, inhibitor_send.text);
      #endif */
   }
-
+   }
   return 0;
 }

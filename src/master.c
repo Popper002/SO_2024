@@ -73,6 +73,7 @@ int why_term(enum term_reason term_reason)
   switch (term_reason)
   {
   case EXPLODE:
+    
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
@@ -83,6 +84,7 @@ int why_term(enum term_reason term_reason)
     exit(EXIT_FAILURE);
     break;
   case BLACKOUT:
+    
     write(STDOUT_FILENO, "BLACKOUT- NOT ENOUGH ENERGY\n", 29);
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
@@ -93,6 +95,7 @@ int why_term(enum term_reason term_reason)
     exit(EXIT_FAILURE);
     break;
   case MELTDOWN:
+  
     write(STDOUT_FILENO, "MELTDOWN - FORK-ERROR -TERMINATION\n", 36);
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
@@ -413,9 +416,11 @@ void handle_signal(int signum)
   case SIGUSR1:
     break;
   case SIGALRM:
+   
     write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
     write(STDOUT_FILENO, "\t\tALARM : IT'S TIME TO STOP\n", 29);
     write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
+ 
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
@@ -756,8 +761,9 @@ int main(void)
       break;
   }
      */
+    
 }
-
+ 
   // detach_shared_memory();
   return 0;
 }
