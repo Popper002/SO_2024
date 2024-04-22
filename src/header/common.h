@@ -25,6 +25,7 @@
 #include <sys/signal.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include "ipc.h"
 
