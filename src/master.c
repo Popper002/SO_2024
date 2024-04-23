@@ -5,13 +5,14 @@
 #include "util/shared_memory.h"
 #include <complex.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/msg.h>
 #include <sys/shm.h>
+#include <sys/wait.h>
 #include <unistd.h>
-#include <stdbool.h>
 #define CONFIG_PATH "src/config/config1.txt"
 
 char **args_atom[100];
@@ -38,15 +39,15 @@ pid_t fuel_pid;
 struct config config;
 enum term_reason term_reason;
 struct statistics *shared_data;
-static int inhibitor_energy_consumed ;
-int inhibitor_balance ;
-int total_nuclear_waste ;
-int num_fission_last_sec ; 
-int num_activation_last_sec ;
-int energy_produced ;
+static int inhibitor_energy_consumed;
+int inhibitor_balance;
+int total_nuclear_waste;
+int num_fission_last_sec;
+int num_activation_last_sec;
+int energy_produced;
 int received_value;
 int energy_absorbed;
-int energy_produced =0 ;
+int energy_produced = 0;
 /*
 /* #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -73,18 +74,19 @@ int why_term(enum term_reason term_reason)
   switch (term_reason)
   {
   case EXPLODE:
-    
+
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
     killpg(rcv_pid->array, SIGKILL);
-    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",49);
+    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",
+	  49);
     exit(EXIT_FAILURE);
     break;
   case BLACKOUT:
-    
+
     write(STDOUT_FILENO, "BLACKOUT- NOT ENOUGH ENERGY\n", 29);
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
@@ -95,7 +97,7 @@ int why_term(enum term_reason term_reason)
     exit(EXIT_FAILURE);
     break;
   case MELTDOWN:
-  
+
     write(STDOUT_FILENO, "MELTDOWN - FORK-ERROR -TERMINATION\n", 36);
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
@@ -394,10 +396,17 @@ void store_pid_atom()
 void remove_ipc()
 {
   int remove_queue;
-  remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
-  msgctl(remove_queue, IPC_RMID, NULL);
-  msgctl(rcv_id, IPC_RMID, NULL);
+  int status;
 
+  while (waitpid(inhibitor_pid, &status, WNOHANG) &&
+	 waitpid(atom_pid, &status, WNOHANG))
+  {
+    remove_queue =
+	msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
+    msgctl(remove_queue, IPC_RMID, NULL);
+
+    msgctl(rcv_id, IPC_RMID, NULL);
+  }
   fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
 }
 
@@ -416,11 +425,11 @@ void handle_signal(int signum)
   case SIGUSR1:
     break;
   case SIGALRM:
-   
+
     write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
     write(STDOUT_FILENO, "\t\tALARM : IT'S TIME TO STOP\n", 29);
     write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
- 
+
     remove_ipc();
     killpg(atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
@@ -444,21 +453,25 @@ void start_atom()
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(atom_array_pid[i], SIGCONT);
-/*#ifdef __PRINT_TEST
-    printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
-#endif */
+    /*#ifdef __PRINT_TEST
+	printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
+    #endif */
   }
 }
 
 // use sigint to start and stop the inhibitor
 void inhibitor_handle(int signum)
 {
-  if (signum == SIGINT) {
-    if (is_inhibitor_running) {
+  if (signum == SIGINT)
+  {
+    if (is_inhibitor_running)
+    {
       kill(inhibitor_pid, SIGSTOP);
       write(STDOUT_FILENO, "STOPPED INHIBITOR\n", 19);
       is_inhibitor_running = false;
-    } else {
+    }
+    else
+    {
       kill(inhibitor_pid, SIGCONT);
       write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
       is_inhibitor_running = true;
@@ -485,20 +498,19 @@ void inhibitor_handle(int signum)
    */
 }
 
-
-
 /**
-@brief: string formatting in C https://stackoverflow.com/questions/25626851/align-text-to-right-in-c
+@brief: string formatting in C
+https://stackoverflow.com/questions/25626851/align-text-to-right-in-c
 */
 void total_print(void)
 {
   static struct message rcv_stats;
-   rcv_id = msgget(STATISTICS_KEY,IPC_CREAT|0666);
-   if(rcv_id<0 )
-   {
-    fprintf(stderr,"[MASTER] ERROR MSGGET\n");
+  rcv_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
+  if (rcv_id < 0)
+  {
+    fprintf(stderr, "[MASTER] ERROR MSGGET\n");
     exit(EXIT_FAILURE);
-   }
+  }
 
   // printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
   // printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
@@ -509,55 +521,59 @@ void total_print(void)
   // printf( "\rINHIBITOR PUSHED\t%d\n", shared_data->inhibitor_balancing);
 
   // printf( "\rACTIVATOR PUSHED\t%d\n", shared_data->activator_balancing);
-/**
-  if(msgrcv(rcv_id,&stat_rcv,sizeof(stat_rcv)-sizeof(long),0, IPC_NOWAIT) > 0){
-    printf("Nuclear waste value is: %d",stat_rcv.total_nuclear_waste);
+  /**
+    if(msgrcv(rcv_id,&stat_rcv,sizeof(stat_rcv)-sizeof(long),0, IPC_NOWAIT) >
+    0){ printf("Nuclear waste value is: %d",stat_rcv.total_nuclear_waste);
 
+    }
+    */
+
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 1, IPC_NOWAIT);
+  num_activation_last_sec += rcv_stats.data;
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 2, IPC_NOWAIT);
+  energy_produced += rcv_stats.data;
+  if (energy_produced > config.ENERGY_EXPLODE_THRESHOLD)
+  {
+    why_term(EXPLODE);
   }
-  */
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 3, IPC_NOWAIT);
+  total_nuclear_waste = rcv_stats.data;
 
-
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),1,IPC_NOWAIT);//
-num_activation_last_sec += rcv_stats.data;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),2,IPC_NOWAIT);//
-energy_produced += rcv_stats.data;
-if(energy_produced > config.ENERGY_EXPLODE_THRESHOLD )
-{
-  why_term(EXPLODE);
-}
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),3,IPC_NOWAIT);//
-total_nuclear_waste = rcv_stats.data;
-
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),5,IPC_NOWAIT);
-energy_absorbed += rcv_stats.data; 
- if (energy_produced > 0){
-    statistics_data.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
- } 
-  if (energy_produced < 0){
+  if (energy_produced > 0)
+  {
+    statistics_data.num_energy_consumed_last_sec =
+	energy_produced - config.ENERGY_DEMAND;
+  }
+  if (energy_produced < 0)
+  {
     why_term(BLACKOUT);
   }
-//msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
+  // msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 5, IPC_NOWAIT);
+  energy_absorbed += rcv_stats.data;
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 6, IPC_NOWAIT);
+  inhibitor_energy_consumed +=
+      rcv_stats.data; // statistics_data.num_energy_consumed_inhibitor_last_sec;
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 7, IPC_NOWAIT);
+  inhibitor_balance += rcv_stats.data;
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 8, IPC_NOWAIT);
+  num_fission_last_sec += rcv_stats.data;
 
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),6,IPC_NOWAIT);
-inhibitor_energy_consumed += statistics_data.num_energy_consumed_inhibitor_last_sec;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),7,IPC_NOWAIT);//
-inhibitor_balance += rcv_stats.data;
-msgrcv(rcv_id,&rcv_stats,sizeof(rcv_stats),8,IPC_NOWAIT);//
-num_fission_last_sec+=rcv_stats.data;
+  printf("\n|===========================|\n");
+  printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);
+  printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
+  if (config.INHIBITOR == 1)
+  {
+    printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
+    printf("| %-20s %d\n", "ENERGY CONSUMED IN INHBITOR",
+	   inhibitor_energy_consumed);
+  }
+  printf("| %-20s %d\n", "ENERGY_ABSORBED", energy_absorbed);
+  printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
+  printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
+  printf("|===========================|\n\n");
 
-printf("\n|===========================|\n");
-printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);
-printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
-if(config.INHIBITOR == 1) {
-  printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
-  printf("| %-20s %d\n", "ENERGY CONSUMED IN INHBITOR", inhibitor_energy_consumed);
-}
-printf("| %-20s %d\n", "ENERGY_ABSORBED", energy_absorbed);
-printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
-printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
-printf("|===========================|\n\n");
-
-sleep(1);
+  sleep(1);
 }
 
 void final_print(struct statistics final_print)
@@ -565,7 +581,8 @@ void final_print(struct statistics final_print)
   final_print.total_num_activation = final_print.num_activation_last_sec;
   final_print.total_nuclear_waste = final_print.total_nuclear_waste_last_sec;
   final_print.total_num_fission = final_print.num_fission_last_sec;
-  final_print.total_num_energy_consumed =final_print.total_num_energy_produced_last_sec;
+  final_print.total_num_energy_consumed =
+      final_print.total_num_energy_produced_last_sec;
   final_print.energy_absorbed = final_print.energy_absorbed_last_sec;
   final_print.total_num_energy_consumed = final_print.energy_absorbed_last_sec;
   final_print.inhibitor_balancing = final_print.inhibitor_balancing_last_sec;
@@ -623,7 +640,7 @@ void logo(void)
 	 "                                                                     "
 	 "      \n");
 
-   print_config();
+  print_config();
 }
 int main(void)
 {
@@ -640,7 +657,7 @@ int main(void)
   {
     fprintf(stderr, "PROBLEM KEY\n");
   }
-  shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT),IPC_CREAT | 0666);
+  shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT), IPC_CREAT | 0666);
 
   srand(time(NULL));
   signal(SIGALRM, handle_signal);
@@ -670,6 +687,7 @@ int main(void)
   if (config.INHIBITOR == 1)
   {
     inhibitor_pid = inhibitor();
+    printf("inhbitor pid is: %d", inhibitor_pid);
     printf("\tInhibitor started\n");
     signal(SIGINT, inhibitor_handle);
   }
@@ -694,13 +712,13 @@ int main(void)
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
    #endif */
   logo();
-  for (start = 10; start > 0; start--)
+  for (start = 5; start > 0; start--)
   {
     printf("\rStarting the simulation in %d...", start);
     fflush(stdout);
     sleep(1);
   }
-  fprintf(stdout, "Master: [PID %d] is starting the simulation\n", getpid());
+  fprintf(stdout, "\nMaster: [PID %d] is starting the simulation\n", getpid());
   alarm(config.SIM_DURATION);
 
   shmdt(rcv_pid);
@@ -736,22 +754,22 @@ int main(void)
     case 's':
       if (inhibitor == 0 || inhibitor == NULL)
       {
-        inhibitor_pid = inhibitor();
+	inhibitor_pid = inhibitor();
       }
       else
       {
-        kill(inhibitor_pid, SIGUSR1);
+	kill(inhibitor_pid, SIGUSR1);
       }
       break;
 
     case 't':
       if (inhibitor == 0 || inhibitor == NULL)
       {
-        inhibitor_pid = inhibitor();
+	inhibitor_pid = inhibitor();
       }
       else
       {
-        kill(inhibitor_pid, SIGUSR2);
+	kill(inhibitor_pid, SIGUSR2);
       }
       break;
 
@@ -760,9 +778,8 @@ int main(void)
       break;
   }
      */
-    
-}
- 
+  }
+
   // detach_shared_memory();
   return 0;
 }

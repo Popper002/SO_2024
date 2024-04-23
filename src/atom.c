@@ -65,6 +65,7 @@ void atom_fission(struct atom *atom, struct config config)
 {
 
 
+  statistics_data.total_nuclear_waste_last_sec = 0;
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
     // fprintf(stdout, "Starting fissioning atom....\n");

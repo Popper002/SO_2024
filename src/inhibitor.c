@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/msg.h>
-int msg_id,stat_id;
+int msg_id, stat_id;
 struct mes inhibitor_send;
 struct message inhibitor_stats_send;
 struct config config;
@@ -16,9 +16,11 @@ struct statistics *inhibitor_stats;
     P(FISSIONE) = P(1)|P(INEBITORE) * P(1) * P(ATTIVATORE) /  */
 int fission_flag() { return rand() % 2; }
 
-
-/*take the value from shared memory with key ENERGY_ABSORBED_KEY, do a substraction and send it in msgque to master.c for energy_absorbed statistic*/
-void energy_absorbed_value(){
+/*take the value from shared memory with key ENERGY_ABSORBED_KEY, do a
+ * substraction and send it in msgque to master.c for energy_absorbed
+ * statistic*/
+void energy_absorbed_value()
+{
   int shm_id = shmget(ENERGY_ABSORBED_KEY, sizeof(int), IPC_CREAT | 0666);
   if (shm_id < 0)
   {
@@ -36,9 +38,11 @@ void energy_absorbed_value(){
   energy_absorbed -= config.ENERGY_DEMAND;
   inhibitor_stats_send.m_type = 5;
   inhibitor_stats_send.data = energy_absorbed;
-  if (msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
+  if (msgsnd(stat_id, &inhibitor_stats_send,
+	     sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
   {
-    fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__, strerror(errno), getpid());
+    fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,
+	    strerror(errno), getpid());
     exit(EXIT_FAILURE);
   }
 }
@@ -88,54 +92,58 @@ int main(int argc, char const *argv[])
     comandi anti fissione in queue e poi gli atomi pescano dentro questa queue e
     chi preleva questi parametri sapra se fare o meno la fissione */
 
-  msg_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666); /* @return the same queue of atom */
-  stat_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666); /* @return the same queue of atom */
+  msg_id =
+      msgget(ATOMIC_KEY, IPC_CREAT | 0666); /* @return the same queue of atom */
+  stat_id = msgget(STATISTICS_KEY,
+		   IPC_CREAT | 0666); /* @return the same queue of atom */
   inhibitor_send.m_type = 1;
   if (msg_id < 0)
   {
-    fprintf(stderr, "INHIBITOR : ERROR IN MSGGET <ERRNO : %s> \n",strerror(errno));
+    fprintf(stderr, "INHIBITOR : ERROR IN MSGGET <ERRNO : %s> \n",
+	    strerror(errno));
     exit(EXIT_FAILURE);
   }
   /* #ifdef _PRINT_TEST
     printf("ID %d \n", msg_id);
    #endif */
-   while(1){
-  for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
+  while (1)
   {
-
-    inhibitor_command =fission_flag();
-    /* #ifdef _PRINT_TEST
-    fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND
-    %d>\n",getpid(),inhibitor_command); #endif */
-    /* convert command in to string ,inside the msg_buffer*/
-    inhibitor_stats_send.m_type = 1 ;
-    sprintf(inhibitor_send.text, "%d", inhibitor_command);
-    if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
-	       0) < 0)
-    { //FIXME: identifier removed error
-      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d,at line: %d\n", __FILE__, __func__,strerror(errno), getpid(),__LINE__);
-      exit(EXIT_FAILURE);
-    }
-
-    if (inhibitor_command == 0)
-      balance++;
-
-    
-    inhibitor_stats_send.data = balance;
-    inhibitor_stats_send.m_type = 7;
-    if(msgsnd(stat_id, &inhibitor_stats_send,sizeof(inhibitor_stats_send), 0) < 0)
+    for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
     {
-      fprintf(stderr, "%s %s ,ERRNO:%s PID=%d\n", __FILE__, __func__,strerror(errno), getpid());
-      exit(EXIT_FAILURE);
-    }
-   
 
-   
-    /* #ifdef _PRINT_TEST
-	printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
-	       getpid(), inhibitor_command, inhibitor_send.text);
-     #endif */
+      inhibitor_command = fission_flag();
+      /* #ifdef _PRINT_TEST
+      fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND
+      %d>\n",getpid(),inhibitor_command); #endif */
+      /* convert command in to string ,inside the msg_buffer*/
+      inhibitor_send.m_type = 1;
+      sprintf(inhibitor_send.text, "%d", inhibitor_command);
+      if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
+		 0) < 0)
+      {
+	fprintf(stderr, "%s %s ,ERRNO:%s PID=%d,at line: %d\n", __FILE__,
+		__func__, strerror(errno), getpid(), __LINE__);
+	exit(EXIT_FAILURE);
+      }
+
+      if (inhibitor_command == 0)
+	balance++;
+
+      inhibitor_stats_send.data = balance;
+      inhibitor_stats_send.m_type = 7;
+      if (msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send),
+		 0) < 0)
+      { // FIXME: identifier removed error
+	fprintf(stderr, "%s %s ,ERRNO:%s PID=%d, at line:%d \n", __FILE__,
+		__func__, strerror(errno), getpid(), __LINE__);
+	exit(EXIT_FAILURE);
+      }
+
+      /* #ifdef _PRINT_TEST
+	  printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
+		 getpid(), inhibitor_command, inhibitor_send.text);
+       #endif */
+    }
   }
-   }
   return 0;
 }
