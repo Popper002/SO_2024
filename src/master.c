@@ -532,22 +532,10 @@ void total_print(void)
   num_activation_last_sec += rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 2, IPC_NOWAIT);
   energy_produced += rcv_stats.data;
-  if (energy_produced > config.ENERGY_EXPLODE_THRESHOLD)
-  {
-    why_term(EXPLODE);
-  }
+  
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 3, IPC_NOWAIT);
   total_nuclear_waste = rcv_stats.data;
 
-  if (energy_produced > 0)
-  {
-    statistics_data.num_energy_consumed_last_sec =
-	energy_produced - config.ENERGY_DEMAND;
-  }
-  if (energy_produced < 0)
-  {
-    why_term(BLACKOUT);
-  }
   // msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 5, IPC_NOWAIT);
   energy_absorbed += rcv_stats.data;
@@ -559,16 +547,26 @@ void total_print(void)
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 8, IPC_NOWAIT);
   num_fission_last_sec += rcv_stats.data;
 
+  statistics_data.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
+  if (energy_produced < 0)
+  {
+    why_term(BLACKOUT);
+  }
+
+if (energy_produced > config.ENERGY_EXPLODE_THRESHOLD)
+  {
+    why_term(EXPLODE);
+  }
   printf("\n|===========================|\n");
   printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);
   printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
   if (config.INHIBITOR == 1)
   {
     printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
-    printf("| %-20s %d\n", "ENERGY CONSUMED IN INHBITOR",
+    printf("| %-20s %d\n", "ENERGY ABSORBED IN INHIBITOR",
 	   inhibitor_energy_consumed);
   }
-  printf("| %-20s %d\n", "ENERGY_ABSORBED", energy_absorbed);
+  printf("| %-20s %d\n", "ENERGY CONSUMED",statistics_data.num_energy_consumed_last_sec);
   printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
   printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
   printf("|===========================|\n\n");
