@@ -1,8 +1,7 @@
 #include "header/atom.h"
 #include "header/common.h"
-#include "header/ipc.h" #include "util/hash_table.h"
+#include "header/ipc.h" 
 #include "util/my_sem_lib.h"
-#include "util/shared_memory.h"
 #include <complex.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -48,7 +47,7 @@ int energy_produced;
 int received_value;
 int energy_absorbed;
 int energy_produced = 0;
-/*
+
 /* #ifdef _PRINT_TEST
 static void print_para_TEST()
 {
@@ -68,6 +67,26 @@ static void print_para_TEST()
   printf("\t\n----------\n");
 }
  #endif */
+
+
+void remove_ipc()
+{
+  int remove_queue;
+  int status;
+
+  while (waitpid(inhibitor_pid, &status, WNOHANG) &&
+	 waitpid(atom_pid, &status, WNOHANG))
+  {
+    remove_queue =
+	msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
+    msgctl(remove_queue, IPC_RMID, NULL);
+
+    msgctl(rcv_id, IPC_RMID, NULL);
+  }
+  fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
+}
+
+
 
 int why_term(enum term_reason term_reason)
 {
@@ -392,24 +411,6 @@ void store_pid_atom()
     #endif */
   free(atom_array_pid);
 }
-
-void remove_ipc()
-{
-  int remove_queue;
-  int status;
-
-  while (waitpid(inhibitor_pid, &status, WNOHANG) &&
-	 waitpid(atom_pid, &status, WNOHANG))
-  {
-    remove_queue =
-	msgget(ATOMIC_KEY, IPC_CREAT); /* get the id for the remove */
-    msgctl(remove_queue, IPC_RMID, NULL);
-
-    msgctl(rcv_id, IPC_RMID, NULL);
-  }
-  fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
-}
-
 void handle_signal(int signum)
 {
   switch (signum)
@@ -512,22 +513,6 @@ void total_print(void)
     exit(EXIT_FAILURE);
   }
 
-  // printf( "\rTOTAL ACTIVATION\t%d\n", get(stats_map,"total_num_activation"));
-  // printf( "\rTOTAL FISSION\t%d\n", shared_data->total_num_fission);
-  // printf( "\rTOTAL ENERGY PRODUCED\t%d\n", get(stats_map,"energy produced"));
-  // printf( "\rTOTAL ENERGY CONSUMED\t%d\n", shared_data->energy_absorbed);
-  // printf( "\rTOTAL NUCLEAR WASTE\t%d\n", shared_data->total_nuclear_waste);
-  // printf( "\rTOTAL ENERGY INHIBITOR CONSUMED\t%d\n", total_energy);
-  // printf( "\rINHIBITOR PUSHED\t%d\n", shared_data->inhibitor_balancing);
-
-  // printf( "\rACTIVATOR PUSHED\t%d\n", shared_data->activator_balancing);
-  /**
-    if(msgrcv(rcv_id,&stat_rcv,sizeof(stat_rcv)-sizeof(long),0, IPC_NOWAIT) >
-    0){ printf("Nuclear waste value is: %d",stat_rcv.total_nuclear_waste);
-
-    }
-    */
-
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 1, IPC_NOWAIT);
   num_activation_last_sec += rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 2, IPC_NOWAIT);
@@ -536,12 +521,11 @@ void total_print(void)
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 3, IPC_NOWAIT);
   total_nuclear_waste = rcv_stats.data;
 
-  // msgrcv(rcv_id , &rcv_stats ,sizeof(rcv_stats),6,IPC_NOWAIT);
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 5, IPC_NOWAIT);
   energy_absorbed += rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 6, IPC_NOWAIT);
-  inhibitor_energy_consumed +=
-      rcv_stats.data; // statistics_data.num_energy_consumed_inhibitor_last_sec;
+   statistics_data.num_energy_consumed_inhibitor_last_sec +=
+      rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 7, IPC_NOWAIT);
   inhibitor_balance += rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 8, IPC_NOWAIT);
