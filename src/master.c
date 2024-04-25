@@ -5,6 +5,7 @@
 #include <complex.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <sys/param.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,7 @@ bool is_inhibitor_running = true;
 static int shm_id;
 static int rcv_id;
 // static int fork_atom;
-static int fork_inhibitor;
+// static int fork_inhibitor;
 shm_fuel *rcv_pid;
 int *atom_array_pid;
 static key_t key_shm;
@@ -95,11 +96,11 @@ int why_term(enum term_reason term_reason)
   case EXPLODE:
 
     remove_ipc();
-    killpg(atom_array_pid, SIGKILL);
+    killpg(*atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    killpg(rcv_pid->array, SIGKILL);
+    killpg(*rcv_pid->array, SIGKILL);
     write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",
 	  49);
     exit(EXIT_FAILURE);
@@ -108,22 +109,22 @@ int why_term(enum term_reason term_reason)
 
     write(STDOUT_FILENO, "BLACKOUT- NOT ENOUGH ENERGY\n", 29);
     remove_ipc();
-    killpg(atom_array_pid, SIGKILL);
+    killpg(*atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    killpg(rcv_pid->array, SIGKILL);
+    killpg(*rcv_pid->array, SIGKILL);
     exit(EXIT_FAILURE);
     break;
   case MELTDOWN:
 
     write(STDOUT_FILENO, "MELTDOWN - FORK-ERROR -TERMINATION\n", 36);
     remove_ipc();
-    killpg(atom_array_pid, SIGKILL);
+    killpg(*atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    killpg(rcv_pid->array, SIGKILL);
+    killpg(*rcv_pid->array, SIGKILL);
     exit(EXIT_FAILURE);
     break;
   default:
@@ -219,7 +220,7 @@ static void argument_creator(char *argv[])
   char n_nuovi_atomi[10];
   char sim_duration[10];
   char energy_explode_threshold[10];
-  char atomic_number[10];
+  // char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
   sprintf(n_atom_max, "%d", config.N_ATOM_MAX);
@@ -246,7 +247,7 @@ static void fuel_argument_ipc(char *argv[])
   char n_nuovi_atomi[10];
   char sim_duration[10];
   char energy_explode_threshold[10];
-  char atomic_number[10];
+  // char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
   sprintf(n_atom_max, "%d", config.N_ATOM_MAX);
@@ -391,7 +392,7 @@ pid_t activator(void)
 
 void store_pid_atom()
 {
-  atom_array_pid = (int *)malloc(config.N_ATOMI_INIT * sizeof(pid_t));
+  atom_array_pid = (int *)malloc(config.N_ATOMI_INIT * sizeof(int));
   if (atom_array_pid == NULL)
   {
     fprintf(stdout, "malloc error :ERR:%s\n", strerror(errno));
@@ -411,14 +412,21 @@ void store_pid_atom()
     #endif */
   free(atom_array_pid);
 }
+
+
+/**
+  sizeof(int *) / sizeof(int) gives a warning with -Wall, so we had to use new way to compute the size of atom_array_pid
+  https://arjunsreedharan.org/post/69303442896/how-to-find-the-size-of-an-array-in-c-without 
+  here there is an explanation on why this work 
+*/
 void handle_signal(int signum)
 {
   switch (signum)
   {
   case SIGINT:
     write(STDOUT_FILENO, "SIGINT_HANDLE\n", 15);
-    size_t length = sizeof(atom_array_pid) / sizeof(atom_array_pid[0]);
-    for (size_t pid = 0; pid < length; pid++)
+    int length = (&atom_array_pid)[1]-atom_array_pid ;
+    for (int pid = 0; pid < length; pid++)
     {
       kill(atom_array_pid[pid], SIGINT);
     }
@@ -432,11 +440,11 @@ void handle_signal(int signum)
     write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
 
     remove_ipc();
-    killpg(atom_array_pid, SIGKILL);
+    killpg(*atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    killpg(rcv_pid->array, SIGKILL);
+    killpg(*rcv_pid->array, SIGKILL); //FIXME segmentation fault
     // total_print();
 
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
@@ -626,11 +634,10 @@ void logo(void)
 }
 int main(void)
 {
-  struct statistics *energy_released;
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
-  void *rcv_ptr;
-  char command[2];
+  // void *rcv_ptr;
+  // char command[2];
   /* #ifdef _PRINT_TEST
     printf("KEY IS %d \n", key_shm);
    #endif */

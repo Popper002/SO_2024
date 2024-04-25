@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =  -std=c11 -D_GNU_SOURCE  -Wall -Wextra -Werror -Wvla -g
+CFLAGS =  -std=c11 -D_GNU_SOURCE -Werror -Wall -Wextra -Werror -Wvla -g
 D_FLAG = -D _PRINT_TEST -D_GNU_SOURCE -Wall -g 
 RM =rm 
 IPC_RM =ipcrm --all
