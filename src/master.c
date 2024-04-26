@@ -103,7 +103,6 @@ int why_term(enum term_reason term_reason)
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    killpg(*rcv_pid->array, SIGKILL);
     write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",
 	  49);
     exit(EXIT_FAILURE);
@@ -116,7 +115,6 @@ int why_term(enum term_reason term_reason)
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    killpg(*rcv_pid->array, SIGKILL);
     exit(EXIT_FAILURE);
     break;
   case MELTDOWN:
@@ -447,7 +445,6 @@ void handle_signal(int signum)
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    // killpg(*rcv_pid->array, SIGKILL); //FIXME segmentation fault
     // total_print();
 
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
