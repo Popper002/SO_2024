@@ -5,6 +5,7 @@
 #include <complex.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <sys/ipc.h>
 #include <sys/param.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,6 +85,8 @@ void remove_ipc()
 
     msgctl(rcv_id, IPC_RMID, NULL);
   }
+  shmctl(shm_id,IPC_RMID,NULL);
+  
   fprintf(stdout, "REMOVED ALL IPC'ITEM\n");
 }
 
@@ -444,7 +447,7 @@ void handle_signal(int signum)
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    killpg(*rcv_pid->array, SIGKILL); //FIXME segmentation fault
+    // killpg(*rcv_pid->array, SIGKILL); //FIXME segmentation fault
     // total_print();
 
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
@@ -710,7 +713,6 @@ int main(void)
   fprintf(stdout, "\nMaster: [PID %d] is starting the simulation\n", getpid());
   alarm(config.SIM_DURATION);
 
-  shmdt(rcv_pid);
 
   start_atom();
 
