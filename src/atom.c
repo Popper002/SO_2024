@@ -5,7 +5,6 @@
 #include <string.h>
 #include <sys/msg.h>
 #include <sys/shm.h>
-
 struct atom atom;
 static struct mes rcv;
 struct config config;
@@ -61,7 +60,7 @@ static int energy_free(int atomic_a1, int atomic_a2)
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
 
-void atom_fission(struct atom *atom, struct config config)
+int atom_fission(struct atom *atom, struct config config)
 {
 
 
@@ -87,11 +86,12 @@ void atom_fission(struct atom *atom, struct config config)
 
 
     pid_t atom_child = fork();
+   
     switch (atom_child)
     {
     case -1:
-      TEST_ERROR
-      exit(EXIT_FAILURE);
+      return -1;
+      break;
     case 0:
       send_stats.m_type=1;
       statistics_data.num_activation_last_sec++;
@@ -121,19 +121,33 @@ void atom_fission(struct atom *atom, struct config config)
       send_stats.m_type=2;
       send_stats.data = energy_released;
       msgsnd(stat_id, &send_stats, sizeof(int), 0);
-
+      exit(EXIT_SUCCESS);
+      return 0 ; 
       break;
 
     default:
       /* #ifdef _PRINT_TEST
 	    printf("father process, TODO\n");
        #endif */
-
       break;
+
     }
   }
+  return 0; 
 }
 
+void handler_signal(int signum)
+{
+  switch (signum)
+  {
+  case SIGCHLD:
+      wait(NULL);
+    break;
+  
+  default:
+    break;
+  }
+}
 /**
  * @brief using the current time in nanosecond as seed, generates a random
  * number between 0 and N_ATOM_MAX
@@ -152,6 +166,7 @@ int main(int argc, char const *argv[])
 {
   (void)argc;
   srand(time(NULL));
+  signal(SIGCHLD,handler_signal);
   atom.pid = getpid();
   stat_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
   if (stat_id < 0)
@@ -166,7 +181,7 @@ int main(int argc, char const *argv[])
   fetch_args_atom(argv);
 
   rcv.m_type = 1;
-  kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
+  //kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
 
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL);
   /* #ifdef _PRINT_TEST
@@ -205,17 +220,10 @@ int main(int argc, char const *argv[])
 
   atom_fission(&atom, config);
 
-  /*
-    while (1)
-    {
-
-    }
-
-  */
 
   /* cleanup_shared_memory(); */
   /* Never lunched this function ,this is caused from the while loop never
    * end's*/
-
+  exit(EXIT_SUCCESS);
   return 0;
 }

@@ -57,8 +57,8 @@ int main(int argc, char const *argv[])
   srand(time(NULL));
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
 
-  printf("[%s] QUEUEU : %d CREATED \n ", __FILE__, q_id);
-  for (i = 0; i < config.N_ATOMI_INIT; i++)
+  //printf("[%s] QUEUEU : %d CREATED \n ", __FILE__, q_id);
+  for (i = 0; i < config.N_ATOMI_INIT+config.N_NUOVI_ATOMI; i++)
   {
     send.m_type = 1;
     command = randomic_activation();
@@ -85,6 +85,6 @@ int main(int argc, char const *argv[])
     printf("%s\n",__FILE__);
   }
    */
-
+  exit(EXIT_SUCCESS);
   return 0;
 }

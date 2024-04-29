@@ -1,16 +1,5 @@
 #pragma once
-#ifndef TEST_ERROR
-#define TEST_ERROR                                                             \
-  if (errno)                                                                   \
-  {                                                                            \
-    fprintf(stderr, "%s:%d: PID=%5d: Error %d (%s)\n", __FILE__, __LINE__,     \
-	    getpid(), errno, strerror(errno));                                 \
-  }
-/* __LINE__ is a preprocessor macro that expands to current line number in the
-   source file, as an integer.
-     __LINE__ is useful when generating log statements
- */
- #endif 
+
 
 #ifndef _GNU_SOURCE /* Missing this baby :p */
 #define _GNU_SOURCE
@@ -28,7 +17,19 @@
 #include <sys/wait.h>
 
 #include "ipc.h"
+#ifndef TEST_ERROR
 
+#define TEST_ERROR                                                             \
+  if (errno)                                                                   \
+  {                                                                            \
+    fprintf(stderr, "%s:%d: PID=%5d: Error %d (%s)\n", __FILE__, __LINE__,     \
+	    getpid(), errno, strerror(errno));                                 \
+  }
+/* __LINE__ is a preprocessor macro that expands to current line number in the
+   source file, as an integer.
+     __LINE__ is useful when generating log statements
+ */
+ #endif 
 #define ATOM_PATH "./bin/atom"
 #define ACTIVATOR_PATH "./bin/activator"
 #define FUEL_PATH "./bin/fuel"

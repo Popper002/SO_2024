@@ -1,3 +1,5 @@
+
+
 #include "header/common.h"
 #include "header/ipc.h"
 #include <errno.h>
@@ -13,7 +15,8 @@ static int  q_stats;
 pid_t new_atom;
 static int shm_id;
 static key_t shm_key;
-
+#define NANO_SECOND_MULTIPLIER  1000000 
+struct timespec sleepValue = {0};
 void atom_argument_creator(char *argv[])
 {
   char n_atomi_init[10];
@@ -65,6 +68,7 @@ pid_t born_new_atom()
     break;
 
   default:
+
     waitpid(new_atom, NULL, 0);
     return new_atom;
     break;
@@ -84,7 +88,8 @@ void fetch_args_fuel(char const *argv[])
   int energy_explode_threshold = atoi(argv[7]);
   int ipc_shm_id = atoi(argv[8]);
   key_t ipc_key_shm = atoi(argv[9]);
-  argv[10] = NULL;
+  int step = atoi(argv[10]); 
+  argv[11] = NULL;
 
   config.N_ATOMI_INIT = n_atom_init;
   config.ENERGY_DEMAND = energy_demand;
@@ -93,6 +98,7 @@ void fetch_args_fuel(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
+  config.STEP = step;
   shm_id = ipc_shm_id;
   shm_key = ipc_key_shm;
 /* #ifdef _PRINT_TEST
@@ -151,20 +157,11 @@ int stampaStatoMemoria(int shid)
   }
 }
 
- #endif */
-void signal_handle(int signum)
-{
-  switch (signum)
-  {
-  case SIGALRM:
-    write(STDOUT_FILENO, "FUEL : FINISH CREATE NEW ATOM'S..BYE\n", 38);
-    shmctl(shm_id, IPC_RMID, NULL);
-    kill(getpid(), SIGTERM);
-    break;
 
-  default:
-    break;
-  }
+
+void start_atom(pid_t atom)
+{
+  killpg(atom,SIGCONT); 
 }
 double step_nanosec()
 {
@@ -174,7 +171,13 @@ double step_nanosec()
   retNsec = ts.tv_nsec;
   return retNsec;
 }
-/**
+
+
+
+
+
+
+/
  * inseriamo l'array di pid nuovo in memoria condivisa in modo da essere
  * condivisi con altri processi
  *   La chiave del nuovo segmento di memoria viene passata come argv dal master
@@ -183,27 +186,17 @@ double step_nanosec()
  * attacca ] [fuel scrive ] [ fuel detach ] i nuovi pid vengono letti dal master
  * in modo da sapere ogni STEP secondi le nuove nascite
  */
+
+
+
 int main(int argc, char const *argv[])
 {
   (void) argc;
   srand(time(NULL));
-  signal(SIGALRM, signal_handle);
-/* #ifdef _PRINT_TEST
-  printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
- #endif */
-
   
   fetch_args_fuel(argv);
-  config.STEP = step_nanosec();
-/* #ifdef _PRINT_TEST
-  fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);
- #endif */
-/* #ifdef _PRINT_TEST
-  print_ALL_IPC();
-  print_para_TEST();
-  fprintf(stdout, "NANOSEC VALUE :%ld\n", config.STEP);
-  // value_in_memory();
- #endif */
+
+
   q_stats = msgget(STATISTICS_KEY,IPC_CREAT|0666);
   if(q_stats < 0 ){fprintf(stderr,"[FUEL %d] ERROR MSGGET STATISTICS Q \n",getpid());exit(EXIT_FAILURE);} 
   shm_id = shmget(KEY_SHM, sizeof(config.N_NUOVI_ATOMI) ,IPC_CREAT | 0666);
@@ -212,70 +205,22 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "%s, error[%s] in shmget[LINE %d]\n",__FILE__,strerror(errno),__LINE__);
     exit(EXIT_FAILURE);
   }
-/* #ifdef _PRINT_TEST
-  printf(" [%s] [N_NUOVI_ATOMI : %d ]\n", __FILE__, config.N_NUOVI_ATOMI);
-#endif
-  atom_new_pid = (pid_t *)malloc(sizeof(pid_t) * config.N_ATOMI_INIT  );
-  if (atom_new_pid == NULL)
+
+pid_t atom_new; 
+
+sleepValue.tv_nsec = config.STEP *NANO_SECOND_MULTIPLIER; 
+while (1)
+{
+  for(int i =0 ; i<config.N_NUOVI_ATOMI;i++)
   {
-    fprintf(stdout, "malloc error %s", strerror(errno));
-    exit(EXIT_FAILURE);
+
+    atom_new=born_new_atom(); 
+    kill(atom_new,SIGCONT);
+    atom_new=0;
   }
-  // store__new_pid_atom();
->>
- // new_pid_atom->array = (shm_fuel * )
-  // malloc(sizeof(config.N_NUOVI_ATOMI)*sizeof(pid_t));
-  // alarm(config.STEP);
-   Indecisione o ogni STEP nanosecondi viene interpretato come Fuel runna fino
-  a STEP nanosecondi o lo facciamo dormire per STEP nonosecondi finchè non
-  finisce la simulazione
-  */
+   nanosleep(&sleepValue,NULL);
 
-  /*Altra idea STEP facciamo randomico numeri floating point compreso tra 0.N e
-   * 1,N */
+}
 
-  struct timespec ns_step, sec_step;
-  sec_step.tv_sec = config.STEP;
-  ns_step.tv_nsec = config.STEP * 1000000000;
-
-
-
-
-
-
-  while (1)
-  {
-  for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
-  {
-   // atom_new_pid[i] =
-     born_new_atom();
-    nanosleep(&ns_step, &sec_step);
-
-   // new_pid_atom = (shm_fuel *)shmat(shm_id, NULL, 0);
-  /* copiamo l'array di pid in memoria condivisa */
- // memcpy(new_pid_atom->array, atom_new_pid, sizeof(pid_t));
-  }
-
-/* #ifdef _PRINT_TEST
-  for (int l = 0; l < config.N_NUOVI_ATOMI; l++)
-  {
-    printf("\n[FUEL %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
-	   atom_new_pid[l], l);
-  }
-#endif
-  
-#ifdef _PRINT_TESPLEATE\n");
- #endif */
-  fflush(stdout);
-  /**
-  if (shmdt(new_pid_atom) < 0)
-  {
-    fprintf(stderr, "Shared memory ");
-   }
-  */
-  }
-/* #ifdef _PRINT_TEST
-  stampaStatoMemoria(shm_id);
- #endif */
   return 0;
 }
