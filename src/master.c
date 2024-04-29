@@ -1,16 +1,16 @@
 #include "header/atom.h"
 #include "header/common.h"
-#include "header/ipc.h" 
+#include "header/ipc.h"
 #include "util/my_sem_lib.h"
 #include <complex.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <sys/ipc.h>
-#include <sys/param.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ipc.h>
 #include <sys/msg.h>
+#include <sys/param.h>
 #include <sys/shm.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -77,76 +77,82 @@ void remove_ipc() {
 
     / Rimuove gli oggetti IPC solo se i processi sono terminati
     while ((waitpid(inhibitor_pid, &status, WNOHANG) > 0) &&
-           (waitpid(atom_pid, &status, WNOHANG) > 0) &&
-           (waitpid(fuel_pid, &status, WNOHANG) > 0))
+	   (waitpid(atom_pid, &status, WNOHANG) > 0) &&
+	   (waitpid(fuel_pid, &status, WNOHANG) > 0))
     {
-        remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); // Ottiene l'ID della coda da rimuovere
-        TEST_ERROR
-        rcv_id = msgget(STATISTICS_KEY, IPC_CREAT);
-        TEST_ERROR
-        fprintf(stdout, "[REMOVE_IPC QUEUE_ID: %d ]\n", remove_queue);
-        msgctl(remove_queue, IPC_RMID, NULL);
-        msgctl(rcv_id, IPC_RMID, NULL);
-        shmctl(shm_id, IPC_RMID, NULL);
-        fprintf(stdout, "REMOVED ALL IPC ITEMS\n");
+	remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); // Ottiene l'ID della coda
+da rimuovere TEST_ERROR rcv_id = msgget(STATISTICS_KEY, IPC_CREAT); TEST_ERROR
+	fprintf(stdout, "[REMOVE_IPC QUEUE_ID: %d ]\n", remove_queue);
+	msgctl(remove_queue, IPC_RMID, NULL);
+	msgctl(rcv_id, IPC_RMID, NULL);
+	shmctl(shm_id, IPC_RMID, NULL);
+	fprintf(stdout, "REMOVED ALL IPC ITEMS\n");
     }
 }*/
 
-void remove_ipc() {
-    int remove_queue;
-    //int status;
-    remove_queue = msgget(ATOMIC_KEY, IPC_CREAT|0666);
-    rcv_id = msgget(STATISTICS_KEY, IPC_CREAT|0666);
+void remove_ipc()
+{
+  int remove_queue;
+  // int status;
+  remove_queue = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  rcv_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
 
-        // Ottiene l'ID della coda di messaggi atomici
-        if (remove_queue < 0) {
-            fprintf(stderr, "Errore durante la creazione della coda di messaggi\n");
-            exit(EXIT_FAILURE);
-        }
+  if (remove_queue < 0)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+	    strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
 
-        // Rimuove la coda di messaggi atomici
-        if (msgctl(remove_queue, IPC_RMID, NULL) == -1) {
-            fprintf(stderr, "Errore durante la rimozione della coda di messaggi\n");
-            exit(EXIT_FAILURE);
-        }
+  if (msgctl(remove_queue, IPC_RMID, NULL) == -1)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+	    strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
 
-        // Ottiene l'ID della coda di messaggi di statistica
-        if (rcv_id < 0) {
-            fprintf(stderr, "Errore durante la creazione della coda di messaggi di statistica\n");
-            exit(EXIT_FAILURE);
-        }
+  if (rcv_id < 0)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+	    strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
 
-        // Rimuove la coda di messaggi di statistica
-        if (msgctl(rcv_id, IPC_RMID, NULL) == -1) {
-            fprintf(stderr, "Errore durante la rimozione della coda di messaggi di statistica\n");
-            exit(EXIT_FAILURE);
-        }
+  if (msgctl(rcv_id, IPC_RMID, NULL) == -1)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+	    strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
 
-        // Rimuove la memoria condivisa
-        if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
-            fprintf(stderr, "Errore durante la rimozione della memoria condivisa\n");
-            exit(EXIT_FAILURE);
-        }
+  if (shmctl(shm_id, IPC_RMID, NULL) == -1)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+	    strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
 
-        fprintf(stdout, "RIMOSSE TUTTE LE RISORSE IPC\n");
-    
-    
-        if (msgctl(remove_queue, IPC_RMID, NULL) == -1) {
-            fprintf(stderr, "Errore durante la rimozione della coda di messaggi\n");
-            exit(EXIT_FAILURE);
-        }
-            // Rimuove la coda di messaggi di statistica
-        if (msgctl(rcv_id, IPC_RMID, NULL) == -1) {
-            fprintf(stderr, "Errore durante la rimozione della coda di messaggi di statistica\n");
-            exit(EXIT_FAILURE);
-        }
+  fprintf(stdout, "Removed all ipc object\n");
 
-        // Rimuove la memoria condivisa
-        if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
-            fprintf(stderr, "Errore durante la rimozione della memoria condivisa\n");
-            exit(EXIT_FAILURE);
-        }
-        
+  if (msgctl(remove_queue, IPC_RMID, NULL) == -1)
+  {
+    fprintf(stderr, "Error in removing ipc object  %s %s %d\n", __FILE__,
+	    strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
+  if (msgctl(rcv_id, IPC_RMID, NULL) == -1)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+	    strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
+
+  if (shmctl(shm_id, IPC_RMID, NULL) == -1)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+	    strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
 }
 
 int why_term(enum term_reason term_reason)
@@ -314,7 +320,7 @@ static void fuel_argument_ipc(char *argv[])
   sprintf(n_nuovi_atomi, "%d", config.N_NUOVI_ATOMI);
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
-  sprintf(step,"%ld",config.STEP);
+  sprintf(step, "%ld", config.STEP);
   /* ipc */
   char ipc_shm_id_[10];
   char ipc_shm_key_[10];
@@ -335,7 +341,7 @@ static void fuel_argument_ipc(char *argv[])
   argv[8] = strdup(shm_id_str);
   argv[9] = strdup(key_shm_str);
 
-  argv[10]=strdup(step);
+  argv[10] = strdup(step);
   argv[11] = NULL;
 }
 
@@ -393,7 +399,7 @@ pid_t fuel_generator(void)
 
 pid_t atom_gen(void)
 {
-  int status; 
+  int status;
   switch (atom_pid = fork())
   {
   case -1:
@@ -410,8 +416,8 @@ pid_t atom_gen(void)
     break;
 
   default:
-    
-    waitpid(atom_pid,&status,WNOHANG); 
+
+    waitpid(atom_pid, &status, WNOHANG);
     return atom_pid;
     break;
   }
@@ -467,11 +473,11 @@ void store_pid_atom()
   free(atom_array_pid);
 }
 
-
 /**
-  sizeof(int *) / sizeof(int) gives a warning with -Wall, so we had to use new way to compute the size of atom_array_pid
-  https://arjunsreedharan.org/post/69303442896/how-to-find-the-size-of-an-array-in-c-without 
-  here there is an explanation on why this work 
+  sizeof(int *) / sizeof(int) gives a warning with -Wall, so we had to use new
+  way to compute the size of atom_array_pid
+  https://arjunsreedharan.org/post/69303442896/how-to-find-the-size-of-an-array-in-c-without
+  here there is an explanation on why this work
 */
 void handle_signal(int signum)
 {
@@ -479,7 +485,7 @@ void handle_signal(int signum)
   {
   case SIGINT:
     write(STDOUT_FILENO, "SIGINT_HANDLE\n", 15);
-    int length = (&atom_array_pid)[1]-atom_array_pid ;
+    int length = (&atom_array_pid)[1] - atom_array_pid;
     for (int pid = 0; pid < length; pid++)
     {
       kill(atom_array_pid[pid], SIGINT);
@@ -493,22 +499,21 @@ void handle_signal(int signum)
     write(STDOUT_FILENO, "\t\tALARM : IT'S TIME TO STOP\n", 29);
     write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
 
-    
     killpg(*atom_array_pid, SIGKILL);
     killpg(activator_pid, SIGKILL);
     killpg(inhibitor_pid, SIGKILL);
     killpg(fuel_pid, SIGKILL);
-    write(STDOUT_FILENO,"PRIMA DI REMOVE STO CAZZO DI IPC\n",34);
+    write(STDOUT_FILENO, "PRIMA DI REMOVE STO CAZZO DI IPC\n", 34);
     remove_ipc();
     // total_print();
-  
+
     write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
     exit(EXIT_SUCCESS);
 
     break;
-    case SIGCHLD: 
-      wait(NULL);
-      break;
+  case SIGCHLD:
+    wait(NULL);
+    break;
   default:
     break;
   }
@@ -517,16 +522,14 @@ void handle_signal(int signum)
 void start_atom()
 {
   printf("\033[1;32m starting atom as last process \033[0m\n");
-  
+
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(atom_array_pid[i], SIGCONT);
-  
   }
-    /*#ifdef __PRINT_TEST
-	printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
-    #endif */
-  
+  /*#ifdef __PRINT_TEST
+      printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
+  #endif */
 }
 
 // use sigint to start and stop the inhibitor
@@ -586,27 +589,27 @@ void total_print(void)
   num_activation_last_sec += rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 2, IPC_NOWAIT);
   energy_produced += rcv_stats.data;
-  
+
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 3, IPC_NOWAIT);
   total_nuclear_waste = rcv_stats.data;
 
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 5, IPC_NOWAIT);
   energy_absorbed += rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 6, IPC_NOWAIT);
-   statistics_data.num_energy_consumed_inhibitor_last_sec +=
-      rcv_stats.data;
+  statistics_data.num_energy_consumed_inhibitor_last_sec += rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 7, IPC_NOWAIT);
   inhibitor_balance += rcv_stats.data;
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 8, IPC_NOWAIT);
   num_fission_last_sec += rcv_stats.data;
 
-  statistics_data.num_energy_consumed_last_sec = energy_produced - config.ENERGY_DEMAND;
+  statistics_data.num_energy_consumed_last_sec =
+      energy_produced - config.ENERGY_DEMAND;
   if (energy_produced < 0)
   {
     why_term(BLACKOUT);
   }
 
-if (energy_produced > config.ENERGY_EXPLODE_THRESHOLD)
+  if (energy_produced > config.ENERGY_EXPLODE_THRESHOLD)
   {
     why_term(EXPLODE);
   }
@@ -619,7 +622,8 @@ if (energy_produced > config.ENERGY_EXPLODE_THRESHOLD)
     printf("| %-20s %d\n", "ENERGY ABSORBED IN INHIBITOR",
 	   inhibitor_energy_consumed);
   }
-  printf("| %-20s %d\n", "ENERGY CONSUMED",statistics_data.num_energy_consumed_last_sec);
+  printf("| %-20s %d\n", "ENERGY CONSUMED",
+	 statistics_data.num_energy_consumed_last_sec);
   printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
   printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
   printf("|===========================|\n\n");
@@ -711,7 +715,7 @@ int main(void)
 
   srand(time(NULL));
   signal(SIGALRM, handle_signal);
-  signal(SIGCHLD,handle_signal);
+  signal(SIGCHLD, handle_signal);
   /*
   signal(SIGUSR1, inhibitor_handle);
   signal(SIGUSR2, inhibitor_handle);
@@ -719,7 +723,7 @@ int main(void)
 
   char file_path[100];
   printf("Insert the configuration path: <src/config/file_name.txt> \n");
-  scanf("%s",file_path);
+  scanf("%s", file_path);
   scan_data(file_path);
 
   /* #ifdef _PRINT_TEST
@@ -774,7 +778,6 @@ int main(void)
   }
   fprintf(stdout, "\nMaster: [PID %d] is starting the simulation\n", getpid());
   alarm(config.SIM_DURATION);
-
 
   start_atom();
 
