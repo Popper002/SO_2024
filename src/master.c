@@ -191,12 +191,12 @@ int why_term(enum term_reason term_reason)
   }
 }
 
-static int scan_data()
+static int scan_data(char *file_path)
 {
   int value;
   char name_param[500];
   int error = 1;
-  FILE *fp = fopen(CONFIG_PATH, "r");
+  FILE *fp = fopen(file_path, "r");
   if (fp == NULL)
   {
     fprintf(stderr, "%d\n", errno);
@@ -717,7 +717,10 @@ int main(void)
   signal(SIGUSR2, inhibitor_handle);
    */
 
-  scan_data();
+  char file_path[100];
+  printf("Insert the configuration path: <src/config/file_name.txt> \n");
+  scanf("%s",file_path);
+  scan_data(file_path);
 
   /* #ifdef _PRINT_TEST
    // print_para_TEST(config);
