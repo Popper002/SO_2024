@@ -60,7 +60,11 @@ static int energy_free(int atomic_a1, int atomic_a2)
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
 
-void meltdown_simulation() { kill(master_pid, SIGUSR1); }
+void meltdown_simulation()
+{
+  printf("sending signal SIGUSR1 to master\n");
+  kill(master_pid, SIGUSR1);
+}
 
 int atom_fission(struct atom *atom, struct config config)
 {
@@ -106,6 +110,8 @@ int atom_fission(struct atom *atom, struct config config)
 				// starting atomic number
       child2_atomic_number = atom->atomic_number - child1_atomic_number;
 
+printf("\t master pid is: %d\n", master_pid);
+      meltdown_simulation();
       /* #ifdef _PRINT_TEST
 	    printf("child1 atomic number %d\n", child1_atomic_number);
 	    printf("child2 atomic number %d\n", child2_atomic_number);
@@ -117,8 +123,7 @@ int atom_fission(struct atom *atom, struct config config)
       {
 	insert_value_in_shm(energy_released);
       }
-      printf("\t master pid is: %d",master_pid);
-      meltdown_simulation();
+      
       /*
 	printf("energy released %d\n", energy_released);
 	printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
@@ -175,6 +180,7 @@ int main(int argc, char const *argv[])
   signal(SIGCHLD, handler_signal);
   atom.pid = getpid();
   stat_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
+  signal(SIGUSR1,meltdown_simulation);
   if (stat_id < 0)
   {
     fprintf(stderr, "%s Error in msgget: %s>\n", __FILE__, strerror(errno));

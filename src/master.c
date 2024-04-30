@@ -489,6 +489,7 @@ void handle_signal(int signum)
     }
     break;
   case SIGUSR1:
+    why_term(MELTDOWN);
     break;
   case SIGALRM:
 
@@ -531,6 +532,7 @@ void start_atom()
 
 void meltdown_signal()
 {
+  printf("Received SIGUSR1 signal\n");
   why_term(MELTDOWN);
 }
 
@@ -718,7 +720,7 @@ int main(void)
   srand(time(NULL));
   signal(SIGALRM, handle_signal);
   signal(SIGCHLD, handle_signal);
-  signal(SIGUSR1,meltdown_signal);
+  signal(SIGUSR1,handle_signal);
 
   /*
   signal(SIGUSR1, inhibitor_handle);

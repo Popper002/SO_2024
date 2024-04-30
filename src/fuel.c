@@ -64,7 +64,9 @@ pid_t born_new_atom()
     execvp(ATOM_PATH, (char **)new_atom_args);
     fprintf(stderr, "%s line: %d[master %s Problem in execvp with pid %d \n",
 	    __func__, __LINE__, __FILE__, getpid());
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    return new_atom;
+
     break;
 
   default:
