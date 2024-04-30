@@ -155,40 +155,34 @@ void remove_ipc()
   }
 }
 
+void kill_them_all()
+{
+  killpg(*atom_array_pid, SIGKILL);
+  killpg(activator_pid, SIGKILL);
+  killpg(inhibitor_pid, SIGKILL);
+  killpg(fuel_pid, SIGKILL);
+}
+
 int why_term(enum term_reason term_reason)
 {
   switch (term_reason)
   {
   case EXPLODE:
-
+    kill_them_all();
     remove_ipc();
-    killpg(*atom_array_pid, SIGKILL);
-    killpg(activator_pid, SIGKILL);
-    killpg(inhibitor_pid, SIGKILL);
-    killpg(fuel_pid, SIGKILL);
-    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED - EXPLODE TERMINATION\n",
-	  49);
+    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED\n",27);
     exit(EXIT_FAILURE);
     break;
   case BLACKOUT:
-
     write(STDOUT_FILENO, "BLACKOUT- NOT ENOUGH ENERGY\n", 29);
+    kill_them_all();
     remove_ipc();
-    killpg(*atom_array_pid, SIGKILL);
-    killpg(activator_pid, SIGKILL);
-    killpg(inhibitor_pid, SIGKILL);
-    killpg(fuel_pid, SIGKILL);
     exit(EXIT_FAILURE);
     break;
   case MELTDOWN:
-
-    write(STDOUT_FILENO, "MELTDOWN - FORK-ERROR -TERMINATION\n", 36);
+    write(STDOUT_FILENO, "MELTDOWN - FORK-ERROR \n", 24);
     remove_ipc();
-    killpg(*atom_array_pid, SIGKILL);
-    killpg(activator_pid, SIGKILL);
-    killpg(inhibitor_pid, SIGKILL);
-    killpg(fuel_pid, SIGKILL);
-    killpg(*rcv_pid->array, SIGKILL);
+    kill_them_all();
     exit(EXIT_FAILURE);
     break;
   default:
@@ -284,6 +278,7 @@ static void argument_creator(char *argv[])
   char n_nuovi_atomi[10];
   char sim_duration[10];
   char energy_explode_threshold[10];
+  char master_pid[10];
   // char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
@@ -292,6 +287,7 @@ static void argument_creator(char *argv[])
   sprintf(n_nuovi_atomi, "%d", config.N_NUOVI_ATOMI);
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
+  sprintf(master_pid,"%d",getpid());
   argv[1] = strdup(n_atomi_init);
   argv[2] = strdup(energy_demand);
   argv[3] = strdup(n_atom_max);
@@ -299,7 +295,8 @@ static void argument_creator(char *argv[])
   argv[5] = strdup(n_nuovi_atomi);
   argv[6] = strdup(sim_duration);
   argv[7] = strdup(energy_explode_threshold);
-  argv[8] = NULL;
+  argv[8] = strdup(master_pid);
+  argv[9] = NULL;
 }
 static void fuel_argument_ipc(char *argv[])
 {
@@ -532,6 +529,11 @@ void start_atom()
   #endif */
 }
 
+void meltdown_signal()
+{
+  why_term(MELTDOWN);
+}
+
 // use sigint to start and stop the inhibitor
 void inhibitor_handle(int signum)
 {
@@ -543,7 +545,7 @@ void inhibitor_handle(int signum)
       write(STDOUT_FILENO, "STOPPED INHIBITOR\n", 19);
       is_inhibitor_running = false;
     }
-   else
+    else
     {
       kill(inhibitor_pid, SIGCONT);
       write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
@@ -715,7 +717,8 @@ int main(void)
 
   srand(time(NULL));
   signal(SIGALRM, handle_signal);
-  signal(SIGCHLD,handle_signal);
+  signal(SIGCHLD, handle_signal);
+  signal(SIGUSR1,meltdown_signal);
 
   /*
   signal(SIGUSR1, inhibitor_handle);
@@ -725,7 +728,12 @@ int main(void)
   char file_path[100];
   printf("Insert the configuration path: <src/config/file_name.txt> \n");
   scanf("%s", file_path);
-  scan_data(file_path);
+  if(access(file_path, F_OK) == 0){
+    scan_data(file_path);
+  } else{ 
+    printf("wrong file path \n");
+    exit(EXIT_FAILURE);
+  }
 
   /* #ifdef _PRINT_TEST
    // print_para_TEST(config);
