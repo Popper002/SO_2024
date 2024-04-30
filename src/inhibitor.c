@@ -73,23 +73,24 @@ void fetch_args_inhibitor(char const *argv[])
     printf("[INEBITORE %d] {FETCHED ARGV COMPLEATE\n}", getpid());
    #endif */
 }
-void signal_handle(int signum) {
-  switch (signum) {
-    case SIGINT:
-      if (running_flag) {
-        write(STDOUT_FILENO, "INHIBITOR - STOPPED\n", 21);
-        kill(inhibitor_pid, SIGSTOP);
-        running_flag = false;
-      } else {
-        write(STDOUT_FILENO, "INHIBITOR - RESTART\n", 21);
-        kill(inhibitor_pid, SIGCONT);
-        running_flag = true;
-      }
-      break;
-    default:
-      break;
+void signal_handle(int signum)
+{
+  if (signum == SIGINT)
+  {
+    if (running_flag)
+    {
+      //kill(inhibitor_pid, SIGSTOP);
+      write(STDOUT_FILENO, "STOPPED INHIBITOR\n", 19);
+      running_flag = false;
+    }
+   else
+    {
+      //kill(inhibitor_pid, SIGCONT);
+      write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
+      running_flag = true;
+    }
   }
-}
+} 
 
 int main(int argc, char const *argv[])
 {
@@ -97,7 +98,7 @@ int main(int argc, char const *argv[])
 
     printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
    #endif */
-  int inhibitor_command;
+  int inhibitor_command=0;
   int balance = 0;
 inhibitor_pid = getpid(); 
   signal(SIGINT,signal_handle);
@@ -133,33 +134,37 @@ inhibitor_pid = getpid();
     for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
     {
 
-      inhibitor_command = fission_flag();
+
       /* #ifdef _PRINT_TEST
       fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND
       %d>\n",getpid(),inhibitor_command); #endif */
       /* convert command in to string ,inside the msg_buffer*/
       inhibitor_send.m_type = 1;
       sprintf(inhibitor_send.text, "%d", inhibitor_command);
-      if (msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
-		 0) < 0)
+      //if (
+        msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
+		 0);
+     /*< 0)
       {
 	fprintf(stderr, "%s %s ,ERRNO:%s PID=%d,at line: %d\n", __FILE__,
 		__func__, strerror(errno), getpid(), __LINE__);
 	exit(EXIT_FAILURE);
       }
-
+*/
       if (inhibitor_command == 0)
 	balance++;
 
       inhibitor_stats_send.data = balance;
       inhibitor_stats_send.m_type = 7;
-      if (msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send),
-		 0) < 0)
-      { // FIXME: identifier removed error
+      //if (
+        msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send),
+		 0);
+     /*) < 0)
+      {  FIXME: identifier removed error
 	fprintf(stderr, "%s %s ,ERRNO:%s PID=%d, at line:%d \n", __FILE__,
 		__func__, strerror(errno), getpid(), __LINE__);
 	exit(EXIT_FAILURE);
-      }
+      }*/
 
       /* #ifdef _PRINT_TEST
 	  printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
