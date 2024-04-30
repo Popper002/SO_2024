@@ -4,11 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/msg.h>
+#include <stdbool.h>
 int msg_id, stat_id;
 struct mes inhibitor_send;
 struct message inhibitor_stats_send;
 struct config config;
+pid_t inhibitor_pid; 
 struct statistics *inhibitor_stats;
+static bool running_flag = true; 
 /* Possibile idea :
     questo processo pusha in message queue ogni tot nanosecondi degli zeri ,in
    modo da limitare le fissioni il tutto sincronizzato con l'attivatore in modo
@@ -70,6 +73,23 @@ void fetch_args_inhibitor(char const *argv[])
     printf("[INEBITORE %d] {FETCHED ARGV COMPLEATE\n}", getpid());
    #endif */
 }
+void signal_handle(int signum) {
+  switch (signum) {
+    case SIGINT:
+      if (running_flag) {
+        write(STDOUT_FILENO, "INHIBITOR - STOPPED\n", 21);
+        kill(inhibitor_pid, SIGSTOP);
+        running_flag = false;
+      } else {
+        write(STDOUT_FILENO, "INHIBITOR - RESTART\n", 21);
+        kill(inhibitor_pid, SIGCONT);
+        running_flag = true;
+      }
+      break;
+    default:
+      break;
+  }
+}
 
 int main(int argc, char const *argv[])
 {
@@ -79,7 +99,9 @@ int main(int argc, char const *argv[])
    #endif */
   int inhibitor_command;
   int balance = 0;
-
+inhibitor_pid = getpid(); 
+  signal(SIGINT,signal_handle);
+  signal(SIGUSR2,signal_handle);  
   if (argc < 8)
   {
     fprintf(stderr, "[%s] Not enoough arguments", __FILE__);

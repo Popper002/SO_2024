@@ -543,7 +543,7 @@ void inhibitor_handle(int signum)
       write(STDOUT_FILENO, "STOPPED INHIBITOR\n", 19);
       is_inhibitor_running = false;
     }
-    else
+   else
     {
       kill(inhibitor_pid, SIGCONT);
       write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
@@ -715,7 +715,8 @@ int main(void)
 
   srand(time(NULL));
   signal(SIGALRM, handle_signal);
-  signal(SIGCHLD, handle_signal);
+  signal(SIGCHLD,handle_signal);
+
   /*
   signal(SIGUSR1, inhibitor_handle);
   signal(SIGUSR2, inhibitor_handle);
@@ -748,6 +749,7 @@ int main(void)
     printf("inhbitor pid is: %d", inhibitor_pid);
     printf("\tInhibitor started\n");
     signal(SIGINT, inhibitor_handle);
+    signal(SIGUSR2, inhibitor_handle);
   }
   store_pid_atom();
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
