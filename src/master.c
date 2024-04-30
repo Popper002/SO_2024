@@ -489,6 +489,7 @@ void handle_signal(int signum)
     }
     break;
   case SIGUSR1:
+    printf("signal sigusr1 received");
     why_term(MELTDOWN);
     break;
   case SIGALRM:
@@ -528,12 +529,6 @@ void start_atom()
   /*#ifdef __PRINT_TEST
       printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
   #endif */
-}
-
-void meltdown_signal()
-{
-  printf("Received SIGUSR1 signal\n");
-  why_term(MELTDOWN);
 }
 
 // use sigint to start and stop the inhibitor
