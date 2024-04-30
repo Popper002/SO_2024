@@ -8,10 +8,10 @@
 struct atom atom;
 static struct mes rcv;
 struct config config;
+int master_pid;
 struct statistics stats;
 int stat_id;
 static struct message send_stats;
-
 
 void fetch_args_atom(char const *argv[])
 {
@@ -22,7 +22,8 @@ void fetch_args_atom(char const *argv[])
   int n_nuovi_atomi = atoi(argv[5]);
   int sim_duration = atoi(argv[6]);
   int energy_explode_threshold = atoi(argv[7]);
-  argv[8] = NULL;
+  master_pid = atoi(argv[8]);
+  argv[9] = NULL;
 
   config.N_ATOMI_INIT = n_atom_init;
   config.ENERGY_DEMAND = energy_demand;
@@ -52,7 +53,6 @@ void insert_value_in_shm(int energy_released)
   }
   *shm = energy_released;
   shmdt(shm);
-
 }
 
 static int energy_free(int atomic_a1, int atomic_a2)
@@ -60,46 +60,50 @@ static int energy_free(int atomic_a1, int atomic_a2)
   return atomic_a1 * atomic_a2 - MAX((int)atomic_a1, (int)atomic_a2);
 }
 
+void meltdown_simulation() { kill(master_pid, SIGUSR1); }
+
 int atom_fission(struct atom *atom, struct config config)
 {
-
 
   statistics_data.total_nuclear_waste_last_sec = 0;
   int child1_atomic_number, child2_atomic_number;
   if (atom->atomic_number <= config.MIN_A_ATOMICO)
-    // fprintf(stdout, "Starting fissioning atom....\n");
+  // fprintf(stdout, "Starting fissioning atom....\n");
   {
-    // fprintf(stderr, "Atom with %d as atomic number can't be fissioned\n",atom->atomic_number);
-    send_stats.m_type=3;
+    // fprintf(stderr, "Atom with %d as atomic number can't be
+    // fissioned\n",atom->atomic_number);
+    send_stats.m_type = 3;
     statistics_data.total_nuclear_waste_last_sec++;
     send_stats.data = stats.total_nuclear_waste_last_sec;
     msgsnd(stat_id, &send_stats, sizeof(int), 0);
-    // fprintf(stdout, "\nATOM_SEND_STATS ID:%d,<WASTE %s>\n", stat_id,send_stats.text);
+    // fprintf(stdout, "\nATOM_SEND_STATS ID:%d,<WASTE %s>\n",
+    // stat_id,send_stats.text);
   }
   if (atom->atomic_flag == 1)
-  { 
-    send_stats.m_type=8;
-    statistics_data.num_fission_last_sec ++ ;
-    send_stats.data=statistics_data.num_fission_last_sec;
-    msgsnd(stat_id,&send_stats,sizeof(int),0);
-
-
+  {
+    send_stats.m_type = 8;
+    statistics_data.num_fission_last_sec++;
+    send_stats.data = statistics_data.num_fission_last_sec;
+    msgsnd(stat_id, &send_stats, sizeof(int), 0);
 
     pid_t atom_child = fork();
-   
+
     switch (atom_child)
     {
     case -1:
-      return -1;
+      meltdown_simulation();
       break;
     case 0:
-      send_stats.m_type=1;
+      send_stats.m_type = 1;
       statistics_data.num_activation_last_sec++;
-      send_stats.data=   statistics_data.num_activation_last_sec;
+      send_stats.data = statistics_data.num_activation_last_sec;
       msgsnd(stat_id, &send_stats, sizeof(int), 0);
-      // fprintf(stdout, "ATOM_SEND_STATS ID:%d,<ACTIVATION %s>\n", stat_id,send_stats.text);
+      // fprintf(stdout, "ATOM_SEND_STATS ID:%d,<ACTIVATION %s>\n",
+      // stat_id,send_stats.text);
 
-      child1_atomic_number = rand() % (atom->atomic_number - 1) + 1; // -1 and +1 so we are sure to not exceed the starting atomic number
+      child1_atomic_number = rand() % (atom->atomic_number - 1) +
+			     1; // -1 and +1 so we are sure to not exceed the
+				// starting atomic number
       child2_atomic_number = atom->atomic_number - child1_atomic_number;
 
       /* #ifdef _PRINT_TEST
@@ -107,22 +111,25 @@ int atom_fission(struct atom *atom, struct config config)
 	    printf("child2 atomic number %d\n", child2_atomic_number);
        #endif */
 
-      int energy_released = energy_free(child1_atomic_number, child2_atomic_number);
-      if(config.INHIBITOR == 1)
+      int energy_released =
+	  energy_free(child1_atomic_number, child2_atomic_number);
+      if (config.INHIBITOR == 1)
       {
-        insert_value_in_shm(energy_released);
+	insert_value_in_shm(energy_released);
       }
-    /*
-      printf("energy released %d\n", energy_released);
-      printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
-	     __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
-	     energy_released);
-       */
-      send_stats.m_type=2;
+      printf("\t master pid is: %d",master_pid);
+      meltdown_simulation();
+      /*
+	printf("energy released %d\n", energy_released);
+	printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
+	       __FILE__, getpid(), child1_atomic_number, child2_atomic_number,
+	       energy_released);
+	 */
+      send_stats.m_type = 2;
       send_stats.data = energy_released;
       msgsnd(stat_id, &send_stats, sizeof(int), 0);
       exit(EXIT_SUCCESS);
-      return 0 ; 
+      return 0;
       break;
 
     default:
@@ -130,10 +137,9 @@ int atom_fission(struct atom *atom, struct config config)
 	    printf("father process, TODO\n");
        #endif */
       break;
-
     }
   }
-  return 0; 
+  return 0;
 }
 
 void handler_signal(int signum)
@@ -141,9 +147,9 @@ void handler_signal(int signum)
   switch (signum)
   {
   case SIGCHLD:
-      wait(NULL);
+    wait(NULL);
     break;
-  
+
   default:
     break;
   }
@@ -166,7 +172,7 @@ int main(int argc, char const *argv[])
 {
   (void)argc;
   srand(time(NULL));
-  signal(SIGCHLD,handler_signal);
+  signal(SIGCHLD, handler_signal);
   atom.pid = getpid();
   stat_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
   if (stat_id < 0)
@@ -181,7 +187,7 @@ int main(int argc, char const *argv[])
   fetch_args_atom(argv);
 
   rcv.m_type = 1;
-  //kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
+  // kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
 
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL);
   /* #ifdef _PRINT_TEST
@@ -208,7 +214,7 @@ int main(int argc, char const *argv[])
  #endif */
 
   atom.atomic_flag = atoi(rcv.text);
-  
+
   /* #ifdef _PRINT_TEST
     printf("ATOM FLAG IS %d FOR ATOM %d\n", atom.atomic_flag, atom.pid);
     printf("atom.atomic_number %d\n", atom.atomic_number);
@@ -219,7 +225,6 @@ int main(int argc, char const *argv[])
 	  atom.atomic_number);*/
 
   atom_fission(&atom, config);
-
 
   /* cleanup_shared_memory(); */
   /* Never lunched this function ,this is caused from the while loop never
