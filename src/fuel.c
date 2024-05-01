@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/msg.h>
+
+#define NANO_SECOND_MULTIPLIER  1000000 
+
 struct config config;
 struct message send_stats;
 char **new_atom_args[100];
@@ -15,9 +18,8 @@ static int  q_stats;
 pid_t new_atom;
 static int shm_id;
 static key_t shm_key;
-#define NANO_SECOND_MULTIPLIER  1000000 
 struct timespec sleepValue = {0};
-int master_pid;
+pid_t master_pid;
 
 void atom_argument_creator(char *argv[])
 {
@@ -53,6 +55,7 @@ pid_t born_new_atom()
   {
   case -1:
     kill(master_pid,SIGUSR1);
+    break;
   case 0:
 /* #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
@@ -76,6 +79,7 @@ pid_t born_new_atom()
     return new_atom;
     break;
   }
+  return new_atom;
 }
  
 
