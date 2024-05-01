@@ -296,7 +296,7 @@ static void argument_creator(char *argv[])
   argv[6] = strdup(sim_duration);
   argv[7] = strdup(energy_explode_threshold);
   argv[8] = strdup(master_pid);
-  argv[9] = NULL;
+  argv[10] = NULL;
 }
 static void fuel_argument_ipc(char *argv[])
 {
@@ -309,6 +309,7 @@ static void fuel_argument_ipc(char *argv[])
   char sim_duration[10];
   char energy_explode_threshold[10];
   char step[10];
+  char master_pid[10];
   // char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
@@ -318,6 +319,7 @@ static void fuel_argument_ipc(char *argv[])
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
   sprintf(step, "%ld", config.STEP);
+  sprintf(master_pid,"%d",getpid());
   /* ipc */
   char ipc_shm_id_[10];
   char ipc_shm_key_[10];
@@ -339,7 +341,8 @@ static void fuel_argument_ipc(char *argv[])
   argv[9] = strdup(key_shm_str);
 
   argv[10] = strdup(step);
-  argv[11] = NULL;
+  argv[11] = strdup(master_pid);
+  argv[12] = NULL;
 }
 
 pid_t inhibitor(void)
@@ -366,6 +369,7 @@ pid_t inhibitor(void)
   }
   return inhibitor_pid;
 }
+
 pid_t fuel_generator(void)
 {
   pid_t fuel_pid;
@@ -422,7 +426,6 @@ pid_t atom_gen(void)
 }
 pid_t activator(void)
 {
-
   switch (activator_pid = fork())
   {
   case -1:

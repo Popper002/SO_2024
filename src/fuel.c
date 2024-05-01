@@ -17,6 +17,8 @@ static int shm_id;
 static key_t shm_key;
 #define NANO_SECOND_MULTIPLIER  1000000 
 struct timespec sleepValue = {0};
+int master_pid;
+
 void atom_argument_creator(char *argv[])
 {
   char n_atomi_init[10];
@@ -50,8 +52,7 @@ pid_t born_new_atom()
   switch (new_atom = fork())
   {
   case -1:
-    TEST_ERROR;
-    exit(EXIT_FAILURE);
+    kill(master_pid,SIGUSR1);
   case 0:
 /* #ifdef _PRINT_TEST
     printf(" %s %d ,%s\n", __FILE__, getpid(), __func__);
@@ -91,7 +92,8 @@ void fetch_args_fuel(char const *argv[])
   int ipc_shm_id = atoi(argv[8]);
   key_t ipc_key_shm = atoi(argv[9]);
   int step = atoi(argv[10]); 
-  argv[11] = NULL;
+  master_pid = atoi(argv[11]);
+  argv[12] = NULL;
 
   config.N_ATOMI_INIT = n_atom_init;
   config.ENERGY_DEMAND = energy_demand;
