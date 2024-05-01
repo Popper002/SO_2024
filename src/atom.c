@@ -111,7 +111,7 @@ int atom_fission(struct atom *atom, struct config config)
       child2_atomic_number = atom->atomic_number - child1_atomic_number;
 
 printf("\t master pid is: %d\n", master_pid);
-      meltdown_simulation();
+      meltdown_simulation(); //TODO: remove this, that's there just as test 
       /* #ifdef _PRINT_TEST
 	    printf("child1 atomic number %d\n", child1_atomic_number);
 	    printf("child2 atomic number %d\n", child2_atomic_number);
