@@ -501,10 +501,7 @@ void handle_signal(int signum)
     write(STDOUT_FILENO, "\t\tALARM : IT'S TIME TO STOP\n", 29);
     write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
 
-    killpg(*atom_array_pid, SIGKILL);
-    killpg(activator_pid, SIGKILL);
-    killpg(inhibitor_pid, SIGKILL);
-    killpg(fuel_pid, SIGKILL);
+    kill_them_all();
     write(STDOUT_FILENO, "PRIMA DI REMOVE STO CAZZO DI IPC\n", 34);
     remove_ipc();
     // total_print();
