@@ -172,7 +172,7 @@ int why_term(enum term_reason term_reason)
   case TIMEOUT:
     kill_them_all();
     remove_ipc();
-    write(STDOUT_FILENO, "TIMEOUT TIME ELAPSED\n", 22);
+    write(STDOUT_FILENO, "\nTIMEOUT TIME ELAPSED\n", 22);
     exit(EXIT_SUCCESS);
     break;
   default:
