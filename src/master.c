@@ -4,6 +4,7 @@
 #include "util/my_sem_lib.h"
 #include <complex.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -140,9 +141,9 @@ void kill_them_all()
 {
   killpg(*atom_array_pid, SIGKILL);
   killpg(activator_pid, SIGKILL);
-  killpg(inhibitor_pid, SIGKILL);
+  kill(inhibitor_pid, SIGKILL);
   write(STDIN_FILENO,"killed inhibitor\n",18);
-  killpg(fuel_pid, SIGKILL);
+  kill(fuel_pid, SIGKILL);
   write(STDIN_FILENO,"killed fuel\n",13);
 }
 
