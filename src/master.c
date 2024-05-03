@@ -141,7 +141,9 @@ void kill_them_all()
   killpg(*atom_array_pid, SIGKILL);
   killpg(activator_pid, SIGKILL);
   killpg(inhibitor_pid, SIGKILL);
+  write(STDIN_FILENO,"killed inhibitor\n",18);
   killpg(fuel_pid, SIGKILL);
+  write(STDIN_FILENO,"killed fuel\n",13);
 }
 
 int why_term(enum term_reason term_reason)
@@ -559,7 +561,7 @@ void total_print(void)
   rcv_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
   if (rcv_id < 0)
   {
-    fprintf(stderr, "[MASTER] ERROR MSGGET\n");STDOUT_FILENO
+    fprintf(stderr, "[MASTER] ERROR MSGGET\n");
     exit(EXIT_FAILURE);
   }
 
@@ -729,10 +731,11 @@ int main(void)
    #endif */
 
   fuel_pid = fuel_generator();
+  printf("fuel pid is: %d\n",fuel_pid);
   if (config.INHIBITOR == 1)
   {
     inhibitor_pid = inhibitor();
-    printf("inhbitor pid is: %d", inhibitor_pid);
+    printf("inhbitor pid is: %d\n", inhibitor_pid);
     printf("\tInhibitor started\n");
     signal(SIGINT, inhibitor_handle);
     signal(SIGUSR2, inhibitor_handle);
