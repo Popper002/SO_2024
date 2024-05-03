@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/msg.h>
 #include <sys/shm.h>
+#include <unistd.h>
 struct atom atom;
 static struct mes rcv;
 struct config config;
@@ -62,7 +63,7 @@ static int energy_free(int atomic_a1, int atomic_a2)
 
 void meltdown_simulation()
 {
-  printf("sending signal SIGUSR1 to master\n");
+  write(STDOUT_FILENO,"sending signal SIGUSR1 to master\n",34);
   kill(master_pid, SIGUSR1);
 }
 
@@ -110,8 +111,6 @@ int atom_fission(struct atom *atom, struct config config)
 				// starting atomic number
       child2_atomic_number = atom->atomic_number - child1_atomic_number;
 
-      printf("\t master pid is: %d\n", master_pid);
-      meltdown_simulation(); // TODO: remove this, that's there just as test
       /* #ifdef _PRINT_TEST
 	    printf("child1 atomic number %d\n", child1_atomic_number);
 	    printf("child2 atomic number %d\n", child2_atomic_number);

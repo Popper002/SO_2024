@@ -49,6 +49,7 @@ int energy_produced;
 int received_value;
 int energy_absorbed;
 int energy_produced = 0;
+int master_pid;
 
 /* #ifdef _PRINT_TEST
 static void print_para_TEST()
@@ -132,27 +133,7 @@ void remove_ipc()
     exit(EXIT_FAILURE);
   }
 
-  fprintf(stdout, "Removed all ipc object\n");
-
-  if (msgctl(remove_queue, IPC_RMID, NULL) == -1)
-  {
-    fprintf(stderr, "Error in removing ipc object  %s %s %d\n", __FILE__,
-	    strerror(errno), __LINE__);
-    exit(EXIT_FAILURE);
-  }
-  if (msgctl(rcv_id, IPC_RMID, NULL) == -1)
-  {
-    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
-	    strerror(errno), __LINE__);
-    exit(EXIT_FAILURE);
-  }
-
-  if (shmctl(shm_id, IPC_RMID, NULL) == -1)
-  {
-    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
-	    strerror(errno), __LINE__);
-    exit(EXIT_FAILURE);
-  }
+  printf("Removed all ipc object\n");
 }
 
 void kill_them_all()
@@ -170,20 +151,26 @@ int why_term(enum term_reason term_reason)
   case EXPLODE:
     kill_them_all();
     remove_ipc();
-    write(STDOUT_FILENO, "TOO MUCH ENERGY REALEASED\n",27);
-    exit(EXIT_FAILURE);
+    write(STDOUT_FILENO, "\nTOO MUCH ENERGY REALEASED\n",28);
+    exit(EXIT_SUCCESS);
     break;
   case BLACKOUT:
-    write(STDOUT_FILENO, "BLACKOUT- NOT ENOUGH ENERGY\n", 29);
+    write(STDOUT_FILENO, "\nBLACKOUT NOT ENOUGH ENERGY\n", 29);
     kill_them_all();
     remove_ipc();
-    exit(EXIT_FAILURE);
+    exit(EXIT_SUCCESS);
     break;
   case MELTDOWN:
-    write(STDOUT_FILENO, "MELTDOWN - FORK-ERROR \n", 24);
-    remove_ipc();
+    write(STDOUT_FILENO, "\nMELTDOWN FORK ERROR\n", 22);
     kill_them_all();
-    exit(EXIT_FAILURE);
+    remove_ipc();
+    exit(EXIT_SUCCESS);
+    break;
+  case TIMEOUT:
+    kill_them_all();
+    remove_ipc();
+    write(STDOUT_FILENO, "TIMEOUT TIME ELAPSED\n", 22);
+    exit(EXIT_SUCCESS);
     break;
   default:
     return term_reason;
@@ -278,7 +265,7 @@ static void argument_creator(char *argv[])
   char n_nuovi_atomi[10];
   char sim_duration[10];
   char energy_explode_threshold[10];
-  char master_pid[10];
+  char master_ppid[10];
   // char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
@@ -287,7 +274,7 @@ static void argument_creator(char *argv[])
   sprintf(n_nuovi_atomi, "%d", config.N_NUOVI_ATOMI);
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
-  sprintf(master_pid,"%d",getppid());
+  sprintf(master_ppid,"%d",master_pid);
   argv[1] = strdup(n_atomi_init);
   argv[2] = strdup(energy_demand);
   argv[3] = strdup(n_atom_max);
@@ -295,7 +282,7 @@ static void argument_creator(char *argv[])
   argv[5] = strdup(n_nuovi_atomi);
   argv[6] = strdup(sim_duration);
   argv[7] = strdup(energy_explode_threshold);
-  argv[8] = strdup(master_pid);
+  argv[8] = strdup(master_ppid);
   argv[10] = NULL;
 }
 static void fuel_argument_ipc(char *argv[])
@@ -309,7 +296,7 @@ static void fuel_argument_ipc(char *argv[])
   char sim_duration[10];
   char energy_explode_threshold[10];
   char step[10];
-  char master_pid[10];
+  char master_ppid[10];
   // char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
@@ -319,7 +306,7 @@ static void fuel_argument_ipc(char *argv[])
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
   sprintf(step, "%ld", config.STEP);
-  sprintf(master_pid,"%d",getpid());
+  sprintf(master_ppid,"%d",master_pid);
   /* ipc */
   char ipc_shm_id_[10];
   char ipc_shm_key_[10];
@@ -341,7 +328,7 @@ static void fuel_argument_ipc(char *argv[])
   argv[9] = strdup(key_shm_str);
 
   argv[10] = strdup(step);
-  argv[11] = strdup(master_pid);
+  argv[11] = strdup(master_ppid);
   argv[12] = NULL;
 }
 
@@ -492,23 +479,15 @@ void handle_signal(int signum)
     }
     break;
   case SIGUSR1:
-    write(STDOUT_FILENO,"signal sigusr1 received",24);
+    write(STDOUT_FILENO,"received signal sigusr1",24);
     why_term(MELTDOWN);
     break;
   case SIGALRM:
-
-    write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
+    // write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
     write(STDOUT_FILENO, "\t\tALARM : IT'S TIME TO STOP\n", 29);
-    write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
-
-    kill_them_all();
-    write(STDOUT_FILENO, "PRIMA DI REMOVE STO CAZZO DI IPC\n", 34);
-    remove_ipc();
-    // total_print();
-
-    write(STDOUT_FILENO, "TEARM_REASON < TIMEOUT >\n", 26);
+    // write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
+    why_term(TIMEOUT);
     exit(EXIT_SUCCESS);
-
     break;
   case SIGCHLD:
     wait(NULL);
@@ -580,7 +559,7 @@ void total_print(void)
   rcv_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
   if (rcv_id < 0)
   {
-    fprintf(stderr, "[MASTER] ERROR MSGGET\n");
+    fprintf(stderr, "[MASTER] ERROR MSGGET\n");STDOUT_FILENO
     exit(EXIT_FAILURE);
   }
 
@@ -731,6 +710,8 @@ int main(void)
     printf("wrong file path \n");
     exit(EXIT_FAILURE);
   }
+  master_pid = getpid();
+  printf("%s master pid is: %d\n",__FILE__,master_pid);
 
   /* #ifdef _PRINT_TEST
    // print_para_TEST(config);
@@ -756,6 +737,7 @@ int main(void)
     signal(SIGINT, inhibitor_handle);
     signal(SIGUSR2, inhibitor_handle);
   }
+
   store_pid_atom();
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 

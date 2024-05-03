@@ -109,6 +109,8 @@ void fetch_args_fuel(char const *argv[])
   config.STEP = step;
   shm_id = ipc_shm_id;
   shm_key = ipc_key_shm;
+
+  printf("%s master_pid received is: %d\n",__FILE__,master_pid);
 /* #ifdef _PRINT_TEST
   printf("[ATOM %d] {FETCHED ARGV COMPLEATE\n}", getpid());
  #endif */
