@@ -110,8 +110,8 @@ int atom_fission(struct atom *atom, struct config config)
 				// starting atomic number
       child2_atomic_number = atom->atomic_number - child1_atomic_number;
 
-printf("\t master pid is: %d\n", master_pid);
-      meltdown_simulation(); //TODO: remove this, that's there just as test 
+      printf("\t master pid is: %d\n", master_pid);
+      meltdown_simulation(); // TODO: remove this, that's there just as test
       /* #ifdef _PRINT_TEST
 	    printf("child1 atomic number %d\n", child1_atomic_number);
 	    printf("child2 atomic number %d\n", child2_atomic_number);
@@ -123,7 +123,7 @@ printf("\t master pid is: %d\n", master_pid);
       {
 	insert_value_in_shm(energy_released);
       }
-      
+
       /*
 	printf("energy released %d\n", energy_released);
 	printf("\r[%s %d] fissioned into %d and %d, energy released is %d\n",
@@ -180,7 +180,7 @@ int main(int argc, char const *argv[])
   signal(SIGCHLD, handler_signal);
   atom.pid = getpid();
   stat_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
-  signal(SIGUSR1,meltdown_simulation);
+  signal(SIGUSR1, meltdown_simulation);
   if (stat_id < 0)
   {
     fprintf(stderr, "%s Error in msgget: %s>\n", __FILE__, strerror(errno));

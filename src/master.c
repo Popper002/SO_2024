@@ -287,7 +287,7 @@ static void argument_creator(char *argv[])
   sprintf(n_nuovi_atomi, "%d", config.N_NUOVI_ATOMI);
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
-  sprintf(master_pid,"%d",getpid());
+  sprintf(master_pid,"%d",getppid());
   argv[1] = strdup(n_atomi_init);
   argv[2] = strdup(energy_demand);
   argv[3] = strdup(n_atom_max);
@@ -492,7 +492,7 @@ void handle_signal(int signum)
     }
     break;
   case SIGUSR1:
-    printf("signal sigusr1 received");
+    write(STDOUT_FILENO,"signal sigusr1 received",24);
     why_term(MELTDOWN);
     break;
   case SIGALRM:
