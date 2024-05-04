@@ -142,9 +142,7 @@ void kill_them_all()
   killpg(*atom_array_pid, SIGKILL);
   killpg(activator_pid, SIGKILL);
   kill(inhibitor_pid, SIGKILL);
-  write(STDIN_FILENO,"killed inhibitor\n",18);
   kill(fuel_pid, SIGKILL);
-  write(STDIN_FILENO,"killed fuel\n",13);
 }
 
 int why_term(enum term_reason term_reason)
