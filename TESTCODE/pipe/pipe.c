@@ -30,16 +30,17 @@ void handler_signal(int signum) {
 }
 
 int main(int argc, char const *argv[]) {
-    srand(time(NULL)); 
+    struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  unsigned long long seed = (ts.tv_sec * 1000000000 + ts.tv_nsec);
+  srand(seed);
     signal(SIGPIPE, handler_signal);
-    num = rand() % 100; 
+   
     pipe_ret = pipe(fd);
     if (pipe_ret < 0) { 
         fprintf(stderr, "ERROR OPENING PIPE SEGMENT\n");
         exit(EXIT_FAILURE); 
     }
-    struct timespec time; 
-    time.tv_nsec =rand()%10;
     for (int i = 0; i < NUM_PROC; i++) {
         pid_t child;
         switch (child = fork()) {
@@ -65,6 +66,7 @@ int main(int argc, char const *argv[]) {
                 break;
             default: // Sezione del padre
                 // Scrivi nel pipe
+                num = rand() % 100; 
                 sprintf(buffer, "%d", num);
                 num_bytes = write(fd[1], buffer, sizeof(buffer));
                 fprintf(stdout, "NUM BYTES WRITTED %d\n", num_bytes);
