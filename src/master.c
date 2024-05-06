@@ -514,7 +514,7 @@ void start_atom()
 {
   printf("\033[1;32m starting atom as last process \033[0m\n");
 
-  for (int i = 0; i < config.N_ATOMI_INIT; i++)
+  for (pid_t i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(atom_array_pid[i], SIGCONT);
   }

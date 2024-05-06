@@ -83,6 +83,7 @@ int atom_fission(struct atom *atom, struct config config)
     msgsnd(stat_id, &send_stats, sizeof(int), 0);
     // fprintf(stdout, "\nATOM_SEND_STATS ID:%d,<WASTE %s>\n",
     // stat_id,send_stats.text);
+    exit(EXIT_SUCCESS);
   }
   if (atom->atomic_flag == 1)
   {
@@ -192,7 +193,7 @@ int main(int argc, char const *argv[])
   fetch_args_atom(argv);
 
   rcv.m_type = 1;
-  // kill(atom.pid, SIGSTOP); // Send Sigstop signal to atom
+  kill(atom.pid, SIGSTOP); 
 
   int rcv_id = msgget(ATOMIC_KEY, IPC_CREAT | ALL);
   /* #ifdef _PRINT_TEST
