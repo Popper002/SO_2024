@@ -31,7 +31,7 @@ static int rcv_id;
 // static int fork_atom;
 // static int fork_inhibitor;
 shm_fuel *rcv_pid;
-int *atom_array_pid;
+pid_t *atom_array_pid;
 static key_t key_shm;
 pid_t atom_pid;
 static pid_t inhibitor_pid;
@@ -139,12 +139,21 @@ void remove_ipc()
 
 void kill_them_all()
 {
-  killpg(*atom_array_pid, SIGKILL);
+  for(pid_t i =0 ; i<config.N_ATOMI_INIT;i++)
+  {
+    kill(atom_array_pid[i],SIGKILL);
+  }
   killpg(activator_pid, SIGKILL);
   kill(inhibitor_pid, SIGKILL);
   kill(fuel_pid, SIGKILL);
 }
-
+void printPid()
+{
+  for(int i=0;i<config.N_ATOMI_INIT;i++)
+  {
+    fprintf(stdout ,"ATOM FROM MASTER ARRAY PID :%d \n",atom_array_pid[i]); 
+  }
+}
 int why_term(enum term_reason term_reason)
 {
   switch (term_reason)
@@ -388,7 +397,7 @@ pid_t fuel_generator(void)
 
 pid_t atom_gen(void)
 {
-  int status;
+  //int status;
   switch (atom_pid = fork())
   {
   case -1:
@@ -406,8 +415,8 @@ pid_t atom_gen(void)
 
   default:
 
-    waitpid(atom_pid, &status, WNOHANG);
-    return atom_pid;
+    //waitpid(1, &status, WNOHANG);
+    //return atom_pid;
     break;
   }
   return atom_pid;
@@ -440,7 +449,7 @@ pid_t activator(void)
 
 void store_pid_atom()
 {
-  atom_array_pid = (int *)malloc(config.N_ATOMI_INIT * sizeof(int));
+  atom_array_pid = (pid_t *)malloc(config.N_ATOMI_INIT * sizeof(int));
   if (atom_array_pid == NULL)
   {
     fprintf(stdout, "malloc error :ERR:%s\n", strerror(errno));
@@ -454,11 +463,11 @@ void store_pid_atom()
 	       atom_array_pid[i], i);
      #endif */
   }
-
+printPid();
   /* #ifdef _PRINT_TEST
    fprintf(stdout, "Child process %d created and suspended.\n", atom_pid);
     #endif */
-  free(atom_array_pid);
+  //free(atom_array_pid);
 }
 
 /**
@@ -469,6 +478,7 @@ void store_pid_atom()
 */
 void handle_signal(int signum)
 {
+  int status;
   switch (signum)
   {
   case SIGINT:
@@ -491,7 +501,9 @@ void handle_signal(int signum)
     exit(EXIT_SUCCESS);
     break;
   case SIGCHLD:
-    wait(NULL);
+  for(int i =0 ;i<config.N_ATOMI_INIT;i++){
+   waitpid(atom_array_pid[i],&status,WNOHANG);
+  }
     break;
   default:
     break;
@@ -678,6 +690,11 @@ void logo(void)
 }
 int main(void)
 {
+  srand(time(NULL));
+  signal(SIGALRM, handle_signal);
+  signal(SIGCHLD, handle_signal);
+    signal(SIGUSR1,handle_signal);
+
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
   // void *rcv_ptr;
@@ -692,11 +709,7 @@ int main(void)
   }
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT), IPC_CREAT | 0666);
 
-  srand(time(NULL));
-  signal(SIGALRM, handle_signal);
-  signal(SIGCHLD, handle_signal);
-  signal(SIGUSR1,handle_signal);
-
+ 
   /*
   signal(SIGUSR1, inhibitor_handle);
   signal(SIGUSR2, inhibitor_handle);

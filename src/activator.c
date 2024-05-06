@@ -68,7 +68,7 @@ int main(int argc, char const *argv[])
       sprintf(send.text,"%d",command);
     if (msgsnd(q_id, &send, sizeof(send) - sizeof(long), 0) <= -1)
     {
-      fprintf(stderr, "[ACTIVATOR %d] %s Error in msgsnd\n", getpid(),__FILE__);
+      fprintf(stderr, "[ACTIVATOR %d] %s Error in msgsnd %sn", getpid(),__FILE__,strerror(errno));
       exit(EXIT_FAILURE); 
     }
  
