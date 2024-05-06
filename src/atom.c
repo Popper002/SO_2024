@@ -138,9 +138,7 @@ int atom_fission(struct atom *atom, struct config config)
       break;
 
     default:
-      /* #ifdef _PRINT_TEST
-	    printf("father process, TODO\n");
-       #endif */
+     
       break;
     }
   }
