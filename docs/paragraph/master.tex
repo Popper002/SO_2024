@@ -6,6 +6,7 @@
     \item Crea il processo \texttt{inhibitor} sotto richiesta dell'utente attraverso la funzione fork. Il processo figlio generato avrà associato un array contenente i parametri di configurazione personalizzati e il PID del processo master, eseguirà un \texttt{execvp} a \texttt{./bin/inhibitor}.
     \item Si occupa di registrare i segnali che verranno gestiti dagli appositi handler, che permettono la gestione delle terminazioni della simulazione. 
     \item Dopo aver inizializzato tutto il necessario, imposta un alarm con valore \texttt{SIM\_DURATION} che rappresenta la durata complessiva della simulazione. Il segnale \texttt{SIGALARM} è gestito attraverso un handler.
+    \item Generare e inviare ai processi atomo il numero atomico di riferimento 
     \item Ogni secondo mostra a schermo: 
     \begin{itemize}
         \item Il numero di fissioni avvenute nell'ultimo secondo. 
@@ -34,9 +35,9 @@ Il processo atomo viene generato attraverso fork dal processo master ,dopo la su
         \item Preleva e associa all'apposita struct i valori della configurazione attraverso argv. 
     \end{itemize}
 Dopo queste operazioni il processo atomo si autoinvia un segnale \texttt{SIGSTOP} per far capire che lui ha inizializzato tutto il necessario ,attendendo dal processo atomo il segnale \texttt{SIGCONT} che arriverà nel momento in cui partirà quando scadrà il timer a schermo e verrà impostato l'alarm con \texttt{SIM\_DURATION}.
-Successivamente il processo atomo si mette all'opera e dopo aver ricevuto e prelevato il comando di fissione dalla message queue che lo mette in comunicazione con il processo attivatore ,la fissione dell'atomo è gestita dalla funzione \enquote{atom\_fission} l'atomo saprà se effettuare o meno la fissione dopo avere prelevato il valore all'interno della messagge queue ,in caso di comando positivo : 
+Successivamente il processo atomo si mette all'opera e dopo aver ricevuto e prelevato il comando di fissione dalla message queue che lo mette in comunicazione con il processo attivatore ,la fissione dell'atomo è gestita dalla funzione \enquote{atom\_fission} l'atomo saprà se effettuare o meno la fissione dopo avere prelevato il valore all'interno della message queue ,in caso di comando positivo : 
 \begin{itemize}
-    \item Nel caso in cui il suo numero atomico sarà inferiore a quello prestabilità all'interno della configurazione attraverso il parametro \texttt{MIN\_A\_ATOMICO} esso non potrà effettuare fissione e aumenterà il numero delle scorie.
-    \item 
+    \item Nel caso in cui il suo numero atomico sarà inferiore a quello prestabilità all'interno della configurazione attraverso il parametro \texttt{MIN\_A\_ATOMICO} esso non potrà effettuare fissione e aumenterà il numero delle scorie e effettua una exit con parametro \texttt{EXIT\_SUCCESS}.
+    \item Caso contrario e se il comando prelevato in message queue è uguale a 1 ,l'atomo può effettuare fissione , aumentando il numero di fissioni e generando un processo figlio attraverso funzione fork , se essa adrà a buon fine il processo figlio si occuperà di aumentare il numero di attivazioni e di INSERIRE PARTE RELATIVA AL NUMERO ATOMICO 
 \end{itemize}
 
