@@ -143,6 +143,7 @@ void kill_them_all()
   {
     kill(atom_array_pid[i],SIGKILL);
   }
+  killpg(*atom_array_pid,SIGKILL);
   killpg(activator_pid, SIGKILL);
   kill(inhibitor_pid, SIGKILL);
   kill(fuel_pid, SIGKILL);
