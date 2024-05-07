@@ -495,9 +495,7 @@ void handle_signal(int signum)
     why_term(MELTDOWN);
     break;
   case SIGALRM:
-    // write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
     write(STDOUT_FILENO, "\t\tALARM : IT'S TIME TO STOP\n", 29);
-    // write(STDOUT_FILENO, "\n\t-----------------------------------\n", 39);
     why_term(TIMEOUT);
     exit(EXIT_SUCCESS);
     break;
