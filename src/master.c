@@ -15,7 +15,6 @@
 #include <sys/shm.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#define CONFIG_PATH "src/config/config1.txt"
 
 char **args_atom[100];
 char **activator_args[100];
