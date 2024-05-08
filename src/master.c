@@ -28,6 +28,7 @@ struct atom atom_stat;
 bool is_inhibitor_running = true;
 static int shm_id;
 static int rcv_id;
+struct statistics final_print = {0};
 // static int fork_atom;
 // static int fork_inhibitor;
 shm_fuel *rcv_pid;
@@ -52,25 +53,8 @@ int energy_absorbed;
 int energy_produced = 0;
 int master_pid;
 
-/* #ifdef _PRINT_TEST
-static void print_para_TEST()
-{
 
-  printf("\t\n----------\n");
-  printf("N_ATOMI_INIT: %d\n"
-	 "ENERGY_DEMAND :%d\n"
-	 "N_ATOM_MAX:%d\n"
-	 "MIN_A_ATOMICO :%d\n"
-	 "N_NUOVI_ATOMI :%d\n"
-	 "SIM_DURATION :%d\n"
-	 "ENERGY_EXPLODE_THRESHOLD :%d\n",
-	 config.N_ATOMI_INIT, config.ENERGY_DEMAND, config.N_ATOM_MAX,
-	 config.MIN_A_ATOMICO, config.N_NUOVI_ATOMI, config.SIM_DURATION,
-	 config.ENERGY_EXPLODE_THRESHOLD);
-
-  printf("\t\n----------\n");
-}
- #endif */
+int why_term(enum term_reason term_reason);
 
 /*
 void remove_ipc() {
@@ -91,6 +75,99 @@ da rimuovere TEST_ERROR rcv_id = msgget(STATISTICS_KEY, IPC_CREAT); TEST_ERROR
 	fprintf(stdout, "REMOVED ALL IPC ITEMS\n");
     }
 }*/
+
+/**
+@brief: string formatting in C
+https://stackoverflow.com/questions/25626851/align-text-to-right-in-c
+*/
+void total_print(void)
+{
+  static struct message rcv_stats;
+  rcv_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
+  if (rcv_id < 0)
+  {
+    fprintf(stderr, "[MASTER] ERROR MSGGET\n");
+    exit(EXIT_FAILURE);
+  }
+
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 1, IPC_NOWAIT);
+  num_activation_last_sec += rcv_stats.data;
+  final_print.total_num_activation += rcv_stats.data;
+
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 2, IPC_NOWAIT);
+  energy_produced += rcv_stats.data;
+  final_print.total_energy_produced += rcv_stats.data;
+
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 3, IPC_NOWAIT);
+  total_nuclear_waste = rcv_stats.data;
+  final_print.total_nuclear_waste += rcv_stats.data;
+
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 5, IPC_NOWAIT);
+  energy_absorbed += rcv_stats.data;
+  final_print.total_energy_absorbed += rcv_stats.data;
+
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 6, IPC_NOWAIT);
+  statistics_data.num_energy_consumed_inhibitor_last_sec += rcv_stats.data;
+  final_print.total_num_energy_consumed += rcv_stats.data;
+
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 7, IPC_NOWAIT);
+  inhibitor_balance += rcv_stats.data;
+  final_print.total_inhibitor_balancing = rcv_stats.data;
+
+  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 8, IPC_NOWAIT);
+  num_fission_last_sec += rcv_stats.data;
+  final_print.total_num_fission += rcv_stats.data;
+
+  statistics_data.num_energy_consumed_last_sec =
+      energy_produced - config.ENERGY_DEMAND;
+  final_print.total_num_energy_consumed +=
+      statistics_data.num_energy_consumed_last_sec;
+  if (energy_produced < 0)
+  {
+    why_term(BLACKOUT);
+  }
+
+  if (energy_produced > config.ENERGY_EXPLODE_THRESHOLD)
+  {
+    why_term(EXPLODE);
+  }
+  printf("\n|===========================|\n");
+  printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);
+  printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
+  if (config.INHIBITOR == 1)
+  {
+    printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
+    printf("| %-20s %d\n", "ENERGY ABSORBED BY INHIBITOR",
+	   inhibitor_energy_consumed);
+  }
+  printf("| %-20s %d\n", "ENERGY CONSUMED",
+	 statistics_data.num_energy_consumed_last_sec);
+  printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
+  printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
+  printf("|===========================|\n\n");
+
+  sleep(1);
+}
+
+void last_print(struct statistics final_print)
+{
+
+  printf("\n|===========TOTAL STATISTICS VALUES===========|\n");
+  printf("| %-20s %d\n", "ACTIVATION_VALUE", final_print.total_num_activation);
+  printf("| %-20s %d\n", "WASTE_VALUE", final_print.total_nuclear_waste);
+  if (config.INHIBITOR == 1)
+  {
+    printf("| %-20s %d\n", "INHIBITOR BALANCE",
+	   final_print.total_inhibitor_balancing);
+    printf("| %-20s %d\n", "ENERGY ABSORBED BY INHIBITOR",
+	   final_print.total_energy_absorbed);
+  }
+  printf("| %-20s %d\n", "ENERGY CONSUMED",
+	 statistics_data.num_energy_consumed_last_sec);
+  printf("| %-20s %d\n", "ENERGY PRODUCED", final_print.total_energy_produced);
+  printf("| %-20s %d\n", "FISSION_VALUE", final_print.total_num_fission);
+  printf("|===============================================|\n\n");
+}
 
 void remove_ipc()
 {
@@ -139,20 +216,20 @@ void remove_ipc()
 
 void kill_them_all()
 {
-  for(pid_t i =0 ; i<config.N_ATOMI_INIT;i++)
+  for (pid_t i = 0; i < config.N_ATOMI_INIT; i++)
   {
-    kill(atom_array_pid[i],SIGKILL);
+    kill(atom_array_pid[i], SIGKILL);
   }
-  killpg(*atom_array_pid,SIGKILL);
+  killpg(*atom_array_pid, SIGKILL);
   killpg(activator_pid, SIGKILL);
   kill(inhibitor_pid, SIGKILL);
   kill(fuel_pid, SIGKILL);
 }
 void printPid()
 {
-  for(int i=0;i<config.N_ATOMI_INIT;i++)
+  for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
-    fprintf(stdout ,"ATOM FROM MASTER ARRAY PID :%d \n",atom_array_pid[i]); 
+    fprintf(stdout, "ATOM FROM MASTER ARRAY PID :%d \n", atom_array_pid[i]);
   }
 }
 int why_term(enum term_reason term_reason)
@@ -162,25 +239,29 @@ int why_term(enum term_reason term_reason)
   case EXPLODE:
     kill_them_all();
     remove_ipc();
-    write(STDOUT_FILENO, "\nTOO MUCH ENERGY REALEASED\n",28);
+    write(STDOUT_FILENO, "\nTOO MUCH ENERGY REALEASED\n", 28);
+    last_print(final_print);
     exit(EXIT_SUCCESS);
     break;
   case BLACKOUT:
     write(STDOUT_FILENO, "\nBLACKOUT NOT ENOUGH ENERGY\n", 29);
     kill_them_all();
     remove_ipc();
+    last_print(final_print);
     exit(EXIT_SUCCESS);
     break;
   case MELTDOWN:
     write(STDOUT_FILENO, "\nMELTDOWN FORK ERROR\n", 22);
     kill_them_all();
     remove_ipc();
+    last_print(final_print);
     exit(EXIT_SUCCESS);
     break;
   case TIMEOUT:
     kill_them_all();
     remove_ipc();
     write(STDOUT_FILENO, "\nTIMEOUT TIME ELAPSED\n", 22);
+    last_print(final_print);
     exit(EXIT_SUCCESS);
     break;
   default:
@@ -285,7 +366,7 @@ static void argument_creator(char *argv[])
   sprintf(n_nuovi_atomi, "%d", config.N_NUOVI_ATOMI);
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
-  sprintf(master_ppid,"%d",master_pid);
+  sprintf(master_ppid, "%d", master_pid);
   argv[1] = strdup(n_atomi_init);
   argv[2] = strdup(energy_demand);
   argv[3] = strdup(n_atom_max);
@@ -317,7 +398,7 @@ static void fuel_argument_ipc(char *argv[])
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
   sprintf(step, "%ld", config.STEP);
-  sprintf(master_ppid,"%d",master_pid);
+  sprintf(master_ppid, "%d", master_pid);
   /* ipc */
   char ipc_shm_id_[10];
   char ipc_shm_key_[10];
@@ -398,7 +479,7 @@ pid_t fuel_generator(void)
 
 pid_t atom_gen(void)
 {
-  //int status;
+  // int status;
   switch (atom_pid = fork())
   {
   case -1:
@@ -416,8 +497,8 @@ pid_t atom_gen(void)
 
   default:
 
-    //waitpid(1, &status, WNOHANG);
-    //return atom_pid;
+    // waitpid(1, &status, WNOHANG);
+    // return atom_pid;
     break;
   }
   return atom_pid;
@@ -464,11 +545,11 @@ void store_pid_atom()
 	       atom_array_pid[i], i);
      #endif */
   }
-printPid();
+  // printPid();
   /* #ifdef _PRINT_TEST
    fprintf(stdout, "Child process %d created and suspended.\n", atom_pid);
     #endif */
-  //free(atom_array_pid);
+  // free(atom_array_pid);
 }
 
 /**
@@ -491,7 +572,7 @@ void handle_signal(int signum)
     }
     break;
   case SIGUSR1:
-    write(STDOUT_FILENO,"received signal sigusr1",24);
+    write(STDOUT_FILENO, "received signal sigusr1", 24);
     why_term(MELTDOWN);
     break;
   case SIGALRM:
@@ -500,9 +581,10 @@ void handle_signal(int signum)
     exit(EXIT_SUCCESS);
     break;
   case SIGCHLD:
-  for(int i =0 ;i<config.N_ATOMI_INIT;i++){
-   waitpid(atom_array_pid[i],&status,WNOHANG);
-  }
+    for (int i = 0; i < config.N_ATOMI_INIT; i++)
+    {
+      waitpid(atom_array_pid[i], &status, WNOHANG);
+    }
     break;
   default:
     break;
@@ -561,78 +643,6 @@ void inhibitor_handle(int signum)
    */
 }
 
-/**
-@brief: string formatting in C
-https://stackoverflow.com/questions/25626851/align-text-to-right-in-c
-*/
-void total_print(void)
-{
-  static struct message rcv_stats;
-  rcv_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
-  if (rcv_id < 0)
-  {
-    fprintf(stderr, "[MASTER] ERROR MSGGET\n");
-    exit(EXIT_FAILURE);
-  }
-
-  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 1, IPC_NOWAIT);
-  num_activation_last_sec += rcv_stats.data;
-  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 2, IPC_NOWAIT);
-  energy_produced += rcv_stats.data;
-
-  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 3, IPC_NOWAIT);
-  total_nuclear_waste = rcv_stats.data;
-
-  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 5, IPC_NOWAIT);
-  energy_absorbed += rcv_stats.data;
-  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 6, IPC_NOWAIT);
-  statistics_data.num_energy_consumed_inhibitor_last_sec += rcv_stats.data;
-  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 7, IPC_NOWAIT);
-  inhibitor_balance += rcv_stats.data;
-  msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 8, IPC_NOWAIT);
-  num_fission_last_sec += rcv_stats.data;
-
-  statistics_data.num_energy_consumed_last_sec =
-      energy_produced - config.ENERGY_DEMAND;
-  if (energy_produced < 0)
-  {
-    why_term(BLACKOUT);
-  }
-
-  if (energy_produced > config.ENERGY_EXPLODE_THRESHOLD)
-  {
-    why_term(EXPLODE);
-  }
-  printf("\n|===========================|\n");
-  printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);
-  printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
-  if (config.INHIBITOR == 1)
-  {
-    printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
-    printf("| %-20s %d\n", "ENERGY ABSORBED IN INHIBITOR",
-	   inhibitor_energy_consumed);
-  }
-  printf("| %-20s %d\n", "ENERGY CONSUMED",
-	 statistics_data.num_energy_consumed_last_sec);
-  printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
-  printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
-  printf("|===========================|\n\n");
-
-  sleep(1);
-}
-
-void final_print(struct statistics final_print)
-{
-  final_print.total_num_activation = final_print.num_activation_last_sec;
-  final_print.total_nuclear_waste = final_print.total_nuclear_waste_last_sec;
-  final_print.total_num_fission = final_print.num_fission_last_sec;
-  final_print.total_num_energy_consumed =
-      final_print.total_num_energy_produced_last_sec;
-  final_print.energy_absorbed = final_print.energy_absorbed_last_sec;
-  final_print.total_num_energy_consumed = final_print.energy_absorbed_last_sec;
-  final_print.inhibitor_balancing = final_print.inhibitor_balancing_last_sec;
-}
-
 void print_config(void)
 {
   printf("\n\n\n");
@@ -668,6 +678,7 @@ void logo(void)
   printf(" By Riccardo Oro & Francesco Mauro \n");
   printf("\n\n\n");
 
+/*
   printf("              _             _         _                 _       _   "
 	 "_              \n"
 	 "     | |           | |       (_)               | |     | | (_)       "
@@ -684,6 +695,7 @@ void logo(void)
 	 "      \n"
 	 "                                                                     "
 	 "      \n");
+*/
 
   print_config();
 }
@@ -692,7 +704,7 @@ int main(void)
   srand(time(NULL));
   signal(SIGALRM, handle_signal);
   signal(SIGCHLD, handle_signal);
-    signal(SIGUSR1,handle_signal);
+  signal(SIGUSR1, handle_signal);
 
   int start;
   key_shm = KEY_SHM; // ftok("header/common.h",'s');
@@ -708,7 +720,6 @@ int main(void)
   }
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT), IPC_CREAT | 0666);
 
- 
   /*
   signal(SIGUSR1, inhibitor_handle);
   signal(SIGUSR2, inhibitor_handle);
@@ -717,14 +728,17 @@ int main(void)
   char file_path[100];
   printf("Insert the configuration path: <src/config/file_name.txt> \n");
   scanf("%s", file_path);
-  if(access(file_path, F_OK) == 0){
+  if (access(file_path, F_OK) == 0)
+  {
     scan_data(file_path);
-  } else{ 
+  }
+  else
+  {
     printf("wrong file path \n");
     exit(EXIT_FAILURE);
   }
   master_pid = getpid();
-  printf("%s master pid is: %d\n",__FILE__,master_pid);
+  printf("%s master pid is: %d\n", __FILE__, master_pid);
 
   /* #ifdef _PRINT_TEST
    // print_para_TEST(config);
@@ -742,7 +756,7 @@ int main(void)
    #endif */
 
   fuel_pid = fuel_generator();
-  printf("fuel pid is: %d\n",fuel_pid);
+  printf("fuel pid is: %d\n", fuel_pid);
   if (config.INHIBITOR == 1)
   {
     inhibitor_pid = inhibitor();
@@ -761,7 +775,7 @@ int main(void)
 
       printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
     }
-    fprintf(stdout, "atoms generated and stopped\n");
+    fprintf(stdout, "atoms generfinal_printated and stopped\n");
    #endif */
 
   // shutdown();
@@ -792,53 +806,7 @@ int main(void)
 */
     total_print();
     //     TODO: call a function that displays statistic
-    /*
-   if (config.INHIBITOR == 1)
-{
-  fprintf(stdout, "Comando <s: start / t:stop >");
-
-
-  // Legge il comando dall'utente
-  if (fgets(command, sizeof(command), stdin) == NULL)
-  {
-    break;
   }
 
-  // Rimuove il carattere newline finale se presente
-  command[strcspn(command, "\n")] = '\0';
-
-  // Esegue il comando corrispondente
-  switch (command[0])
-  {
-    case 's':
-      if (inhibitor == 0 || inhibitor == NULL)
-      {
-	inhibitor_pid = inhibitor();
-      }
-      else
-      {
-	kill(inhibitor_pid, SIGUSR1);
-      }
-      break;
-
-    case 't':
-      if (inhibitor == 0 || inhibitor == NULL)
-      {
-	inhibitor_pid = inhibitor();
-      }
-      else
-      {
-	kill(inhibitor_pid, SIGUSR2);
-      }
-      break;
-
-    default:
-      fprintf(stderr, "Comando non valido\n");
-      break;
-  }
-     */
-  }
-
-  // detach_shared_memory();
   return 0;
 }

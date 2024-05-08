@@ -73,11 +73,12 @@ int atom_fission(struct atom *atom, struct config config)
 {
 
   stats.total_nuclear_waste_last_sec = 0;
-  int child1_atomic_number=0; // -1 and +1 so we are sure to not exceed thestarting atomic number
-  int child2_atomic_number=0; 
-  int read_atomic_number=0;
+  int child1_atomic_number =
+      0; // -1 and +1 so we are sure to not exceed thestarting atomic number
+  int child2_atomic_number = 0;
+  int read_atomic_number = 0;
   int fd[2];
-  char write_buffer[100],read_buffer[100];
+  char write_buffer[100], read_buffer[100];
   int pipe_ret = pipe(fd);
 
   if (pipe_ret < 0)
@@ -118,15 +119,13 @@ int atom_fission(struct atom *atom, struct config config)
       stats.num_activation_last_sec++;
       send_stats.data = stats.num_activation_last_sec;
       msgsnd(stat_id, &send_stats, sizeof(int), 0);
-       read_atomic_number = read(fd[0],read_buffer,sizeof(read_buffer));
-      printf("read atomic number is %s\n",read_buffer);
-      if(read_atomic_number > 0)
+      read_atomic_number = read(fd[0], read_buffer, sizeof(read_buffer));
+      printf("read atomic number is %s\n", read_buffer);
+      if (read_atomic_number > 0)
       {
-       read_buffer[read_atomic_number] = '\0';
-        fprintf(stderr,"scrolled all buffer\n");  
+	read_buffer[read_atomic_number] = '\0';
+	fprintf(stderr, "scrolled all buffer\n");
       }
-
-
 
       int energy_released =
 	  energy_free(child1_atomic_number, child2_atomic_number);
@@ -135,21 +134,22 @@ int atom_fission(struct atom *atom, struct config config)
 	insert_value_in_shm(energy_released);
       }
 
-  
       send_stats.m_type = 2;
       send_stats.data = energy_released;
       msgsnd(stat_id, &send_stats, sizeof(int), 0);
       close(fd[0]);
-      //exit(EXIT_SUCCESS);
+      // exit(EXIT_SUCCESS);
       return 0;
       break;
 
     default:
-      child1_atomic_number = rand() % (atom->atomic_number - 1) + 1; // -1 and +1 so we are sure to not exceed thestarting atomic number
+      child1_atomic_number =
+	  rand() % (atom->atomic_number - 1) +
+	  1; // -1 and +1 so we are sure to not exceed thestarting atomic number
       child2_atomic_number = atom->atomic_number - child1_atomic_number;
-      sprintf(write_buffer,"%d",child2_atomic_number);
-      nums_bytes_writed = write(fd[1],write_buffer,sizeof(write_buffer));
-      close(fd[1]); 
+      sprintf(write_buffer, "%d", child2_atomic_number);
+      nums_bytes_writed = write(fd[1], write_buffer, sizeof(write_buffer));
+      close(fd[1]);
       break;
     }
   }
@@ -243,10 +243,10 @@ int main(int argc, char const *argv[])
 
   atom_fission(&atom, config);
 
-/*
-  while (1)
-    ;
-*/
+  /*
+    while (1)
+      ;
+  */
   /* cleanup_shared_memory(); */
   /* Never lunched this function ,this is caused from the while loop never
    * end's*/

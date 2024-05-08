@@ -68,8 +68,10 @@ struct statistics
       int total_nuclear_waste_last_sec;
       int energy_absorbed;
       int energy_absorbed_last_sec;
-      int inhibitor_balancing;
+      int total_inhibitor_balancing;
       int inhibitor_balancing_last_sec;
+      int total_energy_absorbed;
+      int total_energy_produced;
     }statistics_data;
 
 
