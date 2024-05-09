@@ -131,7 +131,7 @@ inhibitor_pid = getpid();
    #endif */
   while (1)
   {
-    for (int i = 0; i < config.N_ATOMI_INIT + config.N_ATOM_MAX; i++)
+    for (int i = 0; i < config.N_ATOMI_INIT + config.N_NUOVI_ATOMI; i++)
     {
 
 
