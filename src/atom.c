@@ -241,13 +241,9 @@ int main(int argc, char const *argv[])
 
   atom_fission(&atom, config);
 
-  /*
-    while (1)
-      ;
-  */
-  /* cleanup_shared_memory(); */
-  /* Never lunched this function ,this is caused from the while loop never
-   * end's*/
+
+ 
+  
   exit(EXIT_SUCCESS);
 
   return 0;

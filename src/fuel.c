@@ -20,6 +20,7 @@ static int shm_id;
 static key_t shm_key;
 struct timespec sleepValue = {0};
 pid_t master_pid;
+pid_t *psu_atom_array_pid; 
 
 void atom_argument_creator(char *argv[])
 {
@@ -198,7 +199,12 @@ double step_nanosec()
  */
 
 
-
+void psu_atom_start()
+{
+  for(int i =0 ; i < config.N_ATOMI_INIT;i++){
+  kill(psu_atom_array_pid[i],SIGCONT);
+  }
+}
 int main(int argc, char const *argv[])
 {
   (void) argc;
@@ -216,20 +222,25 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
 
-pid_t atom_new; 
-
+ 
+ psu_atom_array_pid = (pid_t *)malloc(config.N_NUOVI_ATOMI * sizeof(int));
+  if (psu_atom_array_pid == NULL)
+  {
+    fprintf(stdout, "malloc error :ERR:%s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
 sleepValue.tv_nsec = config.STEP *NANO_SECOND_MULTIPLIER; 
 while (1)
 {
   for(int i =0 ; i<config.N_NUOVI_ATOMI;i++)
   {
 
-    atom_new=born_new_atom(); 
-    kill(atom_new,SIGCONT);
-    atom_new=0;
+    psu_atom_array_pid[i]=born_new_atom();   
+    //fprintf(stdout,"PSU GEN ATOM PID %d\n",psu_atom_array_pid[i]); 
   }
+   psu_atom_start(); 
    nanosleep(&sleepValue,NULL);
-
+   //free(psu_atom_array_pid);
 }
 
   return 0;
