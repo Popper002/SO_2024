@@ -120,11 +120,9 @@ int atom_fission(struct atom *atom, struct config config)
       send_stats.data = stats.num_activation_last_sec;
       msgsnd(stat_id, &send_stats, sizeof(int), 0);
       read_atomic_number = read(fd[0], read_buffer, sizeof(read_buffer));
-      printf("read atomic number is %s\n", read_buffer);
       if (read_atomic_number > 0)
       {
 	read_buffer[read_atomic_number] = '\0';
-	fprintf(stderr, "scrolled all buffer\n");
       }
 
       int energy_released =

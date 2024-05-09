@@ -14,6 +14,7 @@
 #include <sys/param.h>
 #include <sys/shm.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 char **args_atom[100];
@@ -81,7 +82,12 @@ https://stackoverflow.com/questions/25626851/align-text-to-right-in-c
 */
 void total_print(void)
 {
+  time_t now; 
+  struct tm *timeinfo;
+  char time_buffer[20];
   static struct message rcv_stats;
+  time(&now);
+  timeinfo = localtime(&now);
   rcv_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
   if (rcv_id < 0)
   {
@@ -130,7 +136,8 @@ void total_print(void)
   {
     why_term(EXPLODE);
   }
-  printf("\n|===========================|\n");
+  strftime(time_buffer,sizeof(time_buffer),"%H:%M:%S",timeinfo);
+  printf("\n|==========%s=================|\n",time_buffer);
   printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);
   printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
   if (config.INHIBITOR == 1)
@@ -143,7 +150,7 @@ void total_print(void)
 	 statistics_data.num_energy_consumed_last_sec);
   printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
   printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
-  printf("|===========================|\n\n");
+  printf("|==============================|\n\n");
 
   sleep(1);
 }
