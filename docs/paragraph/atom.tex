@@ -1,0 +1,12 @@
+Il processo atomo viene generato attraverso fork dal processo master. Dopo la sua nascita fa le seguenti operazioni:
+\begin{itemize}
+    \item Inizializza gli \textit{IPC} necessari.
+    \item Registra il segnale \textit{SIGCHLD} associandolo all'handler apposito. 
+    \item Registra il segnale \textit{SIGUSR1} associandolo ad un handler che si occuperà, in caso di \textit{MELTDOWN}, di inviare il segnale \textit{SIGUSR1} al processo master che gestirà la terminazione della simulazione. 
+    \item Preleva e associa all'apposita struct i valori della configurazione attraverso \textit{argv}. 
+\end{itemize}
+Dopo queste operazioni il processo atomo si autoinvia un segnale \textit{SIGSTOP} per indicare che ha inizializzato tutto il necessario, attendendo dal processo master il segnale \textit{SIGCONT} che arriverà quando scadrà il timer a schermo e verrà impostato l'alarm con \textit{SIM_DURATION}. Successivamente, il processo atomo si mette all'opera e, dopo aver ricevuto e prelevato il comando di fissione dalla message queue che lo mette in comunicazione con il processo attivatore, la fissione dell'atomo è gestita dalla funzione \lstinline{atom_fission()}. L'atomo saprà se effettuare o meno la fissione dopo avere prelevato il valore all'interno della message queue. In caso di comando positivo:
+\begin{itemize}
+    \item Nel caso in cui il suo numero atomico sarà inferiore a quello prestabilito all'interno della configurazione attraverso il parametro \textit{MIN_A_ATOMICO}, esso non potrà effettuare fissione e aumenterà il numero delle scorie, effettuando una exit con parametro \textit{EXIT_SUCCESS}.
+    \item Altrimenti, se il comando prelevato in message queue è uguale a 1, l'atomo può effettuare fissione, aumentando il numero di fissioni e generando un processo figlio attraverso la funzione fork. Se essa andrà a buon fine, il processo figlio si occuperà di aumentare il numero di attivazioni e di [INSERIRE PARTE RELATIVA AL NUMERO ATOMICO].
+\end{itemize}

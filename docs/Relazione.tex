@@ -1,4 +1,8 @@
 \documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{listings}
+\usepackage{microtype}
 
 \title{Progetto di sistemi operativi: Reazione a catena}
 \author{Francesco Mauro, Riccardo Oro}
@@ -8,28 +12,19 @@
 \maketitle
 \tableofcontents
 
-\chapter{Introduzione} 
+\section{Processo master}
+\input{docs/paragraph/master.tex}
 
-\chapter{Processo master}
+\section{Processo atom}
+\input{docs/paragraph/atom.tex}
 
-\chapter{Processo atom}
+\section{Processo psu}
+\input{docs/paragraph/psu.tex}
 
-\chapter{Processo psu}
+\section{Processo activator}
+\input{docs/paragraph/activator.tex}
 
-\chapter{Processo activator}
-
-\chapter{Processo inhibitor}
-\input{paragraph/master.tex}
-
-\input{paragraph/atom.tex}
-
-
-\input{paragraph/psu.tex}
-
-\input{paragraph/activator.tex}
-
-
-\input{paragraph/inhibitor.tex}
-
+\section{Processo inhibitor}
+\input{docs/paragraph/inhibitor.tex}
 
 \end{document}
