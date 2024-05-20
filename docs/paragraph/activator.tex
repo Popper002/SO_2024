@@ -1,1 +1,10 @@
-TODO
+Processo attivatore viene generanto dal processo master attraverso la chimaata alla funzione fork che ,genererà un processo figlio a cui verrà assegnato un array contentente i parametri letti da file necessari alla simulazione ,successivamente chiamerà la funzione execvp per effettuare un cambio d'immagine per diventare effettivamente un processo attivatore .
+Dopo la sua nascia il proecsso attivatore effettuerà le seguenti operazioni: 
+\begin{itemize}
+    \item Inizializza o preleva la message queue necessaria per comunicare le fissioni al processo atomo.
+    \item Genera in modo randomico un numero pari a 0 o 1 che rispettivamente hanno il seguente significato: 
+        0 : Il processo atomo non effettua fissione. 
+        1 : Il processo atomo ha il comando per effettuare una fissione. 
+     I valori vengono generato in modo randomico e inseriti in una apposita message queue su cui gli atomi senza conoscerne precedentemente il significato preleveranno il primo messaggio disponibile che ne determinerà l'operazione di fissione di quell'atomo.
+     
+\end{itemize}
