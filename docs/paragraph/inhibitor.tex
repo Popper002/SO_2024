@@ -10,7 +10,7 @@ genererà attraverso la funzione fork un processo figlio con un array contente t
     \item Preleva l'id della message queue su cui invierà i dati necessari per il calcolo delle statistiche della simulazione. 
     \item Preleva una quantità di energià pari a ENERGY\_DEMAND.
 \end{itemize}
-\subsubsection{Meccanismo di assorbimento dell'energia, limitazione delle fissioni}
+\subsubsection{Meccanismo di assorbimento dell'energia e limitazione delle fissioni}
 Il prelievo di energià avviene attraverso l'utilizzo di una shared memeory su cui viene scritto il quantitativo di energia che il processo inibitore assorbe ogni secondo. 
 \newline
 La limitazione delle fissioni di processi atomi avviene attraverso una meccanismo di scrittura sulla message queue che è in comunicazione tra processo attivatore e processo atomo , in modo tale da aumentare il numero di messaggi contenti il valore 0 ,che appunto non permette ad un processo atomo di effettuare l'operazione di fissione. 

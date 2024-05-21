@@ -3,6 +3,7 @@
 #include "header/common.h"
 #include "header/ipc.h"
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/msg.h>
@@ -229,19 +230,24 @@ int main(int argc, char const *argv[])
     fprintf(stdout, "malloc error :ERR:%s\n", strerror(errno));
     exit(EXIT_FAILURE);
   }
-sleepValue.tv_nsec = config.STEP *NANO_SECOND_MULTIPLIER; 
+
+    sleepValue.tv_sec = (config.STEP * NANO_SECOND_MULTIPLIER) / 1000000000;
+    sleepValue.tv_nsec = (config.STEP * NANO_SECOND_MULTIPLIER) % 1000000000;
 while (1)
 {
   for(int i =0 ; i<config.N_NUOVI_ATOMI;i++)
   {
 
     psu_atom_array_pid[i]=born_new_atom();   
-    //fprintf(stdout,"PSU GEN ATOM PID %d\n",psu_atom_array_pid[i]); 
+    fprintf(stdout,"PSU GEN ATOM PID %d\n",psu_atom_array_pid[i]); 
   }
    psu_atom_start(); 
-   nanosleep(&sleepValue,NULL);
+   if(nanosleep(&sleepValue,NULL)<0 ) {perror("nanosleep");}
+   else {fprintf(stdout,"Sleep for %ld nanosec\n",sleepValue.tv_nsec);
    //free(psu_atom_array_pid);
+ }
 }
+
 
   return 0;
 }

@@ -629,6 +629,7 @@ void inhibitor_handle(int signum)
     }
   }
 
+
   /*
   switch (signum)
   {
