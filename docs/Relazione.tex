@@ -3,6 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{listings}
 \usepackage{microtype}
+\usepackage{dirtree}
 
 \title{Progetto di sistemi operativi: Reazione a catena}
 \author{Francesco Mauro, Riccardo Oro}
@@ -11,6 +12,34 @@
 \begin{document}
 \maketitle
 \tableofcontents
+
+\newpage
+% create a folder struct tree using dritree package 
+\section{Struttura del progetto}
+\dirtree{%
+.1 /.
+.1 bin/.
+.2 atom.
+.2 activator.
+.2 inhibitor.
+.2 master.
+.2 psu.
+.1 src/.
+.2 atom.c.
+.2 activator.c.
+.2 inhibitor.c.
+.2 master.c.
+.2 psu.c.
+.2 header/.
+.3 atom.h.
+.3 activator.h.
+.3 inhibitor.h.
+.3 master.h.
+.3 psu.h.
+.3 config/.
+.2 config.txt.
+.1 makefile.
+}
 
 \section{Processo master}
 \input{docs/paragraph/master.tex}

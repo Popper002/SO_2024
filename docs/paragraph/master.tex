@@ -1,18 +1,21 @@
 \begin{itemize}
-    \item Si occupa di leggere da file attraverso la funzione \lstinline{scan_data()} i valori di configurazione necessari per la simulazione che verranno associati alla struct \lstinline{config}. 
-    \item Crea \textit{N\_ATOMI\_INIT} atomi usando la funzione fork. Il processo figlio generato avrà associato un array contenente i parametri di configurazione personalizzati e il PID del processo master, eseguirà un \textit{execvp} a \textit{./bin/atom}.
-    \item Crea il processo \textit{psu} usando la funzione fork. Il processo figlio generato avrà associato un array contenente i parametri di configurazione personalizzati, il PID del processo master e gli ID di alcuni IPC, eseguirà un \textit{execvp} a \textit{./bin/psu}. 
+    \item Si occupa di leggere da file attraverso la funzione \lstinline|scan_data()| i valori di configurazione necessari per la simulazione che verranno associati alla struct \lstinline{config}. 
+    \item Crea \textit{N\_ATOMI\_INIT} atomi usando la funzione fork. Il processo figlio generato avrà associato un array contenente i parametri di configurazione e il PID del processo master, eseguirà  \textit{execvp} per azionare \textit{./bin/atom}.
+    \item Crea il processo \textit{psu} usando la funzione fork. Il processo figlio generato avrà associato un array contenente i parametri di configurazione impostati nel file di configurazione, il PID del processo master e gli ID di alcuni IPC, eseguirà un \textit{execvp} a \textit{./bin/psu}. 
     \item Crea il processo \textit{inhibitor} sotto richiesta dell'utente attraverso la funzione fork. Il processo figlio generato avrà associato un array contenente i parametri di configurazione personalizzati e il PID del processo master, eseguirà un \textit{execvp} a \textit{./bin/inhibitor}.
     \item Si occupa di registrare i segnali che verranno gestiti dagli appositi handler, che permettono la gestione delle terminazioni della simulazione. 
     \item Dopo aver inizializzato tutto il necessario, imposta un alarm con valore \textit{SIM\_DURATION} che rappresenta la durata complessiva della simulazione. Il segnale \textit{SIGALARM} è gestito attraverso un handler.
     \item Generare e inviare ai processi atomo il numero atomico di riferimento. 
-    \item Ogni secondo mostra a schermo: 
+   
+    \item Si occupa, in seguito allo scadere di un timer visibile a schermo, di far partire i processi atomi per la simulazione. 
+    \item Si occupa di gestire le terminazioni della simulazione.
+\end{itemize}
+
+\subsubsection{Output a schermo}
+Ogni secondo mostra a schermo: 
     \begin{itemize}
         \item Il numero di fissioni avvenute nell'ultimo secondo. 
         \item Il numero di scorie raccolte nell'ultimo secondo.
         \item L'energia prodotta dei processi atomo nell'ultimo secondo.
         \item I bilanciamenti effettuati di processo inhibitor per limitare le fissioni dei processi atomo nell'ultimo secondo. 
     \end{itemize}
-    \item Si occupa, in seguito allo scadere di un timer visibile a schermo, di far partire i processi atomi per la simulazione. 
-    \item Si occupa di gestire le terminazioni della simulazione.
-\end{itemize}

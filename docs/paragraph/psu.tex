@@ -7,6 +7,6 @@ Dopo che viene generato, il processo effettua le seguenti operazioni:
 \end{itemize}
 Dopo aver effettuato l'inizializzazione di tutto il necessario il processo \textit{psu} producen per ogni ciclo nuovi processi atomi per un totale corrispondente al parametro di configurazione N\_NUOVI\_ATOMI.
 Effettua una nanosleep con il valore prestabilito dal parametro di configurazione \textit{STEP} in formato nanosecondi.
-La generazione dei processi atomo avviene tramite la funzione \begin{verbatim}born\_new\_atom()\end{verbatim} che attraverso la funzione fork crea un processo figlio a cui verrà assegnato un array contentente tutti i parametri di configurazione necessari alla simulazione ,esso in fine effettuerà il cambio d'immagione attraverso la funzione execp per cosi trasformarsi in atomo.
+La generazione dei processi atomo avviene tramite la funzione \lstinline|born_new_atom()| che attraverso la funzione fork crea un processo figlio a cui verrà assegnato un array contentente tutti i parametri di configurazione necessari alla simulazione ,esso in fine effettuerà il cambio d'immagione attraverso la funzione execp per cosi trasformarsi in atomo.
 Ogni processo atomo creato viene subito spedito da parte del processo psu un segnale SIGCONT per farsi che il nuovo processo atomo dopo la sua Inizializzazione può procedere allo svolgimento dei propri compiti. 
 In caso di fallimento durante la creazione del processo figlio esso invierà al processo master un segnale SIGUSR1 che avviserà del fallimento per cosi poi terminare la simulazione. 
