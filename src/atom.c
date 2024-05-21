@@ -73,8 +73,7 @@ int atom_fission(struct atom *atom, struct config config)
 {
 
   stats.total_nuclear_waste_last_sec = 0;
-  int child1_atomic_number =
-      0; // -1 and +1 so we are sure to not exceed thestarting atomic number
+  int child1_atomic_number =0; 
   int child2_atomic_number = 0;
   int read_atomic_number = 0;
   int fd[2];
@@ -141,9 +140,7 @@ int atom_fission(struct atom *atom, struct config config)
       break;
 
     default:
-      child1_atomic_number =
-	  rand() % (atom->atomic_number - 1) +
-	  1; // -1 and +1 so we are sure to not exceed thestarting atomic number
+      child1_atomic_number = rand() % (atom->atomic_number - 1) + 1; // -1 and +1 so we are sure to not exceed thestarting atomic number
       child2_atomic_number = atom->atomic_number - child1_atomic_number;
       sprintf(write_buffer, "%d", child2_atomic_number);
       nums_bytes_writed = write(fd[1], write_buffer, sizeof(write_buffer));

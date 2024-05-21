@@ -2,10 +2,10 @@ Processo psu viene generato mediante funzione fork azzionata dal processo master
 Dopo la sua nasciata il processo effettua le seguenti operazioni:
 \begin{itemize}
     \item Inizializza o preleva il suo id se già esistente ,una messagge queue necessaria per comunicare i parametri per l'aggiornamento delle statistiche. 
-    \item Un array di tipo pid_t la cui dimensione viene stabilità attraverso la funzione malloc ,che allochera una memoria paria a N\_NUOVI\_ATOMI * dimensione di un int ,all'interno di questo array andranno tutti i pid dei nuovi processi atomi generati dal processo psu tramite fork. 
+    \item Un array di tipo pid\_t la cui dimensione viene stabilità attraverso la funzione malloc ,che allochera una memoria paria a N\_NUOVI\_ATOMI * dimensione di un int ,all'interno di questo array andranno tutti i pid dei nuovi processi atomi generati dal processo psu tramite fork. 
     \item Il valore per la quale il processo psu effettuera una nanosleep tra un ciclo di creazione di processi atomi e un altro ,esso sarà uguale al valore del parametro di configurazione STEP in formato nanosecondi.
 \end{itemize}
 Dopo aver effettuato l'Inizializzazione di tutto il necessari il processo psu passa all'opera producendo per ogni ciclo nuovi processi atomi per totale corrispondente al parametro di configurazione N\_NUOVI\_ATOMI per poi effettuare una nanosleep con il valore prestabilito dal parametro di configurazione STEP in formato nanosecondi.
-La generazione dei processi atomo avviene tramite la funzione born_new_atom che attraverso la funzione fork crea un processo figlio a cui verrà assegnato un array contentente tutti i parametri di configurazione necessari alla simulazione ,esso in fine effettuerà il cambio d'immagione attraverso la funzione execp per cosi trasformarsi in atomo.
+La generazione dei processi atomo avviene tramite la funzione born\_new\_atom che attraverso la funzione fork crea un processo figlio a cui verrà assegnato un array contentente tutti i parametri di configurazione necessari alla simulazione ,esso in fine effettuerà il cambio d'immagione attraverso la funzione execp per cosi trasformarsi in atomo.
 Ogni processo atomo creato viene subito spedito da parte del processo psu un segnale SIGCONT per farsi che il nuovo processo atomo dopo la sua Inizializzazione può procedere allo svolgimento dei propri compiti. 
 In caso di fallimento durante la creazione del processo figlio esso invierà al processo master un segnale SIGUSR1 che avviserà del fallimento per cosi poi terminare la simulazione. 
