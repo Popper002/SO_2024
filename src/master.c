@@ -177,10 +177,10 @@ void last_print(struct statistics final_print)
 
 void remove_ipc()
 {
-  int remove_queue;
-  // int status;
-  remove_queue = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
+  int remove_queue = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
   rcv_id = msgget(STATISTICS_KEY, IPC_CREAT | 0666);
+  int absorbed_energy_id = shmget(ENERGY_ABSORBED_KEY, sizeof(int),IPC_CREAT | 0666); 
+  
 
   if (remove_queue < 0)
   {
@@ -217,7 +217,16 @@ void remove_ipc()
     exit(EXIT_FAILURE);
   }
 
+  if(shmctl(absorbed_energy_id,IPC_RMID,NULL) == -1)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+      strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
+
+#ifdef _PRINT_TEST
   printf("Removed all ipc object\n");
+  #endif
 }
 
 void kill_them_all()

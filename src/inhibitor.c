@@ -19,9 +19,11 @@ static bool running_flag = true;
     P(FISSIONE) = P(1)|P(INEBITORE) * P(1) * P(ATTIVATORE) /  */
 int fission_flag() { return rand() % 2; }
 
-/*take the value from shared memory with key ENERGY_ABSORBED_KEY, do a
- * substraction and send it in msgque to master.c for energy_absorbed
- * statistic*/
+/**
+ * @brief take the value from shared memory with key ENERGY_ABSORBED_KEY, do a
+ * substraction and send it in msgque to master process for energy_absorbed
+ * statistic
+ */
 void energy_absorbed_value()
 {
   int shm_id = shmget(ENERGY_ABSORBED_KEY, sizeof(int), IPC_CREAT | 0666);
@@ -37,8 +39,8 @@ void energy_absorbed_value()
     exit(EXIT_FAILURE);
   }
   int energy_absorbed = *shm;
-  shmdt(shm);
   energy_absorbed -= config.ENERGY_DEMAND;
+  fprintf(stdout,"ENERGY ABSORBED %d\n", energy_absorbed);
   inhibitor_stats_send.m_type = 5;
   inhibitor_stats_send.data = energy_absorbed;
   if (msgsnd(stat_id, &inhibitor_stats_send,
