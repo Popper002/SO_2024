@@ -9,7 +9,7 @@ all:
 	$(CC)   $(CFLAGS) src/master.c $(UTILS) -o bin/master -lm
 	$(CC)	$(CFLAGS) src/atom.c $(UTILS) -o bin/atom -lm
 	$(CC)	$(CFLAGS) src/activator.c $(UTILS) -o bin/activator  -lm
-	$(CC)	$(CFLAGS) src/fuel.c $(UTILS) -o bin/fuel -lm
+	$(CC)	$(CFLAGS) src/psu.c $(UTILS) -o bin/psu -lm
 	$(CC)	$(CFLAGS) src/inhibitor.c $(UTILS) -o bin/inhibitor -lm
 
 
@@ -17,7 +17,7 @@ debug:
 	$(CC)   $(CFLAGS) $(D_FLAG) src/master.c $(UTILS) -o bin/master -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/atom.c $(UTILS) -o bin/atom -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/activator.c $(UTILS) -o bin/activator -lm
-	$(CC)	$(CFLAGS) $(D_FLAG) src/fuel.c $(UTILS) -o bin/fuel -lm
+	$(CC)	$(CFLAGS) $(D_FLAG) src/psu.c $(UTILS) -o bin/psu -lm
 	$(CC)	$(CFLAGS) $(D_FLAG) src/inhibitor.c $(UTILS) -o bin/inhibitor -lm
 
 clean:
