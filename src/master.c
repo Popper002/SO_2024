@@ -42,7 +42,6 @@ pid_t fuel_pid;
 struct config config;
 enum term_reason term_reason;
 struct statistics *shared_data;
-static int inhibitor_energy_consumed;
 int inhibitor_balance;
 int total_nuclear_waste;
 int num_fission_last_sec;
@@ -56,25 +55,7 @@ int master_pid;
 
 int why_term(enum term_reason term_reason);
 
-/*
-void remove_ipc() {
-    int remove_queue;
-    int status;
 
-    / Rimuove gli oggetti IPC solo se i processi sono terminati
-    while ((waitpid(inhibitor_pid, &status, WNOHANG) > 0) &&
-	   (waitpid(atom_pid, &status, WNOHANG) > 0) &&
-	   (waitpid(fuel_pid, &status, WNOHANG) > 0))
-    {
-	remove_queue = msgget(ATOMIC_KEY, IPC_CREAT); // Ottiene l'ID della coda
-da rimuovere TEST_ERROR rcv_id = msgget(STATISTICS_KEY, IPC_CREAT); TEST_ERROR
-	fprintf(stdout, "[REMOVE_IPC QUEUE_ID: %d ]\n", remove_queue);
-	msgctl(remove_queue, IPC_RMID, NULL);
-	msgctl(rcv_id, IPC_RMID, NULL);
-	shmctl(shm_id, IPC_RMID, NULL);
-	fprintf(stdout, "REMOVED ALL IPC ITEMS\n");
-    }
-}*/
 
 /**
 @brief: string formatting in C
@@ -144,7 +125,7 @@ void total_print(void)
   {
     printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
     printf("| %-20s %d\n", "ENERGY ABSORBED BY INHIBITOR",
-	   inhibitor_energy_consumed);
+	   energy_absorbed);
   }
   printf("| %-20s %d\n", "ENERGY CONSUMED",
 	 statistics_data.num_energy_consumed_last_sec);

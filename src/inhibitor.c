@@ -1,17 +1,17 @@
 #include "header/common.h"
 #include "header/ipc.h"
 #include "util/shared_memory.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/msg.h>
-#include <stdbool.h>
 int msg_id, stat_id;
 struct mes inhibitor_send;
 struct message inhibitor_stats_send;
 struct config config;
-pid_t inhibitor_pid; 
+pid_t inhibitor_pid;
 struct statistics *inhibitor_stats;
-static bool running_flag = true; 
+static bool running_flag = true;
 /* Possibile idea :
     questo processo pusha in message queue ogni tot nanosecondi degli zeri ,in
    modo da limitare le fissioni il tutto sincronizzato con l'attivatore in modo
@@ -40,7 +40,7 @@ void energy_absorbed_value()
   }
   int energy_absorbed = *shm;
   energy_absorbed -= config.ENERGY_DEMAND;
-  fprintf(stdout,"ENERGY ABSORBED %d\n", energy_absorbed);
+  fprintf(stdout, "\tENERGY ABSORBED %d\n", energy_absorbed);
   inhibitor_stats_send.m_type = 5;
   inhibitor_stats_send.data = energy_absorbed;
   if (msgsnd(stat_id, &inhibitor_stats_send,
@@ -81,18 +81,18 @@ void signal_handle(int signum)
   {
     if (running_flag)
     {
-      //kill(inhibitor_pid, SIGSTOP);
+      // kill(inhibitor_pid, SIGSTOP);
       write(STDOUT_FILENO, "STOPPED INHIBITOR\n", 19);
       running_flag = false;
     }
-   else
+    else
     {
-      //kill(inhibitor_pid, SIGCONT);
+      // kill(inhibitor_pid, SIGCONT);
       write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
       running_flag = true;
     }
   }
-} 
+}
 
 int main(int argc, char const *argv[])
 {
@@ -100,11 +100,11 @@ int main(int argc, char const *argv[])
 
     printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
    #endif */
-  int inhibitor_command=0;
+  int inhibitor_command = 0;
   int balance = 0;
-inhibitor_pid = getpid(); 
-  signal(SIGINT,signal_handle);
-  signal(SIGUSR2,signal_handle);  
+  inhibitor_pid = getpid();
+  signal(SIGINT, signal_handle);
+  signal(SIGUSR2, signal_handle);
   if (argc < 8)
   {
     fprintf(stderr, "[%s] Not enoough arguments", __FILE__);
@@ -136,37 +136,35 @@ inhibitor_pid = getpid();
     for (int i = 0; i < config.N_ATOMI_INIT + config.N_NUOVI_ATOMI; i++)
     {
 
-
       /* #ifdef _PRINT_TEST
       fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND
       %d>\n",getpid(),inhibitor_command); #endif */
       /* convert command in to string ,inside the msg_buffer*/
       inhibitor_send.m_type = 1;
       sprintf(inhibitor_send.text, "%d", inhibitor_command);
-      //if (
-        msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long),
-		 0);
-     /*< 0)
-      {
-	fprintf(stderr, "%s %s ,ERRNO:%s PID=%d,at line: %d\n", __FILE__,
-		__func__, strerror(errno), getpid(), __LINE__);
-	exit(EXIT_FAILURE);
-      }
-*/
+      // if (
+      msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long), 0);
+      /*< 0)
+       {
+	 fprintf(stderr, "%s %s ,ERRNO:%s PID=%d,at line: %d\n", __FILE__,
+		 __func__, strerror(errno), getpid(), __LINE__);
+	 exit(EXIT_FAILURE);
+       }
+ */
       if (inhibitor_command == 0)
+      {
 	balance++;
+	inhibitor_stats_send.data = balance;
+	inhibitor_stats_send.m_type = 7;
+	msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send), 0);
+      }
 
-      inhibitor_stats_send.data = balance;
-      inhibitor_stats_send.m_type = 7;
-      //if (
-        msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send),
-		 0);
-     /*) < 0)
-      {  FIXME: identifier removed error
-	fprintf(stderr, "%s %s ,ERRNO:%s PID=%d, at line:%d \n", __FILE__,
-		__func__, strerror(errno), getpid(), __LINE__);
-	exit(EXIT_FAILURE);
-      }*/
+      /*) < 0)
+       {  FIXME: identifier removed error
+	 fprintf(stderr, "%s %s ,ERRNO:%s PID=%d, at line:%d \n", __FILE__,
+		 __func__, strerror(errno), getpid(), __LINE__);
+	 exit(EXIT_FAILURE);
+       }*/
 
       /* #ifdef _PRINT_TEST
 	  printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
