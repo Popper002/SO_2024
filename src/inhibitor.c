@@ -40,9 +40,10 @@ void energy_absorbed_value()
   }
   int energy_absorbed = *shm;
   energy_absorbed -= config.ENERGY_DEMAND;
-  fprintf(stdout, "\tENERGY ABSORBED %d\n", energy_absorbed);
   inhibitor_stats_send.m_type = 5;
   inhibitor_stats_send.data = energy_absorbed;
+
+  printf("value of energy absorbed in shared memory: %d\n", energy_absorbed);
   if (msgsnd(stat_id, &inhibitor_stats_send,
 	     sizeof(inhibitor_stats_send) - sizeof(long), 0) < 0)
   {
@@ -158,6 +159,7 @@ int main(int argc, char const *argv[])
 	inhibitor_stats_send.m_type = 7;
 	msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send), 0);
       }
+      energy_absorbed_value();
 
       /*) < 0)
        {  FIXME: identifier removed error

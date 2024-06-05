@@ -55,7 +55,7 @@ void insert_value_in_shm(int energy_released)
     exit(EXIT_FAILURE);
   }
   *shm = energy_released;
-  printf("Energy released: %d\n", *shm);
+  printf("value of energy released in shared memory: %d",energy_released);
 }
 
 static int energy_free(int atomic_a1, int atomic_a2)
