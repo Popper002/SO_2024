@@ -32,7 +32,7 @@
  #endif 
 #define ATOM_PATH "./bin/atom"
 #define ACTIVATOR_PATH "./bin/activator"
-#define FUEL_PATH "./bin/fuel"
+#define PSU_PATH "./bin/psu"
 #define INHIBITOR_PATH "./bin/inhibitor"
 #define ATOMIC_KEY 0x221
 #define STATISTICS_KEY 0x11

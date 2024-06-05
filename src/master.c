@@ -76,6 +76,8 @@ void total_print(void)
     exit(EXIT_FAILURE);
   }
 
+
+
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 1, IPC_NOWAIT);
   num_activation_last_sec += rcv_stats.data;
   final_print.total_num_activation += rcv_stats.data;
@@ -354,6 +356,7 @@ static void argument_creator(char *argv[])
   char sim_duration[10];
   char energy_explode_threshold[10];
   char master_ppid[10];
+  char config_step[10];
   // char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
@@ -363,6 +366,7 @@ static void argument_creator(char *argv[])
   sprintf(sim_duration, "%d", config.SIM_DURATION);
   sprintf(energy_explode_threshold, "%d", config.ENERGY_EXPLODE_THRESHOLD);
   sprintf(master_ppid, "%d", master_pid);
+  sprintf(config_step, "%ld", config.STEP);
   argv[1] = strdup(n_atomi_init);
   argv[2] = strdup(energy_demand);
   argv[3] = strdup(n_atom_max);
@@ -371,6 +375,7 @@ static void argument_creator(char *argv[])
   argv[6] = strdup(sim_duration);
   argv[7] = strdup(energy_explode_threshold);
   argv[8] = strdup(master_ppid);
+  argv[9] = strdup(config_step);
   argv[10] = NULL;
 }
 static void fuel_argument_ipc(char *argv[])
@@ -458,7 +463,7 @@ pid_t fuel_generator(void)
 	printf("fuel case 0\n");
      #endif */
     fuel_argument_ipc((char **)fuel_args);
-    execvp(FUEL_PATH, (char *const *)fuel_args);
+    execvp(PSU_PATH, (char *const *)fuel_args);
     fprintf(
 	stderr,
 	"%s LINE: %d[MASTER %d  , FUEL_GENERATOR(){PROBLEM IN EXECVP}, %s\n",
@@ -743,7 +748,7 @@ int main(void)
 
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
-  fuel_args[0] = (char **)FUEL_PATH;
+  fuel_args[0] = (char **)PSU_PATH;
   inhibitor_args[0] = (char **)INHIBITOR_PATH;
 
   activator_pid = activator();

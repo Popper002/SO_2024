@@ -1,10 +1,10 @@
 #include "header/common.h"
 #include "header/ipc.h"
-#include "util/shared_memory.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/msg.h>
+#include <unistd.h>
 int msg_id, stat_id;
 struct mes inhibitor_send;
 struct message inhibitor_stats_send;
@@ -18,6 +18,7 @@ static bool running_flag = true;
    da avere una queue con più quindi la prob di non avere una fissione sarà
     P(FISSIONE) = P(1)|P(INEBITORE) * P(1) * P(ATTIVATORE) /  */
 int fission_flag() { return rand() % 2; }
+
 
 /**
  * @brief take the value from shared memory with key ENERGY_ABSORBED_KEY, do a
@@ -53,6 +54,8 @@ void energy_absorbed_value()
   }
 }
 
+
+
 void fetch_args_inhibitor(char const *argv[])
 {
 
@@ -62,8 +65,10 @@ void fetch_args_inhibitor(char const *argv[])
   int min_a_atomico = atoi(argv[4]);
   int n_nuovi_atomi = atoi(argv[5]);
   int sim_duration = atoi(argv[6]);
+
   int energy_explode_threshold = atoi(argv[7]);
-  argv[8] = NULL;
+  int config_step = atoi(argv[9]);
+  argv[10] = NULL;
 
   config.N_ATOMI_INIT = n_atom_init;
   config.ENERGY_DEMAND = energy_demand;
@@ -72,6 +77,7 @@ void fetch_args_inhibitor(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
+  config.STEP = config_step;
   /* #ifdef _PRINT_TEST
     printf("[INEBITORE %d] {FETCHED ARGV COMPLEATE\n}", getpid());
    #endif */
@@ -92,6 +98,10 @@ void signal_handle(int signum)
       write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
       running_flag = true;
     }
+  } else if(signum == SIGALRM)
+  {
+    energy_absorbed_value();
+    alarm(config.STEP);
   }
 }
 
@@ -101,16 +111,13 @@ int main(int argc, char const *argv[])
 
     printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
    #endif */
+   (void) argc;
   int inhibitor_command = 0;
   int balance = 0;
   inhibitor_pid = getpid();
   signal(SIGINT, signal_handle);
   signal(SIGUSR2, signal_handle);
-  if (argc < 8)
-  {
-    fprintf(stderr, "[%s] Not enoough arguments", __FILE__);
-    exit(EXIT_FAILURE);
-  }
+  
   fetch_args_inhibitor(argv);
   /* idea sarebbe quella che inebitore insieme a attivatore in modo sincrono
     inseriscono dentro la message queue i dati della fissione
@@ -132,6 +139,8 @@ int main(int argc, char const *argv[])
   /* #ifdef _PRINT_TEST
     printf("ID %d \n", msg_id);
    #endif */
+   signal(SIGALRM, signal_handle);
+   alarm(config.STEP);
   while (1)
   {
     for (int i = 0; i < config.N_ATOMI_INIT + config.N_NUOVI_ATOMI; i++)
@@ -159,8 +168,11 @@ int main(int argc, char const *argv[])
 	inhibitor_stats_send.m_type = 7;
 	msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send), 0);
       }
-      energy_absorbed_value();
+      //each STEP seconds launch the function energy_absorbed_value
 
+      
+      
+  
       /*) < 0)
        {  FIXME: identifier removed error
 	 fprintf(stderr, "%s %s ,ERRNO:%s PID=%d, at line:%d \n", __FILE__,
