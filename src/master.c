@@ -132,7 +132,7 @@ void total_print(void)
   printf("| %-20s %d\n", "ENERGY CONSUMED",
 	 statistics_data.num_energy_consumed_last_sec);
   printf("| %-20s %d\n", "ENERGY PRODUCED", energy_produced);
-  printf("| %-20s %d\n", "FISSION_VALUE", num_fission_last_sec);
+  printf("| %-20s %d\n", "FISSION VALUE", num_fission_last_sec);
   printf("|==============================|\n\n");
 
   sleep(1);
@@ -154,7 +154,7 @@ void last_print(struct statistics final_print)
   printf("| %-20s %d\n", "ENERGY CONSUMED",
 	 statistics_data.num_energy_consumed_last_sec);
   printf("| %-20s %d\n", "ENERGY PRODUCED", final_print.total_energy_produced);
-  printf("| %-20s %d\n", "FISSION_VALUE", final_print.total_num_fission);
+  printf("| %-20s %d\n", "FISSION VALUE", final_print.total_num_fission);
   printf("|===============================================|\n\n");
 }
 
@@ -230,6 +230,7 @@ void printPid()
     fprintf(stdout, "ATOM FROM MASTER ARRAY PID :%d \n", atom_array_pid[i]);
   }
 }
+
 int why_term(enum term_reason term_reason)
 {
   switch (term_reason)
@@ -237,7 +238,7 @@ int why_term(enum term_reason term_reason)
   case EXPLODE:
     kill_them_all();
     remove_ipc();
-    write(STDOUT_FILENO, "\nTOO MUCH ENERGY REALEASED\n", 28);
+    write(STDOUT_FILENO, "\nTOO MUCH ENERGY RELEASED\n", 27);
     last_print(final_print);
     exit(EXIT_SUCCESS);
     break;
@@ -758,12 +759,11 @@ int main(void)
    #endif */
 
   fuel_pid = fuel_generator();
-  printf("fuel pid is: %d\n", fuel_pid);
+  printf("Fuel pid is: %d\n", fuel_pid);
   if (config.INHIBITOR == 1)
   {
     inhibitor_pid = inhibitor();
-    printf("inhbitor pid is: %d\n", inhibitor_pid);
-    printf("\tInhibitor started\n");
+    printf("Inhbitor pid is: %d\n", inhibitor_pid);
     signal(SIGINT, inhibitor_handle);
     signal(SIGUSR2, inhibitor_handle);
   }
