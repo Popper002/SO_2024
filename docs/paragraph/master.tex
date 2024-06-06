@@ -5,7 +5,6 @@
     \item Crea il processo \textit{inhibitor} sotto richiesta dell'utente attraverso la funzione fork. Il processo figlio generato avrà associato un array contenente i parametri di configurazione personalizzati e il PID del processo master, eseguirà un \textit{execvp} a \textit{./bin/inhibitor}.
     \item Si occupa di registrare i segnali che verranno gestiti dagli appositi handler, che permettono la gestione delle terminazioni della simulazione. 
     \item Dopo aver inizializzato tutto il necessario, imposta un alarm con valore \textit{SIM\_DURATION} che rappresenta la durata complessiva della simulazione. Il segnale \textit{SIGALARM} è gestito attraverso un handler.
-    \item Generare e inviare ai processi atomo il numero atomico di riferimento. 
    
     \item Si occupa, in seguito allo scadere di un timer visibile a schermo, di far partire i processi atomi per la simulazione. 
     \item Si occupa di gestire le terminazioni della simulazione.
