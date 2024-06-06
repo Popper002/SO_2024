@@ -176,12 +176,12 @@ int main(int argc, char const *argv[])
     psu_atom_start();
     if (nanosleep(&sleepValue, NULL) < 0)
     {
-      perror("nanosleep");
+      fprintf(stderr,"nanosleep");
     }
     else
     {
-      fprintf(stdout, "Sleep for %ld nanosec\n", sleepValue.tv_nsec);
-      // free(psu_atom_array_pid);
+      //fprintf(stdout, "Sleep for %ld nanosec\n", sleepValue.tv_nsec);
+      //free(psu_atom_array_pid);
     }
   }
 

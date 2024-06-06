@@ -238,8 +238,6 @@ int main(int argc, char const *argv[])
 
   atom_fission(&atom, config);
 
-
- 
   
   exit(EXIT_SUCCESS);
 
