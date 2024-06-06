@@ -110,7 +110,7 @@ void total_print(void)
       energy_produced - config.ENERGY_DEMAND;
   final_print.total_num_energy_consumed +=
       statistics_data.num_energy_consumed_last_sec;
-  if (energy_produced < 0)
+  if (energy_produced < 0 || statistics_data.num_energy_consumed_inhibitor_last_sec < 0 || statistics_data.num_energy_consumed_last_sec < 0 )  
   {
     why_term(BLACKOUT);
   }
