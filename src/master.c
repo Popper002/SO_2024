@@ -93,15 +93,15 @@ void total_print(void)
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 5, IPC_NOWAIT);
   energy_absorbed += rcv_stats.data;
   final_print.total_energy_absorbed += rcv_stats.data;
-
+  if(is_inhibitor_running){
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 6, IPC_NOWAIT);
   statistics_data.num_energy_consumed_inhibitor_last_sec += rcv_stats.data;
   final_print.total_num_energy_consumed += rcv_stats.data;
 
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 7, IPC_NOWAIT);
   inhibitor_balance += rcv_stats.data;
-  final_print.total_inhibitor_balancing = rcv_stats.data;
-
+  final_print.total_inhibitor_balancing += rcv_stats.data;
+  }
   msgrcv(rcv_id, &rcv_stats, sizeof(rcv_stats), 8, IPC_NOWAIT);
   num_fission_last_sec += rcv_stats.data;
   final_print.total_num_fission += rcv_stats.data;
@@ -123,11 +123,11 @@ void total_print(void)
   printf("\n|==========%s=================|\n",time_buffer);
   printf("| %-20s %d\n", "ACTIVATION_VALUE", num_activation_last_sec);
   printf("| %-20s %d\n", "WASTE_VALUE", total_nuclear_waste);
-  if (config.INHIBITOR == 1)
+  if (config.INHIBITOR == 1 )
   {
     printf("| %-20s %d\n", "INHIBITOR BALANCE", inhibitor_balance);
     printf("| %-20s %d\n", "ENERGY ABSORBED BY INHIBITOR",
-	   energy_absorbed);
+	   statistics_data.num_energy_consumed_inhibitor_last_sec);
   }
   printf("| %-20s %d\n", "ENERGY CONSUMED",
 	 statistics_data.num_energy_consumed_last_sec);
@@ -618,12 +618,15 @@ void inhibitor_handle(int signum)
       kill(inhibitor_pid, SIGSTOP);
       write(STDOUT_FILENO, "STOPPED INHIBITOR\n", 19);
       is_inhibitor_running = false;
+      //fprintf(stdout, " IS_RUNNING VALUE :%B\n",is_inhibitor_running);
     }
     else
     {
       kill(inhibitor_pid, SIGCONT);
       write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
       is_inhibitor_running = true;
+      //fprintf(stdout, " IS_RUNNING VALUE :%B\n",is_inhibitor_running);
+
     }
   }
 
