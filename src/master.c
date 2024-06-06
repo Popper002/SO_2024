@@ -220,7 +220,9 @@ void kill_them_all()
   }
   killpg(*atom_array_pid, SIGKILL);
   killpg(activator_pid, SIGKILL);
+  if(config.INHIBITOR ==1 ){
   kill(inhibitor_pid, SIGKILL);
+  } 
   kill(fuel_pid, SIGKILL);
 }
 void printPid()
@@ -240,6 +242,7 @@ int why_term(enum term_reason term_reason)
     remove_ipc();
     write(STDOUT_FILENO, "\nTOO MUCH ENERGY RELEASED\n", 27);
     last_print(final_print);
+    
     exit(EXIT_SUCCESS);
     break;
   case BLACKOUT:
@@ -247,6 +250,7 @@ int why_term(enum term_reason term_reason)
     kill_them_all();
     remove_ipc();
     last_print(final_print);
+
     exit(EXIT_SUCCESS);
     break;
   case MELTDOWN:
