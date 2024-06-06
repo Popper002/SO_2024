@@ -239,7 +239,11 @@ while (1)
   {
 
     psu_atom_array_pid[i]=born_new_atom();   
-    fprintf(stdout,"PSU GEN ATOM PID %d\n",psu_atom_array_pid[i]); 
+
+
+#ifdef _PRINT_TEST
+    printf("PSU GEN ATOM PID %d\n",psu_atom_array_pid[i]); 
+    #endif
   }
    psu_atom_start(); 
    if(nanosleep(&sleepValue,NULL)<0 ) {perror("nanosleep");}

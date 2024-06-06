@@ -542,23 +542,21 @@ void store_pid_atom()
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     atom_array_pid[i] = atom_gen();
-    /* #ifdef _PRINT_TEST
+     #ifdef _PRINT_TEST
 	printf("[MASTER %d ] %s , [PID %d ] [POS %d]\n", getpid(), __func__,
 	       atom_array_pid[i], i);
-     #endif */
+     #endif
   }
-  // printPid();
-  /* #ifdef _PRINT_TEST
-   fprintf(stdout, "Child process %d created and suspended.\n", atom_pid);
-    #endif */
-  // free(atom_array_pid);
+  #ifdef _PRINT_TEST
+   printf("Child process %d created and suspended.\n", atom_pid);
+    #endif
 }
 
 /**
   sizeof(int *) / sizeof(int) gives a warning with -Wall, so we had to use new
   way to compute the size of atom_array_pid
   https://arjunsreedharan.org/post/69303442896/how-to-find-the-size-of-an-array-in-c-without
-  here there is an explanation on why this work
+  here there is an explanation on how and why this work
 */
 void handle_signal(int signum)
 {
@@ -625,25 +623,6 @@ void inhibitor_handle(int signum)
     }
   }
 
-
-  /*
-  switch (signum)
-  {
-    case SIGUSR1:
-      fprintf(stdout, "START INHIBITOR\n");
-      kill(inhibitor_pid, SIGCONT);
-      break;
-
-    case SIGUSR2:
-      fprintf(stdout, "STOPPING INHIBITOR\n");
-      kill(inhibitor_pid, SIGSTOP);
-      break;
-
-    default:
-      fprintf(stderr, "Invalid signal received\n");
-      break;
-  }
-   */
 }
 
 void print_config(void)
@@ -681,25 +660,6 @@ void logo(void)
   printf(" By Riccardo Oro & Francesco Mauro \n");
   printf("\n\n\n");
 
-/*
-  printf("              _             _         _                 _       _   "
-	 "_              \n"
-	 "     | |           | |       (_)               | |     | | (_)       "
-	 "      \n"
-	 "  ___| |_ __ _ _ __| |_   ___ _ _ __ ___  _   _| | __ _| |_ _  ___  "
-	 "_ __   \n"
-	 " / __| __/ _` | '__| __| / __| | '_ ` _ \\| | | | |/ _` | __| |/ _ "
-	 "\\| '_ \\  \n"
-	 " \\__ \\ || (_| | |  | |_  \\__ \\ | | | | | | |_| | | (_| | |_| | "
-	 "(_) | | | | \n"
-	 " |___/\\__\\__,_|_|   \\__| |___/_|_| |_| "
-	 "|_|\\__,_|_|\\__,_|\\__|_|\\___/|_| |_| \n"
-	 "                                                                     "
-	 "      \n"
-	 "                                                                     "
-	 "      \n");
-*/
-
   print_config();
 }
 int main(void)
@@ -710,12 +670,7 @@ int main(void)
   signal(SIGUSR1, handle_signal);
 
   int start;
-  key_shm = KEY_SHM; // ftok("header/common.h",'s');
-  // void *rcv_ptr;
-  // char command[2];
-  /* #ifdef _PRINT_TEST
-    printf("KEY IS %d \n", key_shm);
-   #endif */
+  key_shm = KEY_SHM;
 
   if (key_shm < 0)
   {
@@ -723,10 +678,7 @@ int main(void)
   }
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT), IPC_CREAT | 0666);
 
-  /*
-  signal(SIGUSR1, inhibitor_handle);
-  signal(SIGUSR2, inhibitor_handle);
-   */
+  
 
   char file_path[100];
   printf("Insert the configuration path: <src/config/file_name.txt> \n");
@@ -743,9 +695,9 @@ int main(void)
   master_pid = getpid();
   printf("%s master pid is: %d\n", __FILE__, master_pid);
 
-  /* #ifdef _PRINT_TEST
-   // print_para_TEST(config);
-   #endif */
+   #ifdef _PRINT_TEST
+   print_para_TEST(config);
+   #endif 
 
   args_atom[0] = (char **)ATOM_PATH;
   activator_args[0] = (char **)ACTIVATOR_PATH;
@@ -753,10 +705,10 @@ int main(void)
   inhibitor_args[0] = (char **)INHIBITOR_PATH;
 
   activator_pid = activator();
-  /* #ifdef _PRINT_TEST
+  #ifdef _PRINT_TEST
     printf("[MASTER %d ] [%s ] [ACTIVATOR PID %d ]\n", getpid(), __func__,
 	   activator_pid);
-   #endif */
+   #endif 
 
   fuel_pid = fuel_generator();
   printf("Fuel pid is: %d\n", fuel_pid);
@@ -771,23 +723,20 @@ int main(void)
   store_pid_atom();
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
-  /* #ifdef _PRINT_TEST
+   #ifdef _PRINT_TEST
     for (int i = 0; i < config.N_NUOVI_ATOMI; i++)
     {
 
       printf("[%s]Il valore memorizzato è %d\n", __FILE__, rcv_pid->array[i]);
     }
-    fprintf(stdout, "atoms generfinal_printated and stopped\n");
-   #endif */
+    fprintf(stdout, "atoms started and stopped\n");
 
-  // shutdown();
-  /* #ifdef _PRINT_TEST
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
   printf("\n\t-----------------------------------\n");
   printf("\t\tEverything is ready to start the simulation\n");
   printf("\n\t-----------------------------------\n");
   printf("\n\t\t\tMaster process didn't kill himself :)\n\n");
-   #endif */
+   #endif 
   logo();
   for (start = 5; start > 0; start--)
   {
@@ -802,12 +751,7 @@ int main(void)
 
   while (1)
   {
-    /*
-    while(config.SIM_DURATION--){
-    printf("TIME REMANING FOR SIMULATION %d \n", config.SIM_DURATION);
-*/
     total_print();
-    //     TODO: call a function that displays statistic
   }
 
   return 0;
