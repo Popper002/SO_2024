@@ -111,7 +111,9 @@ void fetch_args_fuel(char const *argv[])
   shm_id = ipc_shm_id;
   shm_key = ipc_key_shm;
 
+#ifdef _PRINT_TEST
   printf("%s master_pid received is: %d\n", __FILE__, master_pid);
+  #endif
 }
 
 /**
