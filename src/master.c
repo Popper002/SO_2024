@@ -42,6 +42,7 @@ pid_t fuel_pid;
 struct config config;
 enum term_reason term_reason;
 struct statistics *shared_data;
+struct sembuf semOp;
 int inhibitor_balance;
 int total_nuclear_waste;
 int num_fission_last_sec;
@@ -51,7 +52,7 @@ int received_value;
 int energy_absorbed;
 int energy_produced = 0;
 int master_pid;
-
+static int sem_start_inhibitor ;
 
 int why_term(enum term_reason term_reason);
 
@@ -201,6 +202,12 @@ void remove_ipc()
   }
 
   if(shmctl(absorbed_energy_id,IPC_RMID,NULL) == -1)
+  {
+    fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
+      strerror(errno), __LINE__);
+    exit(EXIT_FAILURE);
+  }
+  if(semctl(sem_start_inhibitor , 1 , IPC_RMID) < 0 )
   {
     fprintf(stderr, "Error in removing ipc object %s %s %d\n", __FILE__,
       strerror(errno), __LINE__);
@@ -586,6 +593,7 @@ void handle_signal(int signum)
 
 void start_atom()
 {
+  
   printf("\033[1;32m starting atom as last process \033[0m\n");
 
   for (pid_t i = 0; i < config.N_ATOMI_INIT; i++)
@@ -595,6 +603,7 @@ void start_atom()
   /*#ifdef __PRINT_TEST
       printf("\n\tSTART ATOM %d\n", atom_array_pid[i]);
   #endif */
+
 }
 
 // use sigint to start and stop the inhibitor
@@ -673,9 +682,7 @@ int main(void)
     fprintf(stderr, "PROBLEM KEY\n");
   }
   shm_id = shmget(key_shm, sizeof(config.N_ATOMI_INIT), IPC_CREAT | 0666);
-
-  
-
+  sem_start_inhibitor = semget(0x29 , 1 ,IPC_CREAT|0666); 
   char file_path[100];
   printf("Insert the configuration path: <src/config/file_name.txt> \n");
   scanf("%s", file_path);
@@ -718,6 +725,10 @@ int main(void)
   }
 
   store_pid_atom();
+
+
+
+
   rcv_pid = (shm_fuel *)shmat(shm_id, NULL, 0);
 
    #ifdef _PRINT_TEST
@@ -744,8 +755,15 @@ int main(void)
   fprintf(stdout, "\nMaster: [PID %d] is starting the simulation\n", getpid());
   alarm(config.SIM_DURATION);
 
+
+  
+  if(config.INHIBITOR == 1){
+  sem_reserve(sem_start_inhibitor,1,-1);
   start_atom();
+  sem_release(sem_start_inhibitor,1,1);
   kill(inhibitor_pid,SIGCONT);
+  }
+  start_atom(); 
   while (1)
   {
     total_print();
