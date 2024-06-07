@@ -128,9 +128,11 @@ void fetch_args_fuel(char const *argv[])
 
 void psu_atom_start()
 {
+  while(1){
   for (int i = 0; i < config.N_ATOMI_INIT; i++)
   {
     kill(psu_atom_array_pid[i], SIGCONT);
+  }
   }
 }
 
