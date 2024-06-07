@@ -40,7 +40,9 @@ void fetch_args(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  printf("[Activator %d] {Fetching arguments compleated}\n", getpid());
+  #ifdef _PRINT_TEST
+  printf("[Activator %d] {Fetching arguments completed}\n", getpid());
+  #endif
 }
 
 int main(int argc, char const *argv[])

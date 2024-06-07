@@ -3,10 +3,5 @@
 *.log
 *.toc
 *.gch
-fuel
-master
-activator
-atom 
-inhibitor
-
 .idea/**
+bin/**

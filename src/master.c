@@ -700,10 +700,9 @@ int main(void)
     exit(EXIT_FAILURE);
   }
   master_pid = getpid();
+  #ifdef _PRINT_TEST
   printf("%s master pid is: %d\n", __FILE__, master_pid);
-
-   #ifdef _PRINT_TEST
-   print_para_TEST(config);
+  print_para_TEST(config);
    #endif 
 
   args_atom[0] = (char **)ATOM_PATH;
@@ -718,7 +717,9 @@ int main(void)
    #endif 
 
   fuel_pid = fuel_generator();
+  #ifdef  _PRINT_TEST
   printf("Fuel pid is: %d\n", fuel_pid);
+  #endif
   if (config.INHIBITOR == 1)
   {
     inhibitor_pid = inhibitor();
