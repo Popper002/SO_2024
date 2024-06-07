@@ -284,9 +284,7 @@ static int scan_data(char *file_path)
     fprintf(stderr, "%d\n", errno);
     exit(EXIT_FAILURE);
   }
-  /* #ifdef _PRINT_TEST
-  printf("Reading data from file...\n");
-   #endif */
+  
   while (fscanf(fp, "%s %d", name_param, &value) != EOF)
   {
     if (strcmp(name_param, "N_ATOMI_INIT") == 0)
@@ -341,14 +339,6 @@ static int scan_data(char *file_path)
   }
 
   fclose(fp);
-  /* #ifdef _PRINT_TEST
-  printf("Data read from file!\n");
-  if (config.INHIBITOR == 1)
-  {
-    printf("Inhibitor is going to be used in this simulation\n");
-  }
-   #endif */
-
   return error;
 }
 static void argument_creator(char *argv[])
@@ -362,7 +352,6 @@ static void argument_creator(char *argv[])
   char energy_explode_threshold[10];
   char master_ppid[10];
   char config_step[10];
-  // char atomic_number[10];
   sprintf(n_atomi_init, "%d", config.N_ATOMI_INIT);
   sprintf(energy_demand, "%d", config.ENERGY_DEMAND);
   sprintf(n_atom_max, "%d", config.N_ATOM_MAX);

@@ -111,7 +111,7 @@ int main(int argc, char const *argv[])
   signal(SIGUSR2, signal_handle);
   
   fetch_args_inhibitor(argv);
-  /* idea sarebbe quella che inebitore insieme a attivatore in modo sincrono
+  /* idea sarebbe quella che inibitore insieme a attivatore in modo sincrono
     inseriscono dentro la message queue i dati della fissione
     siccome inebitore ha il compito di ridurre le fissioni pushiamo molti piû
     comandi anti fissione in queue e poi gli atomi pescano dentro questa queue e
@@ -128,9 +128,7 @@ int main(int argc, char const *argv[])
 	    strerror(errno));
     exit(EXIT_FAILURE);
   }
-  /* #ifdef _PRINT_TEST
-    printf("ID %d \n", msg_id);
-   #endif */
+  
    signal(SIGALRM, signal_handle);
    alarm(config.STEP);
   while (1)
