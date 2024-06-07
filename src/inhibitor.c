@@ -78,9 +78,6 @@ void fetch_args_inhibitor(char const *argv[])
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
   config.STEP = config_step;
-  /* #ifdef _PRINT_TEST
-    printf("[INEBITORE %d] {FETCHED ARGV COMPLEATE\n}", getpid());
-   #endif */
 }
 void signal_handle(int signum)
 {
@@ -88,13 +85,11 @@ void signal_handle(int signum)
   {
     if (running_flag)
     {
-      // kill(inhibitor_pid, SIGSTOP);
       write(STDOUT_FILENO, "STOPPED INHIBITOR\n", 19);
       running_flag = false;
     }
     else
     {
-      // kill(inhibitor_pid, SIGCONT);
       write(STDOUT_FILENO, "STARTED INHIBITOR\n", 19);
       running_flag = true;
     }
@@ -107,10 +102,7 @@ void signal_handle(int signum)
 
 int main(int argc, char const *argv[])
 {
-  /* #ifdef _PRINT_TEST
-
-    printf("[%s][%s][PID:%d]\n", __FILE__, __func__, getpid());
-   #endif */
+  
    (void) argc;
   int inhibitor_command = 0;
   int balance = 0;
@@ -146,21 +138,12 @@ int main(int argc, char const *argv[])
     for (int i = 0; i < config.N_ATOMI_INIT + config.N_NUOVI_ATOMI; i++)
     {
 
-      /* #ifdef _PRINT_TEST
-      fprintf(stdout , "TEST_INIBITORE[PID%d]<COMMAND
-      %d>\n",getpid(),inhibitor_command); #endif */
-      /* convert command in to string ,inside the msg_buffer*/
+      
+      // convert command in to string ,inside the msg_buffer
       inhibitor_send.m_type = 1;
       sprintf(inhibitor_send.text, "%d", inhibitor_command);
-      // if (
       msgsnd(msg_id, &inhibitor_send, sizeof(inhibitor_send) - sizeof(long), 0);
-      /*< 0)
-       {
-	 fprintf(stderr, "%s %s ,ERRNO:%s PID=%d,at line: %d\n", __FILE__,
-		 __func__, strerror(errno), getpid(), __LINE__);
-	 exit(EXIT_FAILURE);
-       }
- */
+  
       if (inhibitor_command == 0)
       {
 	balance++;
@@ -168,22 +151,6 @@ int main(int argc, char const *argv[])
 	inhibitor_stats_send.m_type = 7;
 	msgsnd(stat_id, &inhibitor_stats_send, sizeof(inhibitor_stats_send), 0);
       }
-      //each STEP seconds launch the function energy_absorbed_value
-
-      
-      
-  
-      /*) < 0)
-       {  FIXME: identifier removed error
-	 fprintf(stderr, "%s %s ,ERRNO:%s PID=%d, at line:%d \n", __FILE__,
-		 __func__, strerror(errno), getpid(), __LINE__);
-	 exit(EXIT_FAILURE);
-       }*/
-
-      /* #ifdef _PRINT_TEST
-	  printf("[%s][%s][%d][VALUE: %d IN MSG_BUFF:%s]\n", __FILE__, __func__,
-		 getpid(), inhibitor_command, inhibitor_send.text);
-       #endif */
     }
   }
   return 0;
