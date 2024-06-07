@@ -745,7 +745,7 @@ int main(void)
   alarm(config.SIM_DURATION);
 
   start_atom();
-
+  kill(inhibitor_pid,SIGCONT);
   while (1)
   {
     total_print();

@@ -129,6 +129,7 @@ int main(int argc, char const *argv[])
     exit(EXIT_FAILURE);
   }
   
+    kill(getpid(),SIGSTOP);
    signal(SIGALRM, signal_handle);
    alarm(config.STEP);
   while (1)
