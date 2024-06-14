@@ -547,6 +547,7 @@ void store_pid_atom()
 	       atom_array_pid[i], i);
      #endif
   }
+  free(atom_array_pid);
   #ifdef _PRINT_TEST
    printf("Child process %d created and suspended.\n", atom_pid);
     #endif
