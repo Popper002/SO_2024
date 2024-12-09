@@ -5,3 +5,6 @@ atom
 *.log
 *.toc
 
+
+.idea/**
+bin/** 
