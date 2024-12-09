@@ -9,9 +9,11 @@
 #include <sys/sem.h>
 #include <semaphore.h>
 #include <sys/types.h>
+#include <signal.h>
 #define macro_key 12
+#define NUM_PROC 100
 
-
+int sem_id; 
 struct msg{
     long msg_type;
     char text[10]; 

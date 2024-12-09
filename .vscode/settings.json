@@ -1,6 +1,19 @@
 {
     "files.associations": {
         "unistd.h": "c",
-        "common.h": "c"
+        "common.h": "c",
+        "library.h": "c",
+        "shared_memory.h": "c",
+        "algorithm": "c",
+        "cstdlib": "c",
+        "signal.h": "c",
+        "ctime": "c",
+        "ipc.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "vector": "c",
+        "errno.h": "c",
+        "stdio.h": "c"
     }
 }

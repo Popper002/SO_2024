@@ -1,16 +1,18 @@
-//TODO move this in a separate header file
-#include "header/atom.h"
+// TODO move this in a separate header file
 #include "header/common.h"
 #include "header/ipc.h"
+#include "util/shared_memory.h"
+#include "util/my_sem_lib.h"
+#include <stdlib.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <sys/sem.h>
 #include <unistd.h>
 
 #include "header/ipc.h"
 
-struct message send;
+struct mes send;
 struct config config;
-
 /* activator is a message queue*/
 
 static int randomic_activation()
@@ -38,29 +40,53 @@ void fetch_args(char const *argv[])
   config.N_NUOVI_ATOMI = n_nuovi_atomi;
   config.SIM_DURATION = sim_duration;
   config.ENERGY_EXPLODE_THRESHOLD = energy_explode_threshold;
-  printf("[Activator %d] {Fetching arguments compleated}\n",getpid());
+  #ifdef _PRINT_TEST
+  printf("[Activator %d] {Fetching arguments completed}\n", getpid());
+  #endif
 }
-
 
 int main(int argc, char const *argv[])
 {
-  srand(time(NULL));
-  #ifdef _PRINT_TEST
+  (void)argc;
+/* #ifdef _PRINT_TEST
   printf("HELLO I'M ACTIVATOR %d\n", getpid());
-  #endif
-  static int q_id, i ;
+ #endif */
+  static int q_id, i;
+  int command;
+
+  
   fetch_args(argv);
+  srand(time(NULL));
   q_id = msgget(ATOMIC_KEY, IPC_CREAT | 0666);
-  printf("[%s] QUEUEU : %d CREATED \n ",__FILE__, q_id);
-  printf("activator [%d] in pause\n",getpid());
-  pause();
-  for( i=0 ; i<config.N_ATOMI_INIT ; i++){
-  send.m_type = 1;
-  int command = randomic_activation();
-  printf("\ncommand %d\n", command);
-  sprintf(send.text, "%d", command);
-  if(msgsnd(q_id, &send, sizeof(send)-sizeof(long), 0) <=-1){fprintf(stderr,"ERROR IN MSGSND\n");};
-  printf("SENDED THIS MESSAGGE %s IN QUEUE %d TYPE:%ld\n", send.text, q_id,send.m_type);
+
+  //printf("[%s] QUEUEU : %d CREATED \n ", __FILE__, q_id);
+  for (i = 0; i < config.N_ATOMI_INIT+config.N_NUOVI_ATOMI; i++)
+  {
+    send.m_type = 1;
+    command = randomic_activation();
+/* #ifdef _PRINT_TEST
+    printf("\ncommand %d\n", command);
+ #endif */
+      sprintf(send.text,"%d",command);
+    if (msgsnd(q_id, &send, sizeof(send) - sizeof(long), 0) <= -1)
+    {
+      fprintf(stderr, "[ACTIVATOR %d] %s Error in msgsnd %sn", getpid(),__FILE__,strerror(errno));
+      exit(EXIT_FAILURE); 
+    }
+ 
+    // activator_stats->activator_balancing++;
+  //  activator_stats->num_activation_last_sec++;
+/* #ifdef _PRINT_TEST
+    printf("[%s %s SENDED THIS MESSAGE %s IN QUEUE %d TYPE:%ld\n", __FILE__,
+	   __func__, send.text, q_id, send.m_type);
+ #endif */
   }
+
+  /*
+  while(1){
+    printf("%s\n",__FILE__);
+  }
+   */
+  exit(EXIT_SUCCESS);
   return 0;
 }

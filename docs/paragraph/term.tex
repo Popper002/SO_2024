@@ -1,0 +1,9 @@
+Le terminazioni della simulazione sono gestite dal processo master attraverso la funzione \begin{lstlisting}why\_term() \end{lstlisting} che si occupa di interrompere la simulazione
+nel caso si verifichi uno dei seguenti casi  ripartiti nella richiesta progettuale, ogni terminazione è identificata da una macro che sono contenute in un enum apposito. 
+Ogni volta che si presenta una terminazione avviene:
+\begin{itemize}
+    \item Rimozione degli oggetti IPC utilizzati dai vari processi durante la simulazione. 
+    \item Rimuovere attraverso il segnale \textit{SIGKILL} tutti i processi ancora attivi per la simulazione. 
+    \item Stampare su schermo la motivazione della terminazione. 
+\end{itemize}
+
