@@ -14,6 +14,10 @@ send:
 rcv:
 	$(CC) $(CFLAGS) $(D_FLAG) rcv.c library.h -o rcv
 
+struct :
+	$(CC) $(CFLAGS) $(D_FLAG) struct.c -o struct
+	$(CC) $(CFLAGS) $(D_FLAG) rcv_struct.c -o rcv_struct
+	
 rm:
 	$(IPC_RM)
 	$(RM) -f send rcv 

@@ -10,5 +10,14 @@
 #include <semaphore.h>
 #include <signal.h>
 #include <sys/types.h>
+#define SEM_KEY 0x22
 
 
+void semaphore_down(int sem_id);
+void semaphore_up(int sem_id);
+
+struct msg
+{
+    long msg_type; 
+    char text[10];  
+}; 

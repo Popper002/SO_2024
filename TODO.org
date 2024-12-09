@@ -1,0 +1,10 @@
+#+TITLE: Cose mancanti in So
+* TODO gestione scorie
+* TODO Risolvere shared memory PID generati da fuel (mancanti)
+* TODO Tabella print totali
+* TODO Tabella print ogni secondi*
+* TODO step nanosec
+* TODO log su file con tutti i pid degli atomi
+* DONE risolvere i warning di fuel
+* DONE risolvere i warning di activator
+* TODO risolvere i warning di master 

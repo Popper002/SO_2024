@@ -1,4 +1,5 @@
 #include "library.h"
+
 /* SEND : GENERA IPC E LA CHIAVE E L'ID SONO CONVERTITI IN STRINGA E SPEDITI COME PARAMETRO AL
 RCV */
 char **ipc_id[100];
@@ -38,11 +39,18 @@ int main(int argc, char const *argv[])
     key_ = ftok("send.c",'x');
     printf("KEY NUM IS %d\n" ,key_);
     if(key_ < 0 ){ perror("ERROR IN KEY GEN\n");exit(EXIT_FAILURE);}
-    shm_id = shmget(key_, sizeof(char) *2 , IPC_CREAT|0666); 
+    shm_id = shmget(key_, ARRAY_SIZE , IPC_CREAT|0666); 
     if(shm_id <0){perror("ERROR IN GET\n");exit(EXIT_FAILURE);} 
-    printf(" %s SHM ID %d , sizeof(%d)",__FILE__ , shm_id , sizeof(shm_id));
+    printf(" %s SHM ID %d , sizeof(%lu)",__FILE__ , shm_id , sizeof(shm_id));
     ipc_id[0]="./send";
     rcv(); 
+    sleep(5);
+    MyData *data; 
+    data=(MyData* ) shmat(shm_id, NULL, 0);
+    for( int i =0 ; i < 3 ;i++) 
+    {
+    printf("Il valore memorizzato è %d\n", data->array[i]);
+    }
     
 
     return 0;
